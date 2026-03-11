@@ -1,0 +1,15 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
+    authDomain: "testa-crm.firebaseapp.com",
+    projectId: "testa-crm",
+    storageBucket: "testa-crm.firebasestorage.app",
+    messagingSenderId: "616199192563",
+    appId: "1:616199192563:web:20b35acba2f635b9735c86",
+    measurementId: "G-7Q3BQS18FH"
+};
+
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
