@@ -25,20 +25,30 @@ function actualizarTablaClientes() {
     }
 
     listaMedicos.forEach(m => {
-        let ultV = "Sin visitas", pCount = 0;
+        let ultV = "Sin visitas", proxEntrega = "<span style='color:gray'>-</span>", pCount = 0;
         const visitas = m.visitas || [];
+        
         if (visitas.length > 0) {
             stats.v += visitas.length;
             ultV = new Date(visitas[visitas.length-1].fecha + 'T00:00:00').toLocaleDateString('es-AR');
+            
             visitas.forEach(v => { if(v.estado==='pendiente') {pCount++; stats.p++;} else stats.c++; });
+
+            // Buscar la entrega pendiente más próxima
+            const pendientesConEntrega = visitas.filter(v => v.estado === 'pendiente' && v.entrega);
+            if (pendientesConEntrega.length > 0) {
+                // Ordenamos para mostrar la fecha más cercana primero
+                pendientesConEntrega.sort((a,b) => new Date(a.entrega) - new Date(b.entrega));
+                proxEntrega = `<span style="color: var(--red-icon); font-weight: 600;"><i class="fa-solid fa-clock"></i> ${new Date(pendientesConEntrega[0].entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>`;
+            }
         }
         
-        // ACÁ ESTÁ EL CAMBIO PARA EL CELULAR: Los 'data-label' le avisan al CSS qué título poner
         cuerpo.innerHTML += `<tr>
             <td data-label="Médico"><b>${m.nombre}</b><br><small>${m.contacto}</small></td>
             <td data-label="Institución">${m.institucion}</td>
             <td data-label="Última Visita">${ultV}</td>
-            <td data-label="Estado Pedidos">${pCount > 0 ? `<span class="badge badge-pendiente">${pCount} Pendiente</span>` : `<span class="badge badge-completado">Al día</span>`}</td>
+            <td data-label="Entrega Límite">${proxEntrega}</td>
+            <td data-label="Estado Pedidos">${pCount > 0 ? `<span class="badge badge-pendiente">${pCount} Pendiente(s)</span>` : `<span class="badge badge-completado">Al día</span>`}</td>
             <td data-label="Acciones">
                 <button class="btn-icon" onclick="window.abrirVisitas('${m.id}')"><i class="fa-regular fa-folder-open"></i></button>
                 <button class="btn-icon" onclick="window.borrarCliente('${m.id}')" style="color:red"><i class="fa-regular fa-trash-can"></i></button>
@@ -58,10 +68,13 @@ window.abrirVisitas = (id) => {
     document.getElementById('nombre-medico-visita').innerText = "Historial: " + m.nombre;
     document.getElementById('id-medico-actual').value = m.id;
     document.getElementById('fecha-visita').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha-entrega').value = ''; // Limpiamos la entrega
     
     const h = document.getElementById('historial-visitas');
     const vis = m.visitas || [];
-    h.innerHTML = vis.length ? [...vis].reverse().map((v, i) => `
+    h.innerHTML = vis.length ? [...vis].reverse().map((v, i) => {
+        let txtEntrega = v.entrega ? `<br><small style="color: var(--red-icon); font-weight:600;"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(v.entrega+'T00:00:00').toLocaleDateString('es-AR')}</small>` : '';
+        return `
         <div class="visita-card">
             <div class="visita-header">
                 <b>${new Date(v.fecha+'T00:00:00').toLocaleDateString('es-AR')}</b>
@@ -70,9 +83,9 @@ window.abrirVisitas = (id) => {
                     ${v.estado} <i class="fa-solid fa-rotate"></i>
                 </span>
             </div>
-            <p>${v.pedido}</p>
-        </div>
-    `).join('') : '<p style="text-align:center;color:gray;">No hay visitas registradas.</p>';
+            <p>${v.pedido}${txtEntrega}</p>
+        </div>`
+    }).join('') : '<p style="text-align:center;color:gray;">No hay visitas registradas.</p>';
 
     document.getElementById('modal-visitas').classList.add('active');
 };
@@ -91,18 +104,20 @@ window.borrarCliente = async (id) => {
     }
 };
 
-// Guardar nueva visita
+// Guardar nueva visita con FECHA DE ENTREGA
 document.getElementById('form-visita').onsubmit = async (e) => {
     e.preventDefault();
     const id = document.getElementById('id-medico-actual').value;
     const m = listaMedicos.find(x => x.id === id);
     const nuevas = [...(m.visitas||[]), {
         fecha: document.getElementById('fecha-visita').value,
+        entrega: document.getElementById('fecha-entrega').value || null, // Guardamos la entrega si la puso
         estado: document.getElementById('estado-visita').value,
         pedido: document.getElementById('pedido-visita').value
     }];
     await updateDoc(doc(db, "clientes", id), { visitas: nuevas });
     document.getElementById('pedido-visita').value = '';
+    document.getElementById('fecha-entrega').value = '';
     window.abrirVisitas(id);
 };
 
@@ -122,19 +137,29 @@ document.getElementById('form-cliente').onsubmit = async (e) => {
 
 document.getElementById('btn-nuevo').onclick = () => document.getElementById('modal-nuevo-cliente').classList.add('active');
 
-// Calendario
+// Calendario Mejorado (Muestra visitas y entregas)
 window.dibujarCalendario = () => {
     const g = document.getElementById('cuadricula-calendario');
     g.innerHTML = ['D','L','M','X','J','V','S'].map(d => `<div style="text-align:center;font-weight:700">${d}</div>`).join('');
     const hoy = new Date(), mes = hoy.getMonth(), anio = hoy.getFullYear();
     const pDia = new Date(anio, mes, 1).getDay(), dMes = new Date(anio, mes+1, 0).getDate();
     for(let i=0; i<pDia; i++) g.innerHTML += '<div class="cal-day" style="border:none"></div>';
+    
     for(let d=1; d<=dMes; d++){
-        const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const fechaStr = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         let vts = '';
+        
         listaMedicos.forEach(m => (m.visitas||[]).forEach(v => {
-            if(v.fecha === fecha) vts += `<div class="cal-visit-badge">${m.nombre}</div>`;
+            // Si hubo visita ese día (Azul)
+            if(v.fecha === fechaStr) {
+                vts += `<div class="cal-visit-badge" style="background:var(--blue-light); color:var(--blue-primary);"><i class="fa-solid fa-user-doctor"></i> ${m.nombre}</div>`;
+            }
+            // Si hay una entrega pendiente para ese día (Rojo)
+            if(v.entrega === fechaStr && v.estado === 'pendiente') {
+                vts += `<div class="cal-visit-badge" style="background:var(--red-light); color:var(--red-icon); border: 1px solid var(--red-icon);"><i class="fa-solid fa-truck-fast"></i> Entrega: ${m.nombre}</div>`;
+            }
         }));
+        
         g.innerHTML += `<div class="cal-day"><div class="cal-date-num">${d}</div>${vts}</div>`;
     }
 };

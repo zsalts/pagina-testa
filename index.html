@@ -62,7 +62,7 @@
                         <th>Médico</th>
                         <th>Institución</th>
                         <th>Última Visita</th>
-                        <th>Estado Pedidos</th>
+                        <th>Entrega Límite</th> <th>Estado Pedidos</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -104,10 +104,25 @@
             <div id="historial-visitas" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
             <form id="form-visita" style="border-top: 1px solid #eee; padding-top: 15px;">
                 <input type="hidden" id="id-medico-actual">
+                
                 <div style="display: flex; gap: 10px;">
-                    <input type="date" id="fecha-visita" required style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px;">
-                    <select id="estado-visita" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px;"><option value="pendiente">Pendiente</option><option value="completado">Completado</option></select>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Día de Visita</label>
+                        <input type="date" id="fecha-visita" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--red-icon);">Límite Entrega</label>
+                        <input type="date" id="fecha-entrega" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Estado</label>
+                        <select id="estado-visita" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="completado">Completado</option>
+                        </select>
+                    </div>
                 </div>
+
                 <textarea id="pedido-visita" placeholder="Detalle: ¿Qué te pidió o de qué hablaron?" required style="width:100%; margin-top:10px; padding:10px; height:60px; border:1px solid #ddd; border-radius:6px;"></textarea>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Registrar Visita</button></div>
             </form>
@@ -116,7 +131,7 @@
 
     <div class="modal-overlay" id="modal-calendario">
         <div class="modal" style="max-width: 800px;">
-            <div class="modal-header"><h3>Calendario de Visitas</h3><button class="btn-close"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="modal-header"><h3>Calendario de Visitas y Entregas</h3><button class="btn-close"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="calendar-grid" id="cuadricula-calendario"></div>
         </div>
     </div>
