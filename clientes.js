@@ -33,12 +33,13 @@ function actualizarTablaClientes() {
             visitas.forEach(v => { if(v.estado==='pendiente') {pCount++; stats.p++;} else stats.c++; });
         }
         
+        // ACÁ ESTÁ EL CAMBIO PARA EL CELULAR: Los 'data-label' le avisan al CSS qué título poner
         cuerpo.innerHTML += `<tr>
-            <td><b>${m.nombre}</b><br><small>${m.contacto}</small></td>
-            <td>${m.institucion}</td>
-            <td>${ultV}</td>
-            <td>${pCount > 0 ? `<span class="badge badge-pendiente">${pCount} Pendiente</span>` : `<span class="badge badge-completado">Al día</span>`}</td>
-            <td>
+            <td data-label="Médico"><b>${m.nombre}</b><br><small>${m.contacto}</small></td>
+            <td data-label="Institución">${m.institucion}</td>
+            <td data-label="Última Visita">${ultV}</td>
+            <td data-label="Estado Pedidos">${pCount > 0 ? `<span class="badge badge-pendiente">${pCount} Pendiente</span>` : `<span class="badge badge-completado">Al día</span>`}</td>
+            <td data-label="Acciones">
                 <button class="btn-icon" onclick="window.abrirVisitas('${m.id}')"><i class="fa-regular fa-folder-open"></i></button>
                 <button class="btn-icon" onclick="window.borrarCliente('${m.id}')" style="color:red"><i class="fa-regular fa-trash-can"></i></button>
             </td>
