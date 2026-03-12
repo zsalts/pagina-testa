@@ -1,5 +1,3 @@
-alert("¡El cerebro de presupuestos está vivo!");
-console.log("El archivo JS cargó perfectamente.");
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
@@ -9,7 +7,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
     authDomain: "testa-crm.firebaseapp.com",
     projectId: "testa-crm",
-    storageBucket: "testa-crm.appspot.com", // Si falla la subida, cambiá appspot.com por firebasestorage.app
+    storageBucket: "testa-crm.firebasestorage.app", // Si falla la subida, cambiá appspot.com por firebasestorage.app
     messagingSenderId: "616199192563",
     appId: "1:616199192563:web:20b35acba2f635b9735c86",
     measurementId: "G-7Q3BQS18FH"
