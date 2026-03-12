@@ -42,9 +42,9 @@
                     <div class="stat-icon" style="background: var(--red-tint); color: var(--red-alert);"><i class="fa-solid fa-times-circle"></i></div>
                     <div class="stat-data"><h3 id="stat-rechazados">0</h3><p>Rechazados</p></div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="border-color: var(--testa-blue);">
                     <div class="stat-icon" style="background: var(--testa-blue-tint); color: var(--testa-blue);"><i class="fa-solid fa-sack-dollar"></i></div>
-                    <div class="stat-data"><h3 id="stat-monto-aprobado">$0</h3><p>Total Aprobado</p></div>
+                    <div class="stat-data"><h3 id="stat-monto-aprobado">$0</h3><p>Total Ganado</p></div>
                 </div>
             </div>
         </section>
@@ -52,7 +52,7 @@
         <section class="toolbar-section">
             <div class="search-bar">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="buscador-presupuestos" placeholder="Buscar médico o detalle...">
+                <input type="text" id="buscador-presupuestos" placeholder="Buscar por médico o equipo...">
             </div>
             <div class="action-buttons">
                 <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Registrar Presupuesto</button>
@@ -61,7 +61,7 @@
 
         <section class="content-section">
             <div class="table-section-title">
-                <h3><i class="fa-solid fa-file-invoice-dollar"></i> Historial de Presupuestos</h3>
+                <h3><i class="fa-solid fa-file-invoice-dollar"></i> Panel de Gestión Comercial</h3>
             </div>
             <div class="table-card">
                 <table class="testa-table">
@@ -70,8 +70,7 @@
                             <th>Médico / Institución</th><th>Fecha</th><th>Monto</th><th>Detalle</th><th>Estado</th><th>PDF</th><th>Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="cuerpo-tabla-presupuestos">
-                        </tbody>
+                    <tbody id="cuerpo-tabla-presupuestos"></tbody>
                 </table>
             </div>
         </section>
@@ -79,31 +78,40 @@
 
     <div class="modal-overlay" id="modal-presupuesto">
         <div class="modal modern-modal">
-            <div class="modal-header"><h3>Registrar Presupuesto</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header"><h3>Registrar Nuevo Presupuesto</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
             <form id="form-presupuesto" class="modern-form">
                 <div class="form-group">
                     <label>Médico / Institución</label>
-                    <input list="lista-nombres-medicos" id="pres-medico" placeholder="Ej: Dr. Pablo Velazco" required>
+                    <input list="lista-nombres-medicos" id="pres-medico" placeholder="Buscá o escribí el nombre..." required>
                     <datalist id="lista-nombres-medicos"></datalist>
                 </div>
+                
                 <div class="form-row-2">
-                    <div class="form-group"><label>Monto Total ($)</label><input type="number" id="pres-monto" placeholder="Ej: 150000" required></div>
+                    <div class="form-group"><label>Monto Total ($)</label><input type="number" id="pres-monto" placeholder="Ej: 450000" required></div>
                     <div class="form-group"><label>Fecha de Envío</label><input type="date" id="pres-fecha" required></div>
                 </div>
+
                 <div class="form-group">
-                    <label>Link del PDF (Google Drive)</label>
-                    <input type="url" id="pres-link" placeholder="Pegá el enlace de Drive acá..." required>
+                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Seleccionar PDF del Presupuesto</label>
+                    <input type="file" id="pres-archivo" accept=".pdf" required style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer;">
                 </div>
+
                 <div class="form-group">
-                    <label>Estado Actual</label>
+                    <label>Estado Inicial</label>
                     <select id="pres-estado">
-                        <option value="pendiente">Pendiente de Respuesta</option>
-                        <option value="aprobado">Aprobado / Ganado</option>
-                        <option value="rechazado">Rechazado / Perdido</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="aprobado">Aprobado</option>
+                        <option value="rechazado">Rechazado</option>
                     </select>
                 </div>
-                <div class="form-group"><label>Equipos / Detalle Breve</label><textarea id="pres-detalle" placeholder="Ej: Torre de endoscopia, monitor multiparamétrico..."></textarea></div>
-                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Guardar Registro</button></div>
+
+                <div class="form-group"><label>Equipos Incluidos / Notas</label><textarea id="pres-detalle" placeholder="Ej: Monitor Multiparamétrico + Sensores..."></textarea></div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">
+                        Guardar y Subir Archivo
+                    </button>
+                </div>
             </form>
         </div>
     </div>
