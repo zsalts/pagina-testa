@@ -113,7 +113,8 @@ window.actualizarTablaClientes = function() {
             todasLasVisitas.push({
                 medicoId: m.id, medicoNombre: m.nombre, contacto: m.contacto, institucion: m.institucion,
                 fecha: v.fecha, fechaDisplay: new Date(v.fecha + 'T00:00:00').toLocaleDateString('es-AR'), 
-                pedido: v.pedido, estado: v.estado, entrega: v.entrega, idxReal: index
+                pedido: v.pedido, estado: v.estado, entrega: v.entrega, idxReal: index,
+                presupuestoLink: v.presupuestoLink // Recuperamos el link si existe
             });
         });
     });
@@ -127,6 +128,9 @@ window.actualizarTablaClientes = function() {
         let entregaHTML = fila.entrega && fila.estado === 'pendiente' ? `<span class="limite-entrega"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
         let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})" title="Tocar para cambiar">${fila.estado}</span>`;
 
+        // EL ÍCONO DEL PDF APARECE ACÁ
+        let iconoPdf = fila.presupuestoLink ? `<a href="${fila.presupuestoLink}" target="_blank" class="btn-icon" style="color: var(--red-alert); margin-left: 8px; font-size: 18px;" title="Ver Presupuesto Vinculado"><i class="fa-solid fa-file-pdf"></i></a>` : '';
+
         let linkGoogleCalendar = '';
         if (fila.entrega && fila.estado === 'pendiente') {
             const tituloCal = encodeURIComponent(`TESTA: Entrega ${fila.medicoNombre}`);
@@ -139,7 +143,7 @@ window.actualizarTablaClientes = function() {
         }
 
         const filaHTML = `<tr>
-            <td data-label="Médico"><span class="medico-name">${fila.medicoNombre}</span><br><span class="contacto-sub">${fila.contacto}</span></td>
+            <td data-label="Médico"><span class="medico-name">${fila.medicoNombre} ${iconoPdf}</span><br><span class="contacto-sub">${fila.contacto}</span></td>
             <td data-label="Institución">${fila.institucion}</td>
             <td data-label="Fecha"><span class="fecha-visita">${fila.fechaDisplay}</span></td>
             <td data-label="Detalle"><div class="pedido-text">${fila.pedido}</div></td>

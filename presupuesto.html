@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Presupuestos | Testa CRM</title>
+    <title>Gestión de Expedientes | Testa CRM</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Testa CRM">
+    <link rel="apple-touch-icon" href="icono-192.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css"> 
@@ -13,23 +21,26 @@
     <header>
         <div class="header-container">
             <div class="brand-id">
-                <img src="IMG_2317.JPG" alt="Testa" class="company-logo-img">
+                <img src="IMG_2317.JPG" alt="Testa Equipamiento Médico" class="company-logo-img">
                 <div class="header-titles">
                     <span class="company-name-text">Testa</span>
                     <p class="company-subtitle-text">Equipamiento Médico</p>
                 </div>
             </div>
             <div class="header-actions">
-                <a href="index.html" class="btn btn-secondary" style="text-decoration: none;">
-                    <i class="fa-solid fa-arrow-left"></i> Volver al CRM
-                </a>
+                <span class="app-title-text">Expedientes</span>
+                <div class="user-profile-circle"><i class="fa-solid fa-user-circle"></i></div>
             </div>
         </div>
     </header>
 
     <main>
+        <a href="index.html" class="btn width-100" style="background: var(--testa-blue-dark); color: white; margin-bottom: 20px; text-decoration: none; padding: 14px; font-size: 15px; display: flex; justify-content: center; gap: 10px; box-shadow: var(--shadow-md);">
+            <i class="fa-solid fa-arrow-left" style="font-size: 18px;"></i> ir a CRM Visitas
+        </a>
+
         <section class="stats-section" style="margin-top: 15px;">
-            <div class="stats-grid">
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: var(--yellow-tint); color: var(--yellow-pending);"><i class="fa-solid fa-hourglass-half"></i></div>
                     <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
@@ -42,10 +53,6 @@
                     <div class="stat-icon" style="background: var(--red-tint); color: var(--red-alert);"><i class="fa-solid fa-times-circle"></i></div>
                     <div class="stat-data"><h3 id="stat-rechazados">0</h3><p>Rechazados</p></div>
                 </div>
-                <div class="stat-card" style="border-color: var(--testa-blue);">
-                    <div class="stat-icon" style="background: var(--testa-blue-tint); color: var(--testa-blue);"><i class="fa-solid fa-sack-dollar"></i></div>
-                    <div class="stat-data"><h3 id="stat-monto-aprobado">$0</h3><p>Total Ganado</p></div>
-                </div>
             </div>
         </section>
 
@@ -55,19 +62,16 @@
                 <input type="text" id="buscador-presupuestos" placeholder="Buscar por médico o equipo...">
             </div>
             <div class="action-buttons">
-                <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Registrar Presupuesto</button>
+                <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Iniciar Expediente</button>
             </div>
         </section>
 
         <section class="content-section">
-            <div class="table-section-title">
-                <h3><i class="fa-solid fa-file-invoice-dollar"></i> Panel de Gestión Comercial</h3>
-            </div>
             <div class="table-card">
                 <table class="testa-table">
                     <thead>
                         <tr>
-                            <th>Médico / Institución</th><th>Fecha</th><th>Monto</th><th>Detalle</th><th>Estado</th><th>PDF</th><th>Acción</th>
+                            <th>Médico / Institución</th><th>Fecha</th><th>Detalle</th><th>Estado</th><th>Documentación</th><th>Acción</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpo-tabla-presupuestos"></tbody>
@@ -78,21 +82,25 @@
 
     <div class="modal-overlay" id="modal-presupuesto">
         <div class="modal modern-modal">
-            <div class="modal-header"><h3>Registrar Nuevo Presupuesto</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header"><h3>Iniciar Nuevo Expediente</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
             <form id="form-presupuesto" class="modern-form">
                 <div class="form-group">
                     <label>Médico / Institución</label>
                     <input list="lista-nombres-medicos" id="pres-medico" placeholder="Buscá o escribí el nombre..." required>
                     <datalist id="lista-nombres-medicos"></datalist>
                 </div>
-                
-                <div class="form-row-2">
-                    <div class="form-group"><label>Monto Total ($)</label><input type="number" id="pres-monto" placeholder="Ej: 450000" required></div>
-                    <div class="form-group"><label>Fecha de Envío</label><input type="date" id="pres-fecha" required></div>
-                </div>
 
                 <div class="form-group">
-                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Seleccionar PDF del Presupuesto</label>
+                    <label style="color: var(--testa-blue-dark); font-weight: 600;"><i class="fa-solid fa-handshake"></i> Vincular a una Visita (Opcional)</label>
+                    <select id="pres-visita" style="background: white; border: 2px solid var(--border-color); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                        <option value="">-- Escribí un médico arriba primero --</option>
+                    </select>
+                </div>
+                
+                <div class="form-group"><label>Fecha de Envío</label><input type="date" id="pres-fecha" required></div>
+
+                <div class="form-group">
+                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Archivo del Presupuesto (PDF)</label>
                     <input type="file" id="pres-archivo" accept=".pdf" required style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
                 </div>
 
@@ -105,11 +113,42 @@
                     </select>
                 </div>
 
-                <div class="form-group"><label>Equipos Incluidos / Notas</label><textarea id="pres-detalle" placeholder="Ej: Monitor Multiparamétrico + Sensores..."></textarea></div>
+                <div class="form-group"><label>Equipos Incluidos / Notas</label><textarea id="pres-detalle" placeholder="Ej: Monitor Multiparamétrico..."></textarea></div>
                 
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">
-                        Guardar y Subir Archivo
+                        Guardar Presupuesto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-archivo-extra">
+        <div class="modal modern-modal">
+            <div class="modal-header"><h3>Adjuntar Documentación</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <form id="form-archivo-extra" class="modern-form">
+                <input type="hidden" id="extra-id">
+                <input type="hidden" id="extra-carpeta">
+                
+                <div class="form-group">
+                    <label>¿Qué documento vas a subir?</label>
+                    <select id="extra-tipo" required>
+                        <option value="OC_Cliente">Orden de Compra (Cliente)</option>
+                        <option value="OC_Proveedor">Orden de Compra (Proveedor)</option>
+                        <option value="Remito">Remito</option>
+                        <option value="Recibo">Recibo de Cobro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-file-pdf"></i> Seleccionar PDF / Imagen</label>
+                    <input type="file" id="extra-archivo" accept=".pdf,.jpg,.png" required style="background: white; border: 2px dashed var(--border-color); padding: 15px; width: 100%; box-sizing: border-box;">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">
+                        Subir a la Carpeta
                     </button>
                 </div>
             </form>
