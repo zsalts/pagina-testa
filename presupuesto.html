@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo Presupuesto | Testa CRM</title>
+    <title>Gestión de Presupuestos | Testa CRM</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css"> 
@@ -27,52 +27,87 @@
         </div>
     </header>
 
-    <main style="margin-top: 20px;">
-        <div class="table-section-title">
-            <h3><i class="fa-solid fa-file-invoice-dollar"></i> Generar Nuevo Presupuesto</h3>
-        </div>
-
-        <div class="table-card" style="padding: 25px; box-sizing: border-box;">
-            <form id="form-presupuesto" class="modern-form">
-                
-                <div class="form-row-2">
-                    <div class="form-group">
-                        <label>Médico / Institución</label>
-                        <input type="text" id="cliente-nombre" placeholder="Ej: Dr. Pablo Velazco" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email o Teléfono</label>
-                        <input type="text" id="cliente-contacto" placeholder="Opcional">
-                    </div>
+    <main>
+        <section class="stats-section" style="margin-top: 15px;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--yellow-tint); color: var(--yellow-pending);"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
                 </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <label>Detalle de Equipamiento / Servicios</label>
-                
-                <div id="contenedor-items">
-                    <div class="item-fila" style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
-                        <input type="text" class="item-desc" placeholder="Descripción del equipo..." style="flex: 2;" required>
-                        <input type="number" class="item-precio" placeholder="$ Precio" style="flex: 1;" required>
-                        <button type="button" class="btn-icon btn-delete btn-quitar-item" style="display: none;"><i class="fa-solid fa-trash"></i></button>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--green-tint); color: var(--green-success);"><i class="fa-solid fa-check-circle"></i></div>
+                    <div class="stat-data"><h3 id="stat-aprobados">0</h3><p>Aprobados</p></div>
                 </div>
-
-                <button type="button" class="btn btn-secondary-tint" id="btn-agregar-item" style="margin-bottom: 25px; width: 100%;">
-                    <i class="fa-solid fa-plus"></i> Agregar otro ítem
-                </button>
-
-                <div style="text-align: right; margin-bottom: 20px; font-size: 18px; color: var(--testa-blue-dark);">
-                    <strong>Total Presupuestado: $<span id="total-presupuesto">0</span></strong>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--red-tint); color: var(--red-alert);"><i class="fa-solid fa-times-circle"></i></div>
+                    <div class="stat-data"><h3 id="stat-rechazados">0</h3><p>Rechazados</p></div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--testa-blue-tint); color: var(--testa-blue);"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div class="stat-data"><h3 id="stat-monto-aprobado">$0</h3><p>Total Aprobado</p></div>
+                </div>
+            </div>
+        </section>
 
-                <button type="submit" class="btn btn-add width-100" style="font-size: 16px; padding: 14px;">
-                    <i class="fa-solid fa-save"></i> Guardar Presupuesto
-                </button>
-            </form>
-        </div>
+        <section class="toolbar-section">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="buscador-presupuestos" placeholder="Buscar médico o detalle...">
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Registrar Presupuesto</button>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="table-section-title">
+                <h3><i class="fa-solid fa-file-invoice-dollar"></i> Historial de Presupuestos</h3>
+            </div>
+            <div class="table-card">
+                <table class="testa-table">
+                    <thead>
+                        <tr>
+                            <th>Médico / Institución</th><th>Fecha</th><th>Monto</th><th>Detalle</th><th>Estado</th><th>PDF</th><th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-presupuestos">
+                        </tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
-    <script type="module" src="presupuesto.js"></script> 
+    <div class="modal-overlay" id="modal-presupuesto">
+        <div class="modal modern-modal">
+            <div class="modal-header"><h3>Registrar Presupuesto</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <form id="form-presupuesto" class="modern-form">
+                <div class="form-group">
+                    <label>Médico / Institución</label>
+                    <input list="lista-nombres-medicos" id="pres-medico" placeholder="Ej: Dr. Pablo Velazco" required>
+                    <datalist id="lista-nombres-medicos"></datalist>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group"><label>Monto Total ($)</label><input type="number" id="pres-monto" placeholder="Ej: 150000" required></div>
+                    <div class="form-group"><label>Fecha de Envío</label><input type="date" id="pres-fecha" required></div>
+                </div>
+                <div class="form-group">
+                    <label>Link del PDF (Google Drive)</label>
+                    <input type="url" id="pres-link" placeholder="Pegá el enlace de Drive acá..." required>
+                </div>
+                <div class="form-group">
+                    <label>Estado Actual</label>
+                    <select id="pres-estado">
+                        <option value="pendiente">Pendiente de Respuesta</option>
+                        <option value="aprobado">Aprobado / Ganado</option>
+                        <option value="rechazado">Rechazado / Perdido</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Equipos / Detalle Breve</label><textarea id="pres-detalle" placeholder="Ej: Torre de endoscopia, monitor multiparamétrico..."></textarea></div>
+                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Guardar Registro</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="presupuesto.js"></script>
 </body>
 </html>
