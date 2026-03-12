@@ -2,7 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/fireba
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
 
+// ==========================================
 // 1. CONEXIÓN A FIREBASE
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
     authDomain: "testa-crm.firebaseapp.com",
@@ -17,10 +19,15 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// >>> PEGA TU URL DE GOOGLE APPS SCRIPT AQUÍ <<<
+const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec"; 
+
 let listaPresupuestos = [];
 let listaMedicos = [];
 
-// 2. CERRAR MODALES
+// ==========================================
+// 2. FUNCIONES DE INTERFAZ
+// ==========================================
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
         document.getElementById('modal-presupuesto').classList.remove('active');
@@ -28,14 +35,12 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// 3. CARGAR MÉDICOS PARA AUTOCOMPLETAR
 onSnapshot(collection(db, "clientes"), (snap) => {
     listaMedicos = snap.docs.map(d => d.data().nombre);
     const dl = document.getElementById('lista-nombres-medicos');
     if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
 });
 
-// 4. CARGAR Y DIBUJAR PRESUPUESTOS (Expedientes)
 onSnapshot(collection(db, "presupuestos"), (snap) => {
     listaPresupuestos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     dibujarTablaPresupuestos();
@@ -44,10 +49,8 @@ onSnapshot(collection(db, "presupuestos"), (snap) => {
 function dibujarTablaPresupuestos() {
     const cuerpo = document.getElementById('cuerpo-tabla-presupuestos');
     if (!cuerpo) return;
-
     let stats = { pen: 0, apr: 0, rec: 0 };
     let html = '';
-
     listaPresupuestos.sort((a, b) => b.fecha.localeCompare(a.fecha));
 
     listaPresupuestos.forEach(p => {
@@ -56,127 +59,68 @@ function dibujarTablaPresupuestos() {
         if (p.estado === 'rechazado') stats.rec++;
 
         let colorBadge = p.estado === 'pendiente' ? 'badge-pendiente' : (p.estado === 'aprobado' ? 'badge-completado' : '');
-        let estiloRechazado = p.estado === 'rechazado' ? 'background: var(--red-tint); color: #7f1d1d; border: 1px solid #fecaca;' : '';
-
-        // Construir los iconos de documentos subidos
         let docsHTML = `<a href="${p.link}" target="_blank" class="btn-icon" title="Presupuesto Inicial" style="color: var(--red-alert); font-size: 20px;"><i class="fa-regular fa-file-pdf"></i></a>`;
         
         if (p.archivosExtra) {
-            if (p.archivosExtra.OC_Cliente) docsHTML += `<a href="${p.archivosExtra.OC_Cliente}" target="_blank" class="btn-icon" title="OC Cliente" style="color: #0284c7; font-size: 20px;"><i class="fa-solid fa-file-invoice-dollar"></i></a>`;
-            if (p.archivosExtra.OC_Proveedor) docsHTML += `<a href="${p.archivosExtra.OC_Proveedor}" target="_blank" class="btn-icon" title="OC Proveedor" style="color: #d97706; font-size: 20px;"><i class="fa-solid fa-file-contract"></i></a>`;
-            if (p.archivosExtra.Remito) docsHTML += `<a href="${p.archivosExtra.Remito}" target="_blank" class="btn-icon" title="Remito" style="color: #16a34a; font-size: 20px;"><i class="fa-solid fa-truck-fast"></i></a>`;
-            if (p.archivosExtra.Recibo) docsHTML += `<a href="${p.archivosExtra.Recibo}" target="_blank" class="btn-icon" title="Recibo de Cobro" style="color: #059669; font-size: 20px;"><i class="fa-solid fa-hand-holding-dollar"></i></a>`;
+            Object.entries(p.archivosExtra).forEach(([tipo, url]) => {
+                let colorIcono = "#0284c7"; // Azul por defecto
+                html += ""; // Espacio para lógica de iconos si quisieras colores distintos por tipo
+                docsHTML += `<a href="${url}" target="_blank" class="btn-icon" title="${tipo}" style="color: #16a34a; font-size: 20px;"><i class="fa-solid fa-file-circle-check"></i></a>`;
+            });
         }
 
         let carpetaDestino = p.carpetaUnica || p.medico;
-        let btnAgregarDoc = '';
-        if (p.estado === 'aprobado') {
-            btnAgregarDoc = `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" title="Adjuntar a carpeta: ${carpetaDestino}" style="color: var(--green-success); margin-left:10px;"><i class="fa-solid fa-plus-circle"></i></button>`;
-        }
+        let btnAddDoc = p.estado === 'aprobado' ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:10px;"><i class="fa-solid fa-plus-circle"></i></button>` : '';
 
         html += `<tr>
-            <td data-label="Médico"><span class="medico-name">${p.medico}</span></td>
-            <td data-label="Fecha">${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-            <td data-label="Detalle"><div class="pedido-text">${p.detalle || '-'}</div></td>
-            <td data-label="Estado">
-                <span class="badge ${colorBadge}" style="${estiloRechazado} cursor:pointer;" onclick="window.rotarEstado('${p.id}', '${p.estado}')" title="Tocar para cambiar">
-                    ${p.estado.toUpperCase()}
-                </span>
-            </td>
-            <td data-label="Documentación">
-                <div style="display:flex; gap:8px; align-items:center;">
-                    ${docsHTML}
-                    ${btnAgregarDoc}
-                </div>
-            </td>
-            <td data-label="Acción">
-                <button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')"><i class="fa-regular fa-trash-can"></i></button>
-            </td>
+            <td><strong>${p.medico}</strong></td>
+            <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+            <td><div class="pedido-text">${p.detalle || '-'}</div></td>
+            <td><span class="badge ${colorBadge}" onclick="window.rotarEstado('${p.id}', '${p.estado}')" style="cursor:pointer">${p.estado.toUpperCase()}</span></td>
+            <td><div style="display:flex; gap:8px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
+            <td><button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')"><i class="fa-regular fa-trash-can"></i></button></td>
         </tr>`;
     });
 
     cuerpo.innerHTML = html !== '' ? html : `<tr><td colspan="6" class="row-empty">No hay expedientes registrados.</td></tr>`;
-
     document.getElementById('stat-pendientes').innerText = stats.pen;
     document.getElementById('stat-aprobados').innerText = stats.apr;
     document.getElementById('stat-rechazados').innerText = stats.rec;
 }
 
-// 5. CAMBIAR ESTADO RÁPIDO (CON CONFIRMACIÓN)
-window.rotarEstado = async (id, estadoActual) => {
-    let nuevoEstado = 'pendiente';
-    if (estadoActual === 'pendiente') nuevoEstado = 'aprobado';
-    else if (estadoActual === 'aprobado') nuevoEstado = 'rechazado';
-
-    if (confirm(`¿Estás seguro de que querés pasar este expediente a ${nuevoEstado.toUpperCase()}?`)) {
-        try {
-            await updateDoc(doc(db, "presupuestos", id), { estado: nuevoEstado });
-        } catch (error) { 
-            alert("Hubo un error al intentar cambiar el estado.");
-        }
-    }
-};
-
-window.borrarPresupuesto = async (id) => {
-    if (confirm("¿Estás seguro de eliminar este expediente completo?")) {
-        try { await deleteDoc(doc(db, "presupuestos", id)); } 
-        catch (error) { console.error(error); }
-    }
-};
-
 // ==========================================
-// 6. BUSCADOR INTELIGENTE DE VISITAS
+// 3. VINCULACIÓN CON VISITAS
 // ==========================================
 document.getElementById('pres-medico').addEventListener('change', async (e) => {
     const medicoElegido = e.target.value.trim();
     const selectVisitas = document.getElementById('pres-visita');
-
-    if (!medicoElegido) {
-        selectVisitas.innerHTML = '<option value="">-- Escribí un médico arriba primero --</option>';
-        return;
-    }
-
-    selectVisitas.innerHTML = '<option value="">Buscando visitas previas...</option>';
-
+    if (!medicoElegido) { selectVisitas.innerHTML = '<option value="">-- Escribí un médico primero --</option>'; return; }
+    selectVisitas.innerHTML = '<option value="">Buscando visitas...</option>';
     try {
         const q = query(collection(db, "clientes"), where("nombre", "==", medicoElegido));
         const snap = await getDocs(q);
-
-        if (snap.empty) {
-            selectVisitas.innerHTML = '<option value="">El médico no existe o no tiene visitas</option>';
-            return;
-        }
-
-        let opciones = '<option value="">-- Elegí la visita correspondiente --</option>';
+        if (snap.empty) { selectVisitas.innerHTML = '<option value="">El médico no existe</option>'; return; }
+        let opciones = '<option value="">-- Elegí la visita --</option>';
         let tieneVisitas = false;
-
         snap.forEach(documento => {
             const cliente = documento.data();
-            if (cliente.visitas && cliente.visitas.length > 0) {
+            if (cliente.visitas) {
                 tieneVisitas = true;
                 cliente.visitas.forEach((v, index) => {
-                    const fechaAr = new Date(v.fecha + 'T00:00:00').toLocaleDateString('es-AR');
-                    const corto = v.pedido ? v.pedido.substring(0, 35) + '...' : 'Visita';
-                    opciones += `<option value="${documento.id}_${index}">${fechaAr} - ${corto}</option>`;
+                    opciones += `<option value="${documento.id}_${index}">${v.fecha} - ${v.pedido.substring(0,30)}...</option>`;
                 });
             }
         });
-
-        selectVisitas.innerHTML = tieneVisitas ? opciones : '<option value="">Este médico no tiene visitas cargadas</option>';
-
-    } catch (error) {
-        console.error(error);
-        selectVisitas.innerHTML = '<option value="">Error al buscar visitas</option>';
-    }
+        selectVisitas.innerHTML = tieneVisitas ? opciones : '<option value="">No tiene visitas cargadas</option>';
+    } catch (e) { selectVisitas.innerHTML = '<option value="">Error al buscar</option>'; }
 });
 
 // ==========================================
-// 7. FORMULARIO 1: INICIAR EXPEDIENTE
+// 4. GUARDADO Y SINCRONIZACIÓN DRIVE
 // ==========================================
 document.getElementById('btn-nuevo-presupuesto').onclick = () => {
     document.getElementById('form-presupuesto').reset();
     document.getElementById('pres-fecha').value = new Date().toISOString().split('T')[0];
-    document.getElementById('pres-visita').innerHTML = '<option value="">-- Escribí un médico arriba primero --</option>';
     document.getElementById('modal-presupuesto').classList.add('active');
 };
 
@@ -185,61 +129,53 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
     const btn = e.target.querySelector('button[type="submit"]');
     const archivoFisico = document.getElementById('pres-archivo').files[0];
     const medico = document.getElementById('pres-medico').value.trim();
-
     if (!archivoFisico) return;
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo PDF...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
     try {
         const nombreCarpeta = `${medico.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
-        const referenciaDestino = ref(storage, `expedientes/${nombreCarpeta}/1_Presupuesto.pdf`);
-        
-        const resultadoSubida = await uploadBytes(referenciaDestino, archivoFisico);
-        const urlPublica = await getDownloadURL(resultadoSubida.ref);
+        const refArch = ref(storage, `expedientes/${nombreCarpeta}/1_Presupuesto.pdf`);
+        const snap = await uploadBytes(refArch, archivoFisico);
+        const urlPublica = await getDownloadURL(snap.ref);
 
-        const nuevoRegistro = {
-            medico: medico,
-            fecha: document.getElementById('pres-fecha').value,
+        await addDoc(collection(db, "presupuestos"), {
+            medico, fecha: document.getElementById('pres-fecha').value,
             estado: document.getElementById('pres-estado').value,
             detalle: document.getElementById('pres-detalle').value.trim(),
-            link: urlPublica,
-            carpetaUnica: nombreCarpeta, 
-            archivosExtra: {} 
-        };
+            link: urlPublica, carpetaUnica: nombreCarpeta, archivosExtra: {}
+        });
 
-        // Guardamos el presupuesto
-        await addDoc(collection(db, "presupuestos"), nuevoRegistro);
-
-        // VINCULAMOS LA VISITA CON ESTE PDF
-        const visitaSelect = document.getElementById('pres-visita').value;
-        if (visitaSelect) {
-            const [clienteId, visitaIndex] = visitaSelect.split('_');
-            const clienteRef = doc(db, "clientes", clienteId);
-            const clienteSnap = await getDoc(clienteRef);
-            
-            if (clienteSnap.exists()) {
-                let clienteData = clienteSnap.data();
-                clienteData.visitas[visitaIndex].presupuestoLink = urlPublica;
-                await updateDoc(clienteRef, { visitas: clienteData.visitas });
+        // Vincular a visita
+        const visitaVal = document.getElementById('pres-visita').value;
+        if (visitaVal) {
+            const [cId, vIdx] = visitaVal.split('_');
+            const cRef = doc(db, "clientes", cId);
+            const cSnap = await getDoc(cRef);
+            if (cSnap.exists()) {
+                let vits = cSnap.data().visitas;
+                vits[vIdx].presupuestoLink = urlPublica;
+                await updateDoc(cRef, { visitas: vits });
             }
         }
 
-        document.getElementById('modal-presupuesto').classList.remove('active');
+        // COPIA A GOOGLE DRIVE
+        if (urlGoogleScript !== "TU_URL_DE_APPS_SCRIPT_AQUÍ") {
+            fetch(urlGoogleScript, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({ carpeta: nombreCarpeta, archivo: "1_Presupuesto.pdf", link: urlPublica })
+            }).catch(e => console.log("Drive Error:", e));
+        }
 
-    } catch (error) {
-        alert("Error al subir el archivo.");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Guardar Presupuesto";
-    }
+        document.getElementById('modal-presupuesto').classList.remove('active');
+    } catch (e) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Presupuesto"; }
 };
 
 // ==========================================
-// 8. FORMULARIO 2: AGREGAR DOCUMENTACIÓN
+// 5. DOCUMENTACIÓN EXTRA
 // ==========================================
 window.abrirModalDoc = (id, carpeta) => {
-    document.getElementById('form-archivo-extra').reset();
     document.getElementById('extra-id').value = id;
     document.getElementById('extra-carpeta').value = carpeta;
     document.getElementById('modal-archivo-extra').classList.add('active');
@@ -248,45 +184,45 @@ window.abrirModalDoc = (id, carpeta) => {
 document.getElementById('form-archivo-extra').onsubmit = async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
-    const idRegistro = document.getElementById('extra-id').value;
-    const carpetaDestino = document.getElementById('extra-carpeta').value;
-    const tipoDoc = document.getElementById('extra-tipo').value;
-    const archivoFisico = document.getElementById('extra-archivo').files[0];
-
-    if (!archivoFisico) return;
+    const id = document.getElementById('extra-id').value;
+    const carpeta = document.getElementById('extra-carpeta').value;
+    const tipo = document.getElementById('extra-tipo').value;
+    const file = document.getElementById('extra-archivo').files[0];
+    if (!file) return;
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo documento...';
-
     try {
-        const nombreArchivo = `${tipoDoc}_${Date.now()}_${archivoFisico.name}`;
-        const referenciaDestino = ref(storage, `expedientes/${carpetaDestino}/${nombreArchivo}`);
-        
-        const resultadoSubida = await uploadBytes(referenciaDestino, archivoFisico);
-        const urlPublica = await getDownloadURL(resultadoSubida.ref);
+        const nombreFull = `${tipo}_${Date.now()}.pdf`;
+        const refArch = ref(storage, `expedientes/${carpeta}/${nombreFull}`);
+        const snap = await uploadBytes(refArch, file);
+        const url = await getDownloadURL(snap.ref);
 
-        const docRef = doc(db, "presupuestos", idRegistro);
-        const campo = `archivosExtra.${tipoDoc}`;
-        
-        await updateDoc(docRef, { [campo]: urlPublica });
+        const pRef = doc(db, "presupuestos", id);
+        await updateDoc(pRef, { [`archivosExtra.${tipo}`]: url });
+
+        // COPIA A GOOGLE DRIVE
+        if (urlGoogleScript !== "TU_URL_DE_APPS_SCRIPT_AQUÍ") {
+            fetch(urlGoogleScript, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({ carpeta: carpeta, archivo: nombreFull, link: url })
+            }).catch(e => console.log("Drive Error:", e));
+        }
 
         document.getElementById('modal-archivo-extra').classList.remove('active');
-
-    } catch (error) {
-        alert("Error al adjuntar el documento.");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Subir a la Carpeta";
-    }
+    } catch (e) { alert("Error al adjuntar."); } finally { btn.disabled = false; }
 };
 
-// ==========================================
-// 9. BUSCADOR
-// ==========================================
+// AUXILIARES
+window.rotarEstado = async (id, actual) => {
+    let sig = actual === 'pendiente' ? 'aprobado' : (actual === 'aprobado' ? 'rechazado' : 'pendiente');
+    if (confirm(`¿Pasar a ${sig.toUpperCase()}?`)) await updateDoc(doc(db, "presupuestos", id), { estado: sig });
+};
+
+window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente?")) await deleteDoc(doc(db, "presupuestos", id)); };
+
 document.getElementById('buscador-presupuestos').oninput = (e) => {
-    const f = e.target.value.toLowerCase().trim();
+    const f = e.target.value.toLowerCase();
     document.querySelectorAll('.testa-table tbody tr').forEach(r => {
-        if(r.querySelector('.row-empty')) return; 
         r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
     });
 };
