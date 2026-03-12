@@ -19,7 +19,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// URL de tu Google Apps Script
+// Tu URL de Google Apps Script
 const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec"; 
 
 let listaPresupuestos = [];
@@ -70,10 +70,11 @@ function dibujarTablaPresupuestos() {
         let carpetaDestino = p.carpetaUnica || p.medico;
         let btnAddDoc = p.estado === 'aprobado' ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:10px;"><i class="fa-solid fa-plus-circle"></i></button>` : '';
 
+        // CAMBIO AQUÍ: Ahora mostramos el nombre del presupuesto subido en lugar del detalle
         html += `<tr>
             <td><strong>${p.medico}</strong></td>
             <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-            <td><div class="pedido-text">${p.detalle || '-'}</div></td>
+            <td data-label="Nombre del Presupuesto"><div class="pedido-text">${p.nombreArchivo || 'Presupuesto Inicial'}</div></td>
             <td><span class="badge ${colorBadge}" onclick="window.rotarEstado('${p.id}', '${p.estado}')" style="cursor:pointer">${p.estado.toUpperCase()}</span></td>
             <td><div style="display:flex; gap:8px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
             <td><button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')"><i class="fa-regular fa-trash-can"></i></button></td>
@@ -133,36 +134,36 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
     try {
-        // 1. Obtener nombre original del archivo sin la extensión .pdf
         const nombreOriginalConExt = archivoFisico.name;
         const nombreOriginalSinExt = nombreOriginalConExt.split('.').slice(0, -1).join('.');
 
-        // 2. Formatear Fecha (DD - MM - 26)
+        // Formatear Fecha (DD - MM - 26)
         const fechaInput = document.getElementById('pres-fecha').value; 
         const partes = fechaInput.split('-');
         const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
 
-        // 3. Limpiar nombre del médico
         const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
         
-        // 4. Armar nombre de carpeta: "12 - 03 - 26 - Dr Garcia - MiArchivo001"
+        // Carpeta en Drive: "12 - 03 - 26 - Dr Garcia - MiPresupuesto001"
         const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
-        
-        // 5. El archivo dentro mantiene su nombre original
         const nombreArchivoFinal = nombreOriginalConExt;
 
         const refArch = ref(storage, `expedientes/${nombreCarpeta}/${nombreArchivoFinal}`);
         const snap = await uploadBytes(refArch, archivoFisico);
         const urlPublica = await getDownloadURL(snap.ref);
 
+        // Guardamos en Firebase incluyendo el NOMBRE DEL ARCHIVO para mostrarlo en la tabla
         await addDoc(collection(db, "presupuestos"), {
-            medico, fecha: fechaInput,
+            medico, 
+            fecha: fechaInput,
             estado: document.getElementById('pres-estado').value,
             detalle: document.getElementById('pres-detalle').value.trim(),
-            link: urlPublica, carpetaUnica: nombreCarpeta, archivosExtra: {}
+            nombreArchivo: nombreOriginalSinExt, // <--- ESTO SE MOSTRARÁ EN LA TABLA
+            link: urlPublica, 
+            carpetaUnica: nombreCarpeta, 
+            archivosExtra: {}
         });
 
-        // Vincular a visita
         const visitaVal = document.getElementById('pres-visita').value;
         if (visitaVal) {
             const [cId, vIdx] = visitaVal.split('_');
@@ -205,7 +206,6 @@ document.getElementById('form-archivo-extra').onsubmit = async (e) => {
 
     btn.disabled = true;
     try {
-        // En documentación extra respetamos el nombre que vos le hayas puesto al archivo (Remito, OC, etc.)
         const nombreArchivoExtra = file.name;
         const refArch = ref(storage, `expedientes/${carpeta}/${nombreArchivoExtra}`);
         const snap = await uploadBytes(refArch, file);
@@ -214,7 +214,6 @@ document.getElementById('form-archivo-extra').onsubmit = async (e) => {
         const pRef = doc(db, "presupuestos", id);
         await updateDoc(pRef, { [`archivosExtra.${tipo}`]: url });
 
-        // ENVÍO A GOOGLE DRIVE
         fetch(urlGoogleScript, {
             method: 'POST', mode: 'no-cors',
             body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
