@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Presupuesto | Testa CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="brand-id">
+                <img src="IMG_2317.JPG" alt="Testa" class="company-logo-img">
+                <div class="header-titles">
+                    <span class="company-name-text">Testa</span>
+                    <p class="company-subtitle-text">Equipamiento Médico</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="index.html" class="btn btn-secondary" style="text-decoration: none;">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al CRM
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main style="margin-top: 20px;">
+        <div class="table-section-title">
+            <h3><i class="fa-solid fa-file-invoice-dollar"></i> Generar Nuevo Presupuesto</h3>
+        </div>
+
+        <div class="table-card" style="padding: 25px; box-sizing: border-box;">
+            <form id="form-presupuesto" class="modern-form">
+                
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Médico / Institución</label>
+                        <input type="text" id="cliente-nombre" placeholder="Ej: Dr. Pablo Velazco" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email o Teléfono</label>
+                        <input type="text" id="cliente-contacto" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <label>Detalle de Equipamiento / Servicios</label>
+                
+                <div id="contenedor-items">
+                    <div class="item-fila" style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+                        <input type="text" class="item-desc" placeholder="Descripción del equipo..." style="flex: 2;" required>
+                        <input type="number" class="item-precio" placeholder="$ Precio" style="flex: 1;" required>
+                        <button type="button" class="btn-icon btn-delete btn-quitar-item" style="display: none;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary-tint" id="btn-agregar-item" style="margin-bottom: 25px; width: 100%;">
+                    <i class="fa-solid fa-plus"></i> Agregar otro ítem
+                </button>
+
+                <div style="text-align: right; margin-bottom: 20px; font-size: 18px; color: var(--testa-blue-dark);">
+                    <strong>Total Presupuestado: $<span id="total-presupuesto">0</span></strong>
+                </div>
+
+                <button type="submit" class="btn btn-add width-100" style="font-size: 16px; padding: 14px;">
+                    <i class="fa-solid fa-save"></i> Guardar Presupuesto
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script type="module" src="presupuesto.js"></script> 
+</body>
+</html>
