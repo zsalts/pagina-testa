@@ -25,7 +25,7 @@
 
 /* --- RESET GENERAL (Bloqueo Absoluto de Scroll Horizontal) --- */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-html, body { scroll-behavior: smooth; width: 100%; max-width: 100%; overflow-x: hidden; }
+html, body { scroll-behavior: smooth; width: 100%; max-width: 100vw; overflow-x: hidden; }
 body { background-color: var(--bg-app); color: var(--testa-blue); line-height: 1.6; font-size: 14px; }
 
 /* --- HEADER PROFESIONAL --- */
@@ -121,7 +121,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizi
    CELULARES (ADAPTACIÓN PERFECTA APP NATIVA)
    ========================================== */
 @media (max-width: 768px) {
-    /* Mantenemos el margen unificado y aseguramos que NADA se desborde */
+    /* Mantenemos el margen unificado de 15px a los costados */
     main { padding: 15px; padding-top: 10px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
 
     /* HEADER */
@@ -144,16 +144,18 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizi
     .action-buttons { grid-template-columns: 1fr 1fr; display: grid; width: 100%; gap: 6px; box-sizing: border-box;}
     .btn { width: 100%; font-size: 12px; padding: 10px; box-sizing: border-box;}
     
-    /* TABLA Y TARJETAS (CORRECCIÓN DEL SCROLL HORIZONTAL) */
+    /* TABLA Y TARJETAS (CORRECCIÓN DEFINITIVA DEL SCROLL HORIZONTAL) */
     .table-section-title { padding-left: 5px; margin-bottom: 8px;}
-    .table-card { border: none; background: transparent; box-shadow: none; width: 100%; margin-bottom: 20px !important; box-sizing: border-box;}
     
-    /* ¡LA CLAVE ESTÁ ACÁ! Anulamos el min-width de 900px de la compu */
-    .testa-table { width: 100%; min-width: 100% !important; display: block; box-sizing: border-box; overflow-x: hidden; }
+    /* 1. Matamos el scroll del contenedor */
+    .table-card { border: none; background: transparent; box-shadow: none; width: 100%; margin-bottom: 20px !important; box-sizing: border-box; overflow-x: hidden !important;}
+    
+    /* 2. Destruimos los 900px de la compu y forzamos ancho 100% */
+    .testa-table { width: 100% !important; min-width: 0 !important; max-width: 100% !important; display: block; box-sizing: border-box; overflow: hidden; }
     .testa-table thead { display: none; } 
     .testa-table tbody { display: block; width: 100%; box-sizing: border-box; }
     
-    /* FILA (Tarjeta Individual) */
+    /* FILA (Tarjeta Individual contenida) */
     .testa-table tbody tr { 
         display: block; 
         width: 100%; 
@@ -170,18 +172,20 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizi
     /* CELDA INDIVIDUAL */
     .testa-table tbody td { 
         display: flex; 
-        justify-content: space-between; 
         align-items: center; 
         width: 100%;
         border: none; 
         padding: 12px 15px; 
         border-bottom: 1px solid #f1f5f9; 
-        text-align: right;
-        gap: 10px; 
+        text-align: right; 
+        gap: 8px; 
+        /* 3. La Magia: Si el texto es largo, va abajo, no estira la tabla */
+        flex-wrap: wrap; 
         word-break: break-word; 
+        overflow-wrap: break-word; 
         box-sizing: border-box;
     }
-    .testa-table tbody td:last-child { border-bottom: none; justify-content: flex-end; background: #f8fafc;}
+    .testa-table tbody td:last-child { border-bottom: none; background: #f8fafc; }
     
     /* ETIQUETA IZQUIERDA */
     .testa-table tbody td::before { 
@@ -192,9 +196,11 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizi
         text-transform: uppercase; 
         flex-shrink: 0; 
         text-align: left;
+        /* Empuja el valor (ej: la fecha o los botones) a la derecha */
+        margin-right: auto; 
     }
     
-    /* CABECERA AZUL (MÉDICO) */
+    /* CABECERA AZUL (SÓLO EL NOMBRE DEL DOCTOR ARRIBA) */
     .testa-table tbody td:first-child { 
         display: block; 
         text-align: left; 
@@ -206,7 +212,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizi
         box-sizing: border-box;
     }
     
-    /* EL TEXTITO "MÉDICO / CONTACTO" ARRIBA DEL NOMBRE */
+    /* Texto "MÉDICO / CONTACTO" prolijo arriba del Dr. */
     .testa-table tbody td:first-child::before { 
         content: "MÉDICO / CONTACTO"; 
         display: block; 
