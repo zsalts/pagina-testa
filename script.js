@@ -95,9 +95,9 @@ onSnapshot(collection(db, "clientes"), (snap) => {
 }, (error) => console.error("Error cargando médicos:", error));
 
 window.actualizarTablaClientes = function() {
-    const cuerpo = document.getElementById('cuerpo-tabla-clientes');
-    if(!cuerpo) return;
-    cuerpo.innerHTML = '';
+    const cuerpoPendientes = document.getElementById('cuerpo-tabla-pendientes');
+    const cuerpoCompletadas = document.getElementById('cuerpo-tabla-completadas');
+    if(!cuerpoPendientes || !cuerpoCompletadas) return;
     
     let stats = { v: 0, p: 0, c: 0 };
     let todasLasVisitas = []; 
@@ -120,45 +120,42 @@ window.actualizarTablaClientes = function() {
 
     todasLasVisitas.sort((a, b) => b.fecha.localeCompare(a.fecha));
 
-    if (todasLasVisitas.length > 0) {
-        document.getElementById('contenedor-tabla-clientes').style.display = 'block';
-        document.getElementById('mensaje-vacio-clientes').style.display = 'none';
-    } else {
-        document.getElementById('contenedor-tabla-clientes').style.display = 'none';
-        document.getElementById('mensaje-vacio-clientes').style.display = 'block';
-    }
+    let htmlPendientes = '';
+    let htmlCompletadas = '';
 
     todasLasVisitas.forEach(fila => {
-        let entregaHTML = fila.entrega ? `<span class="limite-entrega"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
-        let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})">${fila.estado}</span>`;
+        let entregaHTML = fila.entrega && fila.estado === 'pendiente' ? `<span class="limite-entrega"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
+        let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})" title="Tocar para cambiar">${fila.estado}</span>`;
 
-        // REVISIÓN: Corrección del formato de fecha para Google Calendar
         let linkGoogleCalendar = '';
-        if (fila.entrega) {
+        if (fila.entrega && fila.estado === 'pendiente') {
             const tituloCal = encodeURIComponent(`TESTA: Entrega ${fila.medicoNombre}`);
             const detalleCal = encodeURIComponent(`Inst: ${fila.institucion}\nPedido: ${fila.pedido}`);
-            
             const fechaInicio = fila.entrega.replace(/-/g, '');
-            // Sumar un día para que Google lo tome como evento de "todo el día" correctamente
             let fechaObj = new Date(fila.entrega + 'T00:00:00');
             fechaObj.setDate(fechaObj.getDate() + 1);
             const fechaFin = fechaObj.toISOString().split('T')[0].replace(/-/g, '');
-            
             linkGoogleCalendar = `https://www.google.com/calendar/render?action=TEMPLATE&text=${tituloCal}&details=${detalleCal}&dates=${fechaInicio}/${fechaFin}&sf=true&output=xml`;
         }
 
-        cuerpo.innerHTML += `<tr>
+        const filaHTML = `<tr>
             <td data-label="Médico"><span class="medico-name">${fila.medicoNombre}</span><br><span class="contacto-sub">${fila.contacto}</span></td>
             <td data-label="Institución">${fila.institucion}</td>
             <td data-label="Fecha"><span class="fecha-visita">${fila.fechaDisplay}</span></td>
             <td data-label="Detalle"><div class="pedido-text">${fila.pedido}</div></td>
             <td data-label="Estado">${estadoHTML} ${entregaHTML}</td>
             <td data-label="Acción">
-                ${fila.entrega ? `<a href="${linkGoogleCalendar}" target="_blank" class="btn-icon" style="color:#4285F4;" title="Agendar"><i class="fa-solid fa-calendar-plus"></i></a>` : ''}
-                <button class="btn-icon btn-delete" onclick="window.borrarVisita('${fila.medicoId}', ${fila.idxReal})" title="Borrar Visita"><i class="fa-regular fa-trash-can"></i></button>
+                ${linkGoogleCalendar ? `<a href="${linkGoogleCalendar}" target="_blank" class="btn-icon" style="color:#4285F4;" title="Agendar"><i class="fa-solid fa-calendar-plus"></i></a>` : ''}
+                <button class="btn-icon btn-delete" onclick="window.borrarVisita('${fila.medicoId}', ${fila.idxReal})" title="Borrar"><i class="fa-regular fa-trash-can"></i></button>
             </td>
         </tr>`;
+
+        if (fila.estado === 'pendiente') htmlPendientes += filaHTML;
+        else htmlCompletadas += filaHTML;
     });
+
+    cuerpoPendientes.innerHTML = htmlPendientes !== '' ? htmlPendientes : `<tr><td colspan="6" class="row-empty"><i class="fa-solid fa-check"></i> ¡Excelente! No tenés visitas pendientes.</td></tr>`;
+    cuerpoCompletadas.innerHTML = htmlCompletadas !== '' ? htmlCompletadas : `<tr><td colspan="6" class="row-empty">Aún no hay visitas completadas.</td></tr>`;
 
     document.getElementById('contador-clientes').innerText = listaMedicos.length;
     document.getElementById('stat-visitas').innerText = stats.v;
@@ -171,12 +168,9 @@ window.borrarVisita = async (id, idx) => {
     if(confirm("¿Estás seguro de borrar esta visita?")) {
         try {
             const m = listaMedicos.find(x => x.id === id);
-            const nuevas = [...m.visitas]; 
-            nuevas.splice(idx, 1);
+            const nuevas = [...m.visitas]; nuevas.splice(idx, 1);
             await updateDoc(doc(db, "clientes", id), { visitas: nuevas });
-        } catch (error) {
-            alert("Error al borrar. Comprobá tu conexión.");
-        }
+        } catch (error) { alert("Error al borrar. Comprobá tu conexión."); }
     }
 };
 
@@ -186,15 +180,12 @@ window.cambiarEstadoVisita = async (id, idx) => {
         const vis = [...m.visitas];
         vis[idx].estado = vis[idx].estado === 'pendiente' ? 'completado' : 'pendiente';
         await updateDoc(doc(db, "clientes", id), { visitas: vis });
-    } catch (error) {
-        alert("Error al cambiar estado.");
-    }
+    } catch (error) { alert("Error al cambiar estado."); }
 };
 
 window.borrarClinica = async (id) => { 
     if(confirm("¿Borrar clínica?")) {
-        try { await deleteDoc(doc(db, "instituciones", id)); } 
-        catch (e) { alert("Error al borrar."); }
+        try { await deleteDoc(doc(db, "instituciones", id)); } catch (e) { alert("Error al borrar."); }
     } 
 };
 
@@ -202,14 +193,14 @@ window.borrarClinica = async (id) => {
 document.getElementById('btn-nueva-visita-modal').onclick = () => {
     document.getElementById('form-nueva-visita').reset();
     document.getElementById('nv-fecha-visita').value = new Date().toISOString().split('T')[0];
-    medicoPendienteDeGuardar = null; // REVISIÓN: Limpiar memoria residual
+    medicoPendienteDeGuardar = null; 
     document.getElementById('modal-nueva-visita').classList.add('active');
 };
 
 document.getElementById('form-nueva-visita').onsubmit = async (e) => {
     e.preventDefault();
     const btnSubmit = e.target.querySelector('button[type="submit"]');
-    btnSubmit.disabled = true; // REVISIÓN: Evitar doble clic
+    btnSubmit.disabled = true; 
     btnSubmit.innerText = "Guardando...";
 
     const nombreMedico = document.getElementById('input-select-medico').value.trim();
@@ -230,8 +221,6 @@ document.getElementById('form-nueva-visita').onsubmit = async (e) => {
             medicoPendienteDeGuardar = null;
         } else {
             alert("El médico no existe. Hacé clic en el ícono '+' para agregarlo.");
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "Guardar Registro de Visita";
             return;
         }
         document.getElementById('modal-nueva-visita').classList.remove('active');
@@ -268,8 +257,7 @@ document.getElementById('btn-gestion-medicos').onclick = () => document.getEleme
 
 window.borrarMedicoPorCompleto = async (id) => { 
     if(confirm("¿Estás 100% seguro de borrar el médico y todo su historial?")) {
-        try { await deleteDoc(doc(db, "clientes", id)); } 
-        catch(e) { alert("Error al borrar."); }
+        try { await deleteDoc(doc(db, "clientes", id)); } catch(e) { alert("Error al borrar."); }
     } 
 };
 
@@ -311,16 +299,10 @@ document.getElementById('form-editar-medico').onsubmit = async (e) => {
         });
         document.getElementById('form-editar-medico').reset();
         document.getElementById('form-editar-medico').style.display = 'none';
-    } catch (error) {
-        alert("Error al actualizar.");
-    } finally {
-        btn.disabled = false;
-    }
+    } catch (error) { alert("Error al actualizar."); } finally { btn.disabled = false; }
 };
 
-document.getElementById('btn-cancelar-edicion-medico').onclick = () => {
-    document.getElementById('form-editar-medico').style.display = 'none';
-};
+document.getElementById('btn-cancelar-edicion-medico').onclick = () => { document.getElementById('form-editar-medico').style.display = 'none'; };
 
 document.getElementById('btn-borrar-todo').onclick = async () => {
     if(confirm("⚠️ ATENCIÓN: ¿Querés eliminar TODOS los registros?")) {
@@ -330,9 +312,7 @@ document.getElementById('btn-borrar-todo').onclick = async () => {
                 for (const m of listaMedicos) await deleteDoc(doc(db, "clientes", m.id));
                 alert("Base de datos limpia.");
                 document.getElementById('modal-gestion-medicos').classList.remove('active');
-            } catch(e) {
-                alert("Hubo un error al borrar los registros.");
-            }
+            } catch(e) { alert("Hubo un error al borrar los registros."); }
         }
     }
 };
@@ -358,8 +338,9 @@ document.getElementById('btn-calendario').onclick = () => { window.dibujarCalend
 
 // BUSCADOR EN TIEMPO REAL
 document.getElementById('buscador').oninput = (e) => {
-    const f = e.target.value.toLowerCase().trim(); // Limpiamos espacios acá también
-    document.querySelectorAll('#cuerpo-tabla-clientes tr').forEach(r => {
+    const f = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.testa-table tbody tr').forEach(r => {
+        if(r.querySelector('.row-empty')) return; 
         r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
     });
 };

@@ -71,25 +71,35 @@
         </section>
 
         <section class="content-section">
-            <div class="table-card" id="contenedor-tabla-clientes" style="display: none;">
+            
+            <div class="table-section-title">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Visitas Pendientes</h3>
+            </div>
+            <div class="table-card" style="margin-bottom: 30px;">
                 <table class="testa-table">
                     <thead>
                         <tr>
-                            <th>Médico / Contacto</th>
-                            <th>Institución</th>
-                            <th>Fecha</th>
-                            <th>Detalle del Pedido</th>
-                            <th>Estado / Límite</th>
-                            <th>Acción</th>
+                            <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado / Límite</th><th>Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="cuerpo-tabla-clientes"></tbody>
+                    <tbody id="cuerpo-tabla-pendientes"></tbody>
                 </table>
             </div>
-            <div class="empty-state-card" id="mensaje-vacio-clientes">
-                <i class="fa-solid fa-database-nfc empty-icon"></i>
-                <p>Conectando con la base de datos de Testa...</p>
+
+            <div class="table-section-title">
+                <h3><i class="fa-solid fa-check-double"></i> Historial de Completadas</h3>
             </div>
+            <div class="table-card" style="opacity: 0.85;">
+                <table class="testa-table">
+                    <thead>
+                        <tr>
+                            <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado</th><th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-completadas"></tbody>
+                </table>
+            </div>
+
         </section>
     </main>
 
@@ -97,7 +107,6 @@
         <div class="modal modern-modal">
             <div class="modal-header"><h3>Registrar Nueva Visita</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
             <form id="form-nueva-visita" class="modern-form">
-                
                 <div class="form-group">
                     <label>Seleccionar Médico</label>
                     <div class="input-with-action">
@@ -106,30 +115,12 @@
                         <button type="button" class="btn-input-action" id="btn-crear-medico-rapido" title="Crear Médico Nuevo"><i class="fa-solid fa-user-plus"></i></button>
                     </div>
                 </div>
-
                 <div class="form-row-3">
-                    <div class="form-group">
-                        <label>Día de Visita</label>
-                        <input type="date" id="nv-fecha-visita" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Límite Entrega</label>
-                        <input type="date" id="nv-fecha-entrega">
-                    </div>
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select id="nv-estado-visita">
-                            <option value="pendiente">Pendiente</option>
-                            <option value="completado">Completado</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label>Día de Visita</label><input type="date" id="nv-fecha-visita" required></div>
+                    <div class="form-group"><label>Límite Entrega</label><input type="date" id="nv-fecha-entrega"></div>
+                    <div class="form-group"><label>Estado</label><select id="nv-estado-visita"><option value="pendiente">Pendiente</option><option value="completado">Completado</option></select></div>
                 </div>
-
-                <div class="form-group">
-                    <label>Detalle del Pedido / Conversación</label>
-                    <textarea id="nv-pedido-visita" placeholder="¿Qué equipamiento te pidió o de qué hablaron?" required></textarea>
-                </div>
-                
+                <div class="form-group"><label>Detalle del Pedido / Conversación</label><textarea id="nv-pedido-visita" placeholder="¿Qué equipamiento te pidió o de qué hablaron?" required></textarea></div>
                 <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Guardar Registro de Visita</button></div>
             </form>
         </div>
@@ -151,7 +142,6 @@
     <div class="modal-overlay" id="modal-gestion-medicos">
         <div class="modal modern-modal modal-md">
             <div class="modal-header"><h3>Base de Datos de Médicos</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
-            
             <div id="lista-medicos-gestion" class="modern-list-container"></div>
             
             <form id="form-editar-medico" class="modern-form form-edit-container" style="display: none;">
@@ -166,10 +156,7 @@
                     <button type="submit" class="btn btn-add">Actualizar Datos</button>
                 </div>
             </form>
-
-            <button id="btn-borrar-todo" class="btn btn-danger-outline width-100">
-                <i class="fa-solid fa-trash-alt"></i> Limpiar Base de Datos de Prueba
-            </button>
+            <button id="btn-borrar-todo" class="btn btn-danger-outline width-100"><i class="fa-solid fa-trash-alt"></i> Limpiar Base de Datos</button>
         </div>
     </div>
 
@@ -177,18 +164,14 @@
         <div class="modal modern-modal modal-md">
             <div class="modal-header"><h3>Instituciones Médicas</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
             <div id="lista-clinicas-gestion" class="modern-list-container"></div>
-            
-            <button id="btn-cargar-clinicas-mdp" class="btn btn-secondary-tint width-100">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Clínicas Principales MDP
-            </button>
-
-            <form id="form-clinica" class="modern-form form-add-box">
+            <button id="btn-cargar-clinicas-mdp" class="btn btn-secondary-tint width-100"><i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Clínicas Principales MDP</button>
+            <form id="form-clinica" class="modern-form form-add-box" style="margin-top: 15px;">
                 <h4>Agregar Nueva Institución</h4>
                 <div class="form-row-2">
-                    <input type="text" id="nombre-clinica" placeholder="Nombre (Ej. Clínica Colón)" required>
+                    <input type="text" id="nombre-clinica" placeholder="Nombre" required>
                     <input type="text" id="direccion-clinica" placeholder="Dirección" required>
                 </div>
-                <button type="submit" class="btn btn-add width-100">Guardar Clínica</button>
+                <button type="submit" class="btn btn-add width-100" style="margin-top: 10px;">Guardar Clínica</button>
             </form>
         </div>
     </div>
