@@ -20,7 +20,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // >>> PEGA TU URL DE GOOGLE APPS SCRIPT AQUÍ <<<
-const urlGoogleScript = "TU_URL_DE_APPS_SCRIPT_AQUÍ"; 
+const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec"; 
 
 let listaPresupuestos = [];
 let listaMedicos = [];
