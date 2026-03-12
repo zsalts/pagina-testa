@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testa CRM - Clientes</title>
+    <title>Testa CRM - Gestión de Visitas Médicas</title>
 
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0ea5e9">
-    
+    <meta name="theme-color" content="#0284c7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Testa CRM">
@@ -15,135 +14,189 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <header>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
-            <div class="header-titles">
-                <h1>Testa Equipamiento Médico</h1>
-                <p>Seguimiento de Clientes</p>
+        <div class="header-container">
+            <div class="brand-id">
+                <img src="IMG_2317.JPG" alt="Testa Equipamiento Médico" class="company-logo-img">
+                <div class="header-titles">
+                    <span class="company-name-text">Testa</span>
+                    <p class="company-subtitle-text">Equipamiento Médico</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="app-title-text">CRM Visitas</span>
+                <div class="user-profile-circle"><i class="fa-solid fa-user-circle"></i></div>
             </div>
         </div>
     </header>
 
     <main>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="icon-box icon-blue"><i class="fa-solid fa-user-group"></i></div>
-                <div class="stat-info"><h3 id="contador-clientes">0</h3><p>Clientes</p></div>
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-user-md"></i></div>
+                    <div class="stat-data"><h3 id="contador-clientes">0</h3><p>Médicos</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <div class="stat-data"><h3 id="stat-visitas">0</h3><p>Visitas</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
+                    <div class="stat-data"><h3 id="stat-completadas">0</h3><p>Completadas</p></div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="icon-box icon-gray"><i class="fa-regular fa-calendar"></i></div>
-                <div class="stat-info"><h3 id="stat-visitas">0</h3><p>Visitas</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="icon-box icon-red"><i class="fa-solid fa-circle-exclamation"></i></div>
-                <div class="stat-info"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="icon-box icon-green"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="stat-info"><h3 id="stat-completadas">0</h3><p>Completadas</p></div>
-            </div>
-        </div>
+        </section>
 
-        <div class="toolbar">
-            <h2>Médicos Registrados</h2>
-            <div class="actions">
-                <button class="btn btn-outline" id="btn-clinicas"><i class="fa-solid fa-hospital"></i> Clínicas</button>
-                <button class="btn btn-outline" id="btn-calendario"><i class="fa-regular fa-calendar-days"></i> Calendario</button>
-                <button class="btn btn-outline" id="btn-exportar"><i class="fa-solid fa-download"></i> Exportar</button>
-                <button class="btn btn-primary" id="btn-nuevo"><i class="fa-solid fa-plus"></i> Nuevo Médico</button>
+        <section class="toolbar-section">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="buscador" placeholder="Buscar médico, clínica, pedido o fecha...">
             </div>
-        </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="btn-clinicas"><i class="fa-solid fa-hospital"></i> Clínicas</button>
+                <button class="btn btn-secondary" id="btn-gestion-medicos"><i class="fa-solid fa-users-gear"></i> Médicos</button>
+                <button class="btn btn-secondary" id="btn-calendario"><i class="fa-solid fa-calendar-alt"></i> Calendario</button>
+                <button class="btn btn-add" id="btn-nueva-visita-modal"><i class="fa-solid fa-plus-circle"></i> Nueva Visita</button>
+            </div>
+        </section>
 
-        <div class="search-container">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="buscador" placeholder="Buscar por nombre o institución...">
-        </div>
-
-        <div class="table-container" id="contenedor-tabla-clientes" style="display: none;">
-            <table class="clients-table">
-                <thead>
-                    <tr>
-                        <th>Médico</th>
-                        <th>Institución</th>
-                        <th>Última Visita</th>
-                        <th>Entrega Límite</th>
-                        <th>Estado Pedidos</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpo-tabla-clientes"></tbody>
-            </table>
-        </div>
-        <div class="empty-state" id="mensaje-vacio-clientes">Conectando con la base de datos...</div>
+        <section class="content-section">
+            <div class="table-card" id="contenedor-tabla-clientes" style="display: none;">
+                <table class="testa-table">
+                    <thead>
+                        <tr>
+                            <th>Médico / Contacto</th>
+                            <th>Institución</th>
+                            <th>Fecha</th>
+                            <th>Detalle del Pedido</th>
+                            <th>Estado / Límite</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-clientes"></tbody>
+                </table>
+            </div>
+            <div class="empty-state-card" id="mensaje-vacio-clientes">
+                <i class="fa-solid fa-database-nfc empty-icon"></i>
+                <p>Conectando con la base de datos de Testa...</p>
+            </div>
+        </section>
     </main>
 
-    <div class="modal-overlay" id="modal-clinicas">
-        <div class="modal">
-            <div class="modal-header"><h3>Clínicas e Instituciones</h3><button class="btn-close"><i class="fa-solid fa-xmark"></i></button></div>
-            <div id="lista-clinicas-gestion" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 5px; border-radius: 6px;"></div>
-            <form id="form-clinica" style="border-top: 1px solid #eee; padding-top: 15px;">
-                <h4 style="font-size: 14px; margin-bottom: 10px;">Agregar Nueva Institución</h4>
-                <div class="form-group"><input type="text" id="nombre-clinica" placeholder="Nombre (Ej. Clínica Colón)" required></div>
-                <div class="form-group"><input type="text" id="direccion-clinica" placeholder="Dirección" required></div>
-                <div class="modal-footer"><button type="submit" class="btn btn-primary">Guardar Clínica</button></div>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modal-nuevo-cliente">
-        <div class="modal">
-            <div class="modal-header"><h3>Ficha de Nuevo Médico</h3><button class="btn-close"><i class="fa-solid fa-xmark"></i></button></div>
-            <form id="form-cliente">
-                <div class="form-group"><label>Nombre del Médico</label><input type="text" id="nombre" required></div>
-                <div class="form-group"><label>Institución</label><input list="lista-instituciones" id="institucion" placeholder="Seleccioná..." required><datalist id="lista-instituciones"></datalist></div>
-                <div class="form-group"><label>Contacto</label><input type="text" id="contacto" placeholder="Teléfono o Email" required></div>
-                <div class="form-group"><label>Dirección Laboral</label><input type="text" id="direccion" placeholder="Se completa solo..."></div>
-                <div class="modal-footer"><button type="submit" class="btn btn-primary">Guardar</button></div>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modal-visitas">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header"><h3 id="nombre-medico-visita">Historial</h3><button class="btn-close"><i class="fa-solid fa-xmark"></i></button></div>
-            <div id="historial-visitas" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
-            <form id="form-visita" style="border-top: 1px solid #eee; padding-top: 15px;">
-                <input type="hidden" id="id-medico-actual">
+    <div class="modal-overlay" id="modal-nueva-visita">
+        <div class="modal modern-modal">
+            <div class="modal-header"><h3>Registrar Nueva Visita</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <form id="form-nueva-visita" class="modern-form">
                 
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Día de Visita</label>
-                        <input type="date" id="fecha-visita" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                <div class="form-group">
+                    <label>Seleccionar Médico</label>
+                    <div class="input-with-action">
+                        <input list="lista-nombres-medicos" id="input-select-medico" placeholder="Escribí para buscar médico..." required>
+                        <datalist id="lista-nombres-medicos"></datalist>
+                        <button type="button" class="btn-input-action" id="btn-crear-medico-rapido" title="Crear Médico Nuevo"><i class="fa-solid fa-user-plus"></i></button>
                     </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 11px; font-weight: 600; color: var(--red-icon);">Límite Entrega</label>
-                        <input type="date" id="fecha-entrega" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Día de Visita</label>
+                        <input type="date" id="nv-fecha-visita" required>
                     </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Estado</label>
-                        <select id="estado-visita" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <div class="form-group">
+                        <label>Límite Entrega</label>
+                        <input type="date" id="nv-fecha-entrega">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="nv-estado-visita">
                             <option value="pendiente">Pendiente</option>
                             <option value="completado">Completado</option>
                         </select>
                     </div>
                 </div>
 
-                <textarea id="pedido-visita" placeholder="Detalle: ¿Qué te pidió o de qué hablaron?" required style="width:100%; margin-top:10px; padding:10px; height:60px; border:1px solid #ddd; border-radius:6px;"></textarea>
-                <div class="modal-footer"><button type="submit" class="btn btn-primary">Registrar Visita</button></div>
+                <div class="form-group">
+                    <label>Detalle del Pedido / Conversación</label>
+                    <textarea id="nv-pedido-visita" placeholder="¿Qué equipamiento te pidió o de qué hablaron?" required></textarea>
+                </div>
+                
+                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Guardar Registro de Visita</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-nuevo-cliente">
+        <div class="modal modern-modal">
+            <div class="modal-header"><h3>Crear Ficha de Médico</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <form id="form-cliente" class="modern-form">
+                <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" placeholder="Ej: Dr. Juan Pérez" required></div>
+                <div class="form-group"><label>Institución Principal</label><input list="lista-instituciones" id="institucion" placeholder="Seleccioná clínica..." required><datalist id="lista-instituciones"></datalist></div>
+                <div class="form-group"><label>Teléfono / Email</label><input type="text" id="contacto" placeholder="Opcional"></div>
+                <div class="form-group"><label>Dirección Laboral</label><input type="text" id="direccion" placeholder="Se autocompleta con la clínica..."></div>
+                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Crear Médico</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-gestion-medicos">
+        <div class="modal modern-modal modal-md">
+            <div class="modal-header"><h3>Base de Datos de Médicos</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            
+            <div id="lista-medicos-gestion" class="modern-list-container"></div>
+            
+            <form id="form-editar-medico" class="modern-form form-edit-container" style="display: none;">
+                <input type="hidden" id="edit-medico-id">
+                <h4>Editando Ficha del Médico</h4>
+                <div class="form-group"><input type="text" id="edit-medico-nombre" placeholder="Nombre" required></div>
+                <div class="form-group"><input type="text" id="edit-medico-institucion" list="lista-instituciones" placeholder="Institución" required></div>
+                <div class="form-group"><input type="text" id="edit-medico-contacto" placeholder="Contacto (Opcional)"></div>
+                <div class="form-group"><input type="text" id="edit-medico-direccion" placeholder="Dirección"></div>
+                <div class="form-row-2">
+                    <button type="button" class="btn btn-secondary" id="btn-cancelar-edicion-medico">Cancelar</button>
+                    <button type="submit" class="btn btn-add">Actualizar Datos</button>
+                </div>
+            </form>
+
+            <button id="btn-borrar-todo" class="btn btn-danger-outline width-100">
+                <i class="fa-solid fa-trash-alt"></i> Limpiar Base de Datos de Prueba
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-clinicas">
+        <div class="modal modern-modal modal-md">
+            <div class="modal-header"><h3>Instituciones Médicas</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div id="lista-clinicas-gestion" class="modern-list-container"></div>
+            
+            <button id="btn-cargar-clinicas-mdp" class="btn btn-secondary-tint width-100">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Clínicas Principales MDP
+            </button>
+
+            <form id="form-clinica" class="modern-form form-add-box">
+                <h4>Agregar Nueva Institución</h4>
+                <div class="form-row-2">
+                    <input type="text" id="nombre-clinica" placeholder="Nombre (Ej. Clínica Colón)" required>
+                    <input type="text" id="direccion-clinica" placeholder="Dirección" required>
+                </div>
+                <button type="submit" class="btn btn-add width-100">Guardar Clínica</button>
             </form>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-calendario">
-        <div class="modal" style="max-width: 800px;">
-            <div class="modal-header"><h3>Calendario de Visitas y Entregas</h3><button class="btn-close"><i class="fa-solid fa-xmark"></i></button></div>
-            <div class="calendar-grid" id="cuadricula-calendario"></div>
+        <div class="modal modern-modal modal-lg">
+            <div class="modal-header"><h3>Agenda Mensual de Testa</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="calendar-container" id="cuadricula-calendario"></div>
         </div>
     </div>
 
