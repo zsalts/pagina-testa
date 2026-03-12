@@ -19,14 +19,14 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// >>> PEGA TU URL DE GOOGLE APPS SCRIPT AQUÍ <<<
+// URL de tu Google Apps Script
 const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec"; 
 
 let listaPresupuestos = [];
 let listaMedicos = [];
 
 // ==========================================
-// 2. FUNCIONES DE INTERFAZ Y CARGA
+// 2. FUNCIONES DE INTERFAZ
 // ==========================================
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
@@ -133,18 +133,23 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
     try {
-        // FORMATEO DE FECHA (DD-MM-26)
-        const fechaInput = document.getElementById('pres-fecha').value; // YYYY-MM-DD
-        const partes = fechaInput.split('-');
-        const fechaFormateada = `${partes[2]}-${partes[1]}-${partes[0].substring(2)}`;
+        // 1. Obtener nombre original del archivo sin la extensión .pdf
+        const nombreOriginalConExt = archivoFisico.name;
+        const nombreOriginalSinExt = nombreOriginalConExt.split('.').slice(0, -1).join('.');
 
-        // LIMPIEZA DE NOMBRES
+        // 2. Formatear Fecha (DD - MM - 26)
+        const fechaInput = document.getElementById('pres-fecha').value; 
+        const partes = fechaInput.split('-');
+        const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
+
+        // 3. Limpiar nombre del médico
         const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
-        const detalleLimpio = document.getElementById('pres-detalle').value.trim().substring(0, 20).replace(/[^a-zA-Z0-9 ]/g, '');
         
-        // NOMBRE CARPETA: "12-03-26 - Clinica Colon - Arco en C"
-        const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio}${detalleLimpio ? ' - ' + detalleLimpio : ''}`;
-        const nombreArchivoFinal = `Presupuesto - ${medicoLimpio}.pdf`;
+        // 4. Armar nombre de carpeta: "12 - 03 - 26 - Dr Garcia - MiArchivo001"
+        const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
+        
+        // 5. El archivo dentro mantiene su nombre original
+        const nombreArchivoFinal = nombreOriginalConExt;
 
         const refArch = ref(storage, `expedientes/${nombreCarpeta}/${nombreArchivoFinal}`);
         const snap = await uploadBytes(refArch, archivoFisico);
@@ -170,13 +175,11 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
             }
         }
 
-        // COPIA A GOOGLE DRIVE
-        if (urlGoogleScript && urlGoogleScript !== "TU_URL_DE_APPS_SCRIPT_AQUÍ") {
-            fetch(urlGoogleScript, {
-                method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
-            }).catch(e => console.log("Drive Error:", e));
-        }
+        // ENVÍO A GOOGLE DRIVE
+        fetch(urlGoogleScript, {
+            method: 'POST', mode: 'no-cors',
+            body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
+        }).catch(e => console.log("Drive Error:", e));
 
         document.getElementById('modal-presupuesto').classList.remove('active');
     } catch (e) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Presupuesto"; }
@@ -202,7 +205,8 @@ document.getElementById('form-archivo-extra').onsubmit = async (e) => {
 
     btn.disabled = true;
     try {
-        const nombreArchivoExtra = `${tipo}.pdf`;
+        // En documentación extra respetamos el nombre que vos le hayas puesto al archivo (Remito, OC, etc.)
+        const nombreArchivoExtra = file.name;
         const refArch = ref(storage, `expedientes/${carpeta}/${nombreArchivoExtra}`);
         const snap = await uploadBytes(refArch, file);
         const url = await getDownloadURL(snap.ref);
@@ -210,13 +214,11 @@ document.getElementById('form-archivo-extra').onsubmit = async (e) => {
         const pRef = doc(db, "presupuestos", id);
         await updateDoc(pRef, { [`archivosExtra.${tipo}`]: url });
 
-        // COPIA A GOOGLE DRIVE
-        if (urlGoogleScript && urlGoogleScript !== "TU_URL_DE_APPS_SCRIPT_AQUÍ") {
-            fetch(urlGoogleScript, {
-                method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
-            }).catch(e => console.log("Drive Error:", e));
-        }
+        // ENVÍO A GOOGLE DRIVE
+        fetch(urlGoogleScript, {
+            method: 'POST', mode: 'no-cors',
+            body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
+        }).catch(e => console.log("Drive Error:", e));
 
         document.getElementById('modal-archivo-extra').classList.remove('active');
     } catch (e) { alert("Error al adjuntar."); } finally { btn.disabled = false; }
