@@ -3,154 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Expedientes | Testa CRM</title>
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0284c7">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Testa CRM">
-    <link rel="apple-touch-icon" href="icono-192.png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css"> 
+    <title>Testa CRM - Gestión de Expedientes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <div class="header-container">
-            <div class="brand-id">
-                <img src="IMG_2317.JPG" alt="Testa Equipamiento Médico" class="company-logo-img">
-                <div class="header-titles">
-                    <span class="company-name-text">Testa</span>
-                    <p class="company-subtitle-text">Equipamiento Médico</p>
-                </div>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-file-medical"></i> TESTA CRM - Expedientes
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Volver a Visitas</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-stats" style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <div class="stat-card" style="flex: 1; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <h3 style="margin: 0; font-size: 0.9em; color: #64748b;"><i class="fa-solid fa-clock"></i> Pendientes</h3>
+                <p id="stat-pendientes" style="color: var(--testa-blue); font-size: 1.5em; font-weight: bold; margin: 5px 0 0 0;">0</p>
             </div>
-            <div class="header-actions">
-                <span class="app-title-text">Expedientes</span>
-                <div class="user-profile-circle"><i class="fa-solid fa-user-circle"></i></div>
+            <div class="stat-card" style="flex: 1; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <h3 style="margin: 0; font-size: 0.9em; color: #64748b;"><i class="fa-solid fa-check-circle"></i> Aprobados</h3>
+                <p id="stat-aprobados" style="color: var(--green-success); font-size: 1.5em; font-weight: bold; margin: 5px 0 0 0;">0</p>
+            </div>
+            <div class="stat-card" style="flex: 1; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <h3 style="margin: 0; font-size: 0.9em; color: #64748b;"><i class="fa-solid fa-times-circle"></i> Rechazados</h3>
+                <p id="stat-rechazados" style="color: var(--red-alert); font-size: 1.5em; font-weight: bold; margin: 5px 0 0 0;">0</p>
             </div>
         </div>
-    </header>
 
-    <main>
-        <a href="index.html" class="btn width-100" style="background: var(--testa-blue-dark); color: white; margin-bottom: 20px; text-decoration: none; padding: 14px; font-size: 15px; display: flex; justify-content: center; gap: 10px; box-shadow: var(--shadow-md);">
-            <i class="fa-solid fa-arrow-left" style="font-size: 18px;"></i> ir a CRM Visitas
-        </a>
+        <div class="header-acciones" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+            
+            <input type="text" id="buscador-presupuestos" placeholder="Buscar por médico, clínica o expediente..." style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; min-width: 250px;">
+            
+            <button id="btn-nuevo-presupuesto" class="btn btn-primary" style="padding: 10px 20px; cursor: pointer; border-radius: 6px; border: none; font-weight: bold;">
+                <i class="fa-solid fa-plus"></i> Nuevo Presupuesto
+            </button>
+            
+            <a href="https://drive.google.com/drive/folders/1W0K6c1pysbXS5cDYQrRi_sMJQLFVdtF_?usp=share_link" target="_blank" class="btn" style="background-color: #0f9d58; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: 1px solid #0b8043;">
+                <i class="fa-brands fa-google-drive" style="font-size: 1.1em;"></i> Mi Drive
+            </a>
+            </div>
 
-        <section class="stats-section" style="margin-top: 15px;">
-            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: var(--yellow-tint); color: var(--yellow-pending);"><i class="fa-solid fa-hourglass-half"></i></div>
-                    <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: var(--green-tint); color: var(--green-success);"><i class="fa-solid fa-check-circle"></i></div>
-                    <div class="stat-data"><h3 id="stat-aprobados">0</h3><p>Aprobados</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: var(--red-tint); color: var(--red-alert);"><i class="fa-solid fa-times-circle"></i></div>
-                    <div class="stat-data"><h3 id="stat-rechazados">0</h3><p>Rechazados</p></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="toolbar-section">
-            <div class="search-bar">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="buscador-presupuestos" placeholder="Buscar por médico o equipo...">
-            </div>
-            <div class="action-buttons">
-                <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Iniciar Expediente</button>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="table-card">
-                <table class="testa-table">
-                    <thead>
-                        <tr>
-                            <th>Médico / Institución</th><th>Fecha</th><th>Detalle</th><th>Estado</th><th>Documentación</th><th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-presupuestos"></tbody>
-                </table>
-            </div>
-        </section>
+        <div class="table-container" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+            <table class="testa-table" style="width: 100%; border-collapse: collapse;">
+                <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <tr>
+                        <th style="padding: 12px; text-align: left; color: #475569;">Médico / Institución</th>
+                        <th style="padding: 12px; text-align: left; color: #475569;">Fecha</th>
+                        <th style="padding: 12px; text-align: left; color: #475569;">Presupuesto</th>
+                        <th style="padding: 12px; text-align: center; color: #475569;">Estado</th>
+                        <th style="padding: 12px; text-align: center; color: #475569;">Documentos</th>
+                        <th style="padding: 12px; text-align: center; color: #475569;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-presupuestos">
+                    <tr><td colspan="6" class="row-empty" style="text-align: center; padding: 20px; color: #64748b;">Cargando expedientes...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </main>
 
-    <div class="modal-overlay" id="modal-presupuesto">
-        <div class="modal modern-modal">
-            <div class="modal-header"><h3>Iniciar Nuevo Expediente</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
-            <form id="form-presupuesto" class="modern-form">
+    <div id="modal-presupuesto" class="modal-overlay">
+        <div class="modal-content">
+            <span class="btn-close-modal">&times;</span>
+            <h2><i class="fa-solid fa-file-invoice"></i> Cargar Presupuesto</h2>
+            <form id="form-presupuesto">
                 <div class="form-group">
-                    <label>Médico / Institución</label>
-                    <input list="lista-nombres-medicos" id="pres-medico" placeholder="Buscá o escribí el nombre..." required>
+                    <label>Médico:</label>
+                    <input type="text" id="pres-medico" list="lista-nombres-medicos" placeholder="Ej: Dr. García" required autocomplete="off">
                     <datalist id="lista-nombres-medicos"></datalist>
                 </div>
-
                 <div class="form-group">
-                    <label style="color: var(--testa-blue-dark); font-weight: 600;"><i class="fa-solid fa-handshake"></i> Vincular a una Visita (Opcional)</label>
-                    <select id="pres-visita" style="background: white; border: 2px solid var(--border-color); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; font-family: 'Inter', sans-serif;">
-                        <option value="">-- Escribí un médico arriba primero --</option>
+                    <label>Vincular a Visita (Opcional):</label>
+                    <select id="pres-visita">
+                        <option value="">-- Escribí un médico primero --</option>
                     </select>
                 </div>
-                
-                <div class="form-group"><label>Fecha de Envío</label><input type="date" id="pres-fecha" required></div>
-
                 <div class="form-group">
-                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Archivo del Presupuesto (PDF)</label>
-                    <input type="file" id="pres-archivo" accept=".pdf" required style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
+                    <label>Fecha del Documento:</label>
+                    <input type="date" id="pres-fecha" required>
                 </div>
-
                 <div class="form-group">
-                    <label>Estado Inicial</label>
+                    <label>Estado Inicial:</label>
                     <select id="pres-estado">
                         <option value="pendiente">Pendiente</option>
                         <option value="aprobado">Aprobado</option>
                         <option value="rechazado">Rechazado</option>
                     </select>
                 </div>
-
-                <div class="form-group"><label>Equipos Incluidos / Notas</label><textarea id="pres-detalle" placeholder="Ej: Monitor Multiparamétrico..."></textarea></div>
-                
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">
-                        Guardar Presupuesto
-                    </button>
+                <div class="form-group">
+                    <label>Detalle / Observaciones:</label>
+                    <textarea id="pres-detalle" rows="2" placeholder="Ej: Arco en C Philips..."></textarea>
                 </div>
+                <div class="form-group">
+                    <label>Archivo PDF (Requerido):</label>
+                    <input type="file" id="pres-archivo" accept=".pdf" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Guardar Presupuesto</button>
             </form>
         </div>
     </div>
 
-    <div class="modal-overlay" id="modal-archivo-extra">
-        <div class="modal modern-modal">
-            <div class="modal-header"><h3>Adjuntar Documentación</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
-            <form id="form-archivo-extra" class="modern-form">
+    <div id="modal-archivo-extra" class="modal-overlay">
+        <div class="modal-content">
+            <span class="btn-close-modal">&times;</span>
+            <h2><i class="fa-solid fa-paperclip"></i> Adjuntar Documento</h2>
+            <form id="form-archivo-extra">
                 <input type="hidden" id="extra-id">
                 <input type="hidden" id="extra-carpeta">
                 
                 <div class="form-group">
-                    <label>¿Qué documento vas a subir?</label>
+                    <label>Tipo de Documento:</label>
                     <select id="extra-tipo" required>
-                        <option value="OC_Cliente">Orden de Compra (Cliente)</option>
-                        <option value="OC_Proveedor">Orden de Compra (Proveedor)</option>
+                        <option value="Orden de Compra">Orden de Compra</option>
                         <option value="Remito">Remito</option>
-                        <option value="Recibo">Recibo de Cobro</option>
+                        <option value="Recibo">Recibo</option>
+                        <option value="Factura">Factura</option>
+                        <option value="Otro">Otro</option>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label><i class="fa-solid fa-file-pdf"></i> Seleccionar PDF / Imagen</label>
-                    <input type="file" id="extra-archivo" accept=".pdf,.jpg,.png" required style="background: white; border: 2px dashed var(--border-color); padding: 15px; width: 100%; box-sizing: border-box;">
+                    <label>Archivo PDF:</label>
+                    <input type="file" id="extra-archivo" accept=".pdf" required>
                 </div>
-                
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">
-                        Subir a la Carpeta
-                    </button>
-                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Subir e Integrar</button>
             </form>
         </div>
     </div>
