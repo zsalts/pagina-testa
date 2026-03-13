@@ -70,7 +70,6 @@ function dibujarTablaPresupuestos() {
         let carpetaDestino = p.carpetaUnica || p.medico;
         let btnAddDoc = p.estado === 'aprobado' ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:10px;"><i class="fa-solid fa-plus-circle"></i></button>` : '';
 
-        // CAMBIO AQUÍ: Ahora mostramos el nombre del presupuesto subido en lugar del detalle
         html += `<tr>
             <td><strong>${p.medico}</strong></td>
             <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
@@ -144,7 +143,7 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
 
         const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
         
-        // Carpeta en Drive: "12 - 03 - 26 - Dr Garcia - MiPresupuesto001"
+        // Carpeta en Drive
         const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
         const nombreArchivoFinal = nombreOriginalConExt;
 
@@ -152,13 +151,12 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
         const snap = await uploadBytes(refArch, archivoFisico);
         const urlPublica = await getDownloadURL(snap.ref);
 
-        // Guardamos en Firebase incluyendo el NOMBRE DEL ARCHIVO para mostrarlo en la tabla
         await addDoc(collection(db, "presupuestos"), {
             medico, 
             fecha: fechaInput,
             estado: document.getElementById('pres-estado').value,
             detalle: document.getElementById('pres-detalle').value.trim(),
-            nombreArchivo: nombreOriginalSinExt, // <--- ESTO SE MOSTRARÁ EN LA TABLA
+            nombreArchivo: nombreOriginalSinExt, 
             link: urlPublica, 
             carpetaUnica: nombreCarpeta, 
             archivosExtra: {}
@@ -176,7 +174,6 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
             }
         }
 
-        // ENVÍO A GOOGLE DRIVE
         fetch(urlGoogleScript, {
             method: 'POST', mode: 'no-cors',
             body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
@@ -231,9 +228,14 @@ window.rotarEstado = async (id, actual) => {
 
 window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente?")) await deleteDoc(doc(db, "presupuestos", id)); };
 
-document.getElementById('buscador-presupuestos').oninput = (e) => {
-    const f = e.target.value.toLowerCase();
-    document.querySelectorAll('.testa-table tbody tr').forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
+// ==========================================
+// BUSCADOR EN TIEMPO REAL (Expedientes)
+// ==========================================
+document.getElementById('buscador-presupuestos').addEventListener('input', (e) => {
+    const textoBuscado = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
+        if (fila.querySelector('.row-empty')) return; 
+        const contenidoFila = fila.textContent.toLowerCase();
+        fila.style.display = contenidoFila.includes(textoBuscado) ? '' : 'none';
     });
-};
+});

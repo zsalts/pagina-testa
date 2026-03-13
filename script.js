@@ -114,7 +114,7 @@ window.actualizarTablaClientes = function() {
                 medicoId: m.id, medicoNombre: m.nombre, contacto: m.contacto, institucion: m.institucion,
                 fecha: v.fecha, fechaDisplay: new Date(v.fecha + 'T00:00:00').toLocaleDateString('es-AR'), 
                 pedido: v.pedido, estado: v.estado, entrega: v.entrega, idxReal: index,
-                presupuestoLink: v.presupuestoLink // Recuperamos el link si existe
+                presupuestoLink: v.presupuestoLink
             });
         });
     });
@@ -128,7 +128,6 @@ window.actualizarTablaClientes = function() {
         let entregaHTML = fila.entrega && fila.estado === 'pendiente' ? `<span class="limite-entrega"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
         let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})" title="Tocar para cambiar">${fila.estado}</span>`;
 
-        // EL ÍCONO DEL PDF APARECE ACÁ
         let iconoPdf = fila.presupuestoLink ? `<a href="${fila.presupuestoLink}" target="_blank" class="btn-icon" style="color: var(--red-alert); margin-left: 8px; font-size: 18px;" title="Ver Presupuesto Vinculado"><i class="fa-solid fa-file-pdf"></i></a>` : '';
 
         let linkGoogleCalendar = '';
@@ -340,11 +339,14 @@ window.dibujarCalendario = () => {
 };
 document.getElementById('btn-calendario').onclick = () => { window.dibujarCalendario(); document.getElementById('modal-calendario').classList.add('active'); };
 
-// BUSCADOR EN TIEMPO REAL
-document.getElementById('buscador').oninput = (e) => {
-    const f = e.target.value.toLowerCase().trim();
-    document.querySelectorAll('.testa-table tbody tr').forEach(r => {
-        if(r.querySelector('.row-empty')) return; 
-        r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
+// ==========================================
+// BUSCADOR EN TIEMPO REAL (Visitas)
+// ==========================================
+document.getElementById('buscador').addEventListener('input', (e) => {
+    const textoBuscado = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
+        if (fila.querySelector('.row-empty')) return; 
+        const contenidoFila = fila.textContent.toLowerCase();
+        fila.style.display = contenidoFila.includes(textoBuscado) ? '' : 'none';
     });
-};
+});
