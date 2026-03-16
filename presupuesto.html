@@ -23,7 +23,7 @@
     <header>
         <div class="header-container">
             <div class="brand-id">
-                <img src="IMG_2317.JPG" alt="Testa Equipamiento Médico" class="company-logo-img">
+                <img src="IMG_2317.png" alt="Testa Equipamiento Médico" class="company-logo-img">
                 <div class="header-titles">
                     <span class="company-name-text">Testa</span>
                     <p class="company-subtitle-text">Equipamiento Médico</p>
@@ -172,10 +172,13 @@
                 <div class="form-group">
                     <label>¿Qué documento vas a subir?</label>
                     <select id="extra-tipo" required>
-                        <option value="OC_Cliente">Orden de Compra (Cliente)</option>
-                        <option value="OC_Proveedor">Orden de Compra (Proveedor)</option>
+                        <option value="Otro Presupuesto">Otro Presupuesto</option>
+                        <option value="Orden de Compra Cliente">Orden de Compra Cliente</option>
+                        <option value="Orden de Compra Proveedor">Orden de Compra Proveedor</option>
+                        <option value="Factura">Factura</option>
                         <option value="Remito">Remito</option>
-                        <option value="Recibo">Recibo de Cobro</option>
+                        <option value="Recibo de Cobro">Recibo de Cobro</option>
+                        <option value="Otro">Otro</option>
                     </select>
                 </div>
 
@@ -193,7 +196,39 @@
             </form>
         </div>
     </div>
+<div class="modal-overlay" id="modal-editar-presupuesto">
+        <div class="modal modern-modal">
+            <div class="modal-header">
+                <h3>Editar Expediente</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-editar-presupuesto" class="modern-form">
+                <input type="hidden" id="edit-id">
 
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="edit-fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Equipos Incluidos / Notas</label>
+                    <textarea id="edit-detalle"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label style="color: var(--red-alert);"><i class="fa-solid fa-folder-minus"></i> Archivos Adjuntos (Clic en el tacho para desvincular)</label>
+                    <div id="lista-archivos-edit" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1; max-height: 150px; overflow-y: auto;">
+                        </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script type="module" src="presupuesto.js"></script>
 </body>
 

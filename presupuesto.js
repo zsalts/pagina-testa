@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc, query, where, deleteField } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
 
 // ==========================================
@@ -19,21 +19,46 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Tu URL de Google Apps Script
 const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec"; 
 
 let listaPresupuestos = [];
 let listaMedicos = [];
+let vistaActual = 'pendientes'; 
 
 // ==========================================
-// 2. FUNCIONES DE INTERFAZ
+// 2. FUNCIONES DE INTERFAZ, ORDEN Y DIBUJO
 // ==========================================
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
-        document.getElementById('modal-presupuesto').classList.remove('active');
-        document.getElementById('modal-archivo-extra').classList.remove('active');
+        document.getElementById('modal-presupuesto')?.classList.remove('active');
+        document.getElementById('modal-archivo-extra')?.classList.remove('active');
+        document.getElementById('modal-editar-presupuesto')?.classList.remove('active');
     }
 });
+
+function pesoDoc(tipoDocumento) {
+    let t = tipoDocumento.toLowerCase();
+    if (t.includes("presupuesto")) return 1;
+    if (t.includes("cliente")) return 2;
+    if (t.includes("proveedor")) return 3;
+    if (t.includes("orden") || t.includes("oc")) return 4;
+    if (t.includes("factura")) return 5;
+    if (t.includes("remito")) return 6;
+    if (t.includes("recibo")) return 7;
+    return 8; 
+}
+
+function obtenerAbreviatura(tipoDocumento) {
+    let tipo = tipoDocumento.toLowerCase(); 
+    if (tipo.includes("presupuesto")) return `PRE`;
+    if (tipo.includes("cliente")) return `OCC`;
+    if (tipo.includes("proveedor")) return `OCP`;
+    if (tipo.includes("orden") || tipo.includes("oc")) return `OC`;
+    if (tipo.includes("factura")) return `FAC`;
+    if (tipo.includes("remito")) return `REM`;
+    if (tipo.includes("recibo")) return `REC`;
+    return `DOC`; 
+}
 
 onSnapshot(collection(db, "clientes"), (snap) => {
     listaMedicos = snap.docs.map(d => d.data().nombre);
@@ -49,46 +74,204 @@ onSnapshot(collection(db, "presupuestos"), (snap) => {
 function dibujarTablaPresupuestos() {
     const cuerpo = document.getElementById('cuerpo-tabla-presupuestos');
     if (!cuerpo) return;
+
+    let tableContainer = document.querySelector('.table-card'); 
+    
+    if (tableContainer && !document.getElementById('tabs-expedientes')) {
+        let tabsHTML = `
+        <div id="tabs-expedientes" style="display: flex; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 8px 8px 0 0; overflow: hidden;">
+            <button id="tab-pendientes" style="flex:1; padding: 15px; font-weight: bold; border:none; background: white; color: #0284c7; border-bottom: 3px solid #0284c7; cursor:pointer; font-size: 15px; transition: 0.3s;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Pendientes
+            </button>
+            <button id="tab-completados" style="flex:1; padding: 15px; font-weight: bold; border:none; background: transparent; color: #64748b; border-bottom: 3px solid transparent; cursor:pointer; font-size: 15px; transition: 0.3s;">
+                <i class="fa-solid fa-check-double"></i> Historial
+            </button>
+        </div>
+        `;
+        tableContainer.insertAdjacentHTML('afterbegin', tabsHTML);
+
+        document.getElementById('tab-pendientes').onclick = () => {
+            vistaActual = 'pendientes';
+            document.getElementById('tab-pendientes').style.background = 'white';
+            document.getElementById('tab-pendientes').style.color = '#0284c7';
+            document.getElementById('tab-pendientes').style.borderBottom = '3px solid #0284c7';
+            document.getElementById('tab-completados').style.background = 'transparent';
+            document.getElementById('tab-completados').style.color = '#64748b';
+            document.getElementById('tab-completados').style.borderBottom = '3px solid transparent';
+            dibujarTablaPresupuestos(); 
+        };
+
+        document.getElementById('tab-completados').onclick = () => {
+            vistaActual = 'completados';
+            document.getElementById('tab-completados').style.background = 'white';
+            document.getElementById('tab-completados').style.color = '#16a34a';
+            document.getElementById('tab-completados').style.borderBottom = '3px solid #16a34a';
+            document.getElementById('tab-pendientes').style.background = 'transparent';
+            document.getElementById('tab-pendientes').style.color = '#64748b';
+            document.getElementById('tab-pendientes').style.borderBottom = '3px solid transparent';
+            dibujarTablaPresupuestos(); 
+        };
+    }
+    
     let stats = { pen: 0, apr: 0, rec: 0 };
-    let html = '';
+    let pendientes = [];
+    let completados = [];
+
     listaPresupuestos.sort((a, b) => b.fecha.localeCompare(a.fecha));
 
     listaPresupuestos.forEach(p => {
-        if (p.estado === 'pendiente') stats.pen++;
-        if (p.estado === 'aprobado') stats.apr++;
-        if (p.estado === 'rechazado') stats.rec++;
-
-        let colorBadge = p.estado === 'pendiente' ? 'badge-pendiente' : (p.estado === 'aprobado' ? 'badge-completado' : '');
-        let docsHTML = `<a href="${p.link}" target="_blank" class="btn-icon" title="Presupuesto Inicial" style="color: var(--red-alert); font-size: 20px;"><i class="fa-regular fa-file-pdf"></i></a>`;
-        
-        if (p.archivosExtra) {
-            Object.entries(p.archivosExtra).forEach(([tipo, url]) => {
-                docsHTML += `<a href="${url}" target="_blank" class="btn-icon" title="${tipo}" style="color: #16a34a; font-size: 20px;"><i class="fa-solid fa-file-circle-check"></i></a>`;
-            });
+        if (p.estado === 'pendiente') {
+            stats.pen++;
+            pendientes.push(p);
+        } else {
+            if (p.estado === 'aprobado') stats.apr++;
+            if (p.estado === 'rechazado') stats.rec++;
+            completados.push(p);
         }
-
-        let carpetaDestino = p.carpetaUnica || p.medico;
-        let btnAddDoc = p.estado === 'aprobado' ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:10px;"><i class="fa-solid fa-plus-circle"></i></button>` : '';
-
-        html += `<tr>
-            <td><strong>${p.medico}</strong></td>
-            <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-            <td data-label="Nombre del Presupuesto"><div class="pedido-text">${p.nombreArchivo || 'Presupuesto Inicial'}</div></td>
-            <td><span class="badge ${colorBadge}" onclick="window.rotarEstado('${p.id}', '${p.estado}')" style="cursor:pointer">${p.estado.toUpperCase()}</span></td>
-            <td><div style="display:flex; gap:8px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
-            <td><button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')"><i class="fa-regular fa-trash-can"></i></button></td>
-        </tr>`;
     });
 
-    cuerpo.innerHTML = html !== '' ? html : `<tr><td colspan="6" class="row-empty">No hay expedientes registrados.</td></tr>`;
+    const generarFilas = (lista) => {
+        if (lista.length === 0) return `<tr><td colspan="6" class="row-empty" style="text-align:center; padding: 30px; color: #64748b;">No hay expedientes en esta lista.</td></tr>`;
+        
+        let htmlFilas = '';
+        lista.forEach(p => {
+            let colorBadge = p.estado === 'pendiente' ? 'badge-pendiente' : (p.estado === 'aprobado' ? 'badge-completado' : 'badge-rechazado');
+            if(p.estado === 'rechazado' && !p.estado) colorBadge = "badge"; 
+
+            const estiloBadgeDoc = `display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; font-size: 0.85em; padding: 4px 8px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; margin-right: 5px; min-width: 35px;`;
+
+            let docsHTML = `<a href="${p.link}" target="_blank" style="${estiloBadgeDoc}" title="Presupuesto Inicial">PRE</a>`;
+            
+            if (p.archivosExtra) {
+                let extras = Object.entries(p.archivosExtra);
+                extras.sort((a, b) => pesoDoc(a[0]) - pesoDoc(b[0]));
+                
+                extras.forEach(([tipo, url]) => {
+                    let abreviatura = obtenerAbreviatura(tipo);
+                    docsHTML += `<a href="${url}" target="_blank" style="${estiloBadgeDoc}" title="${tipo}">${abreviatura}</a>`;
+                });
+            }
+
+            let carpetaDestino = p.carpetaUnica || p.medico;
+            let btnAddDoc = p.estado === 'aprobado' ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:5px; font-size: 1.2em;" title="Adjuntar Documentación"><i class="fa-solid fa-circle-plus"></i></button>` : '';
+
+            let colorFondoBadge = p.estado === 'rechazado' ? '#ef4444' : '';
+            let colorTextoBadge = p.estado === 'rechazado' ? 'white' : '';
+
+            // BOTONES DE ACCIÓN (Añadido Lápiz de Edición)
+            let botonesAccion = `
+                <div style="display:flex; gap: 8px; justify-content: center;">
+                    <button class="btn-icon" onclick="window.abrirModalEditar('${p.id}')" style="color: #0ea5e9;" title="Editar Expediente"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')" title="Borrar Todo"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
+            `;
+
+            htmlFilas += `<tr>
+                <td><strong>${p.medico}</strong></td>
+                <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+                <td data-label="Nombre del Presupuesto"><div class="pedido-text">${p.nombreArchivo || 'Presupuesto Inicial'}</div></td>
+                <td><span class="badge ${colorBadge}" onclick="window.rotarEstado('${p.id}', '${p.estado}')" style="cursor:pointer; background:${colorFondoBadge}; color:${colorTextoBadge}" title="Hacé clic para cambiar estado">${p.estado.toUpperCase()}</span></td>
+                <td><div style="display:flex; flex-wrap: wrap; gap:5px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
+                <td>${botonesAccion}</td>
+            </tr>`;
+        });
+        return htmlFilas;
+    };
+
+    if (vistaActual === 'pendientes') {
+        cuerpo.innerHTML = generarFilas(pendientes);
+    } else {
+        cuerpo.innerHTML = generarFilas(completados);
+    }
+
     document.getElementById('stat-pendientes').innerText = stats.pen;
     document.getElementById('stat-aprobados').innerText = stats.apr;
     document.getElementById('stat-rechazados').innerText = stats.rec;
+
+    document.getElementById('buscador-presupuestos').dispatchEvent(new Event('input'));
 }
 
 // ==========================================
-// 3. VINCULACIÓN CON VISITAS
+// 3. VINCULACIÓN CON VISITAS Y EDICIÓN
 // ==========================================
+document.getElementById('btn-nuevo-presupuesto').addEventListener('click', () => {
+    document.getElementById('form-presupuesto').reset();
+    document.getElementById('pres-fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal-presupuesto').classList.add('active');
+});
+
+// NUEVO: Abrir modal de edición
+window.abrirModalEditar = (id) => {
+    const p = listaPresupuestos.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('edit-id').value = p.id;
+    document.getElementById('edit-fecha').value = p.fecha;
+    document.getElementById('edit-detalle').value = p.detalle || '';
+
+    // Cargar la lista de archivos extra para poder borrarlos
+    const contenedorArchivos = document.getElementById('lista-archivos-edit');
+    let htmlArchivos = '';
+    
+    if (p.archivosExtra && Object.keys(p.archivosExtra).length > 0) {
+        Object.entries(p.archivosExtra).forEach(([tipo, url]) => {
+            htmlArchivos += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; margin-bottom: 5px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                <span style="font-size: 0.9em; font-weight: 600; color: #334155;">${tipo}</span>
+                <button type="button" onclick="window.borrarArchivoExtra('${p.id}', '${tipo}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1em;" title="Desvincular archivo">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>`;
+        });
+    } else {
+        htmlArchivos = '<p style="font-size: 0.85em; color: #64748b; margin: 0; text-align: center;">No hay documentos adjuntos para borrar.</p>';
+    }
+    
+    contenedorArchivos.innerHTML = htmlArchivos;
+    document.getElementById('modal-editar-presupuesto').classList.add('active');
+};
+
+// NUEVO: Borrar archivo individual
+window.borrarArchivoExtra = async (idExpediente, tipoDoc) => {
+    if (confirm(`¿Seguro que querés desvincular la "${tipoDoc}" de este expediente?`)) {
+        try {
+            const pRef = doc(db, "presupuestos", idExpediente);
+            await updateDoc(pRef, {
+                [`archivosExtra.${tipoDoc}`]: deleteField()
+            });
+            // Recargamos el modal para que desaparezca de la listita
+            window.abrirModalEditar(idExpediente);
+        } catch (error) {
+            alert("Hubo un error al borrar el archivo.");
+        }
+    }
+};
+
+// NUEVO: Guardar cambios del modal
+document.getElementById('form-editar-presupuesto').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const id = document.getElementById('edit-id').value;
+    const nuevaFecha = document.getElementById('edit-fecha').value;
+    const nuevoDetalle = document.getElementById('edit-detalle').value;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        await updateDoc(doc(db, "presupuestos", id), {
+            fecha: nuevaFecha,
+            detalle: nuevoDetalle
+        });
+        document.getElementById('modal-editar-presupuesto').classList.remove('active');
+    } catch (error) {
+        alert("Error al actualizar el expediente.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Guardar Cambios";
+    }
+};
+
 document.getElementById('pres-medico').addEventListener('change', async (e) => {
     const medicoElegido = e.target.value.trim();
     const selectVisitas = document.getElementById('pres-visita');
@@ -116,12 +299,6 @@ document.getElementById('pres-medico').addEventListener('change', async (e) => {
 // ==========================================
 // 4. GUARDADO Y SINCRONIZACIÓN DRIVE
 // ==========================================
-document.getElementById('btn-nuevo-presupuesto').onclick = () => {
-    document.getElementById('form-presupuesto').reset();
-    document.getElementById('pres-fecha').value = new Date().toISOString().split('T')[0];
-    document.getElementById('modal-presupuesto').classList.add('active');
-};
-
 document.getElementById('form-presupuesto').onsubmit = async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
@@ -136,14 +313,12 @@ document.getElementById('form-presupuesto').onsubmit = async (e) => {
         const nombreOriginalConExt = archivoFisico.name;
         const nombreOriginalSinExt = nombreOriginalConExt.split('.').slice(0, -1).join('.');
 
-        // Formatear Fecha (DD - MM - 26)
         const fechaInput = document.getElementById('pres-fecha').value; 
         const partes = fechaInput.split('-');
         const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
 
         const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
         
-        // Carpeta en Drive
         const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
         const nombreArchivoFinal = nombreOriginalConExt;
 
@@ -220,17 +395,13 @@ document.getElementById('form-archivo-extra').onsubmit = async (e) => {
     } catch (e) { alert("Error al adjuntar."); } finally { btn.disabled = false; }
 };
 
-// AUXILIARES
 window.rotarEstado = async (id, actual) => {
     let sig = actual === 'pendiente' ? 'aprobado' : (actual === 'aprobado' ? 'rechazado' : 'pendiente');
     if (confirm(`¿Pasar a ${sig.toUpperCase()}?`)) await updateDoc(doc(db, "presupuestos", id), { estado: sig });
 };
 
-window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente?")) await deleteDoc(doc(db, "presupuestos", id)); };
+window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente completo?")) await deleteDoc(doc(db, "presupuestos", id)); };
 
-// ==========================================
-// BUSCADOR EN TIEMPO REAL (Expedientes)
-// ==========================================
 document.getElementById('buscador-presupuestos').addEventListener('input', (e) => {
     const textoBuscado = e.target.value.toLowerCase().trim();
     document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
