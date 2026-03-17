@@ -61,11 +61,11 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon" style="background: var(--red-tint); color: var(--red-alert);"><i
-                            class="fa-solid fa-times-circle"></i></div>
+                    <div class="stat-icon" style="background: #f1f5f9; color: #475569;"><i
+                            class="fa-solid fa-lock"></i></div>
                     <div class="stat-data">
-                        <h3 id="stat-rechazados">0</h3>
-                        <p>Rechazados</p>
+                        <h3 id="stat-cerrados">0</h3>
+                        <p>Cerrados</p>
                     </div>
                 </div>
             </div>
@@ -143,7 +143,7 @@
                     <select id="pres-estado">
                         <option value="pendiente">Pendiente</option>
                         <option value="aprobado">Aprobado</option>
-                        <option value="rechazado">Rechazado</option>
+                        <option value="cerrado">Cerrado</option>
                     </select>
                 </div>
 
@@ -196,7 +196,8 @@
             </form>
         </div>
     </div>
-<div class="modal-overlay" id="modal-editar-presupuesto">
+
+    <div class="modal-overlay" id="modal-editar-presupuesto">
         <div class="modal modern-modal">
             <div class="modal-header">
                 <h3>Editar Expediente</h3>
@@ -229,6 +230,7 @@
             </form>
         </div>
     </div>
+
     <script type="module" src="presupuesto.js"></script>
 </body>
 
