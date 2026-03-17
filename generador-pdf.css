@@ -1,0 +1,49 @@
+/* ESTILOS EXCLUSIVOS PARA LA TABLA DEL GENERADOR PDF */
+
+.items-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
+.items-table th { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: left;}
+.items-table td { border: 1px solid var(--border-color); padding: 0 10px; height: 48px; overflow: hidden; }
+
+/* Inputs invisibles que se funden con la tabla */
+.items-table td input, 
+.items-table td select, 
+.items-table td textarea {
+    width: 100%; border: none !important; background: transparent !important;
+    outline: none !important; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--testa-blue-dark);
+    padding: 10px 0; margin: 0; box-sizing: border-box; border-radius: 0 !important; font-weight: 500;
+}
+
+.item-detalles { resize: none; vertical-align: middle; padding: 12px 0 !important; font-size: 12px !important; color: var(--text-muted) !important;}
+
+/* Totales de la grilla web */
+.label-total-cell { text-align: right; font-weight: 700; font-size: 12px; padding: 12px !important; border: 1px solid var(--border-color); color: var(--testa-blue-dark); text-transform: uppercase;}
+.value-total-cell { font-weight: 700; font-size: 13px; padding: 12px !important; border: 1px solid var(--border-color); color: var(--testa-blue-dark); }
+.total-highlight { background: var(--testa-blue-tint) !important; color: var(--testa-blue-dark) !important; font-size: 14px; }
+
+/* Botón Lupa en la tabla centrado perfecto */
+.btn-search-prod { 
+    background: var(--testa-blue); 
+    color: white; 
+    border: none; 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: 0.2s; 
+    align-self: center; /* Esta es la magia que lo centra en vertical */
+    margin: 0; /* Eliminamos el margen que lo empujaba hacia abajo */
+    flex-shrink: 0; 
+}
+.btn-search-prod:hover { 
+    background: var(--testa-blue-dark); 
+}
+
+/* Adaptación del modal de resultados al estilo de tu Lista Modern */
+.resultado-item-cat { cursor: pointer; transition: 0.2s; border: 1px solid transparent;}
+.resultado-item-cat:hover { background: #fbfdff; border: 1px solid var(--testa-blue-tint); }
+.cat-titulo { font-weight: 700; color: var(--testa-blue-dark); font-size: 14px; margin-bottom: 2px;}
+.cat-detalles { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+.cat-precio { font-size: 12px; color: var(--testa-blue); font-weight: 600; }

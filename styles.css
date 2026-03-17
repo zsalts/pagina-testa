@@ -233,3 +233,11 @@ main { max-width: 1200px; margin: 0 auto; padding: 0 15px; width: 100%; box-sizi
     @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .form-row-3, .form-row-2 { grid-template-columns: 1fr; }
 }
+html {
+    color-scheme: light;
+}
+
+datalist, option {
+    background-color: #ffffff !important;
+    color: #0369a1 !important;
+}
