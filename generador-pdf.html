@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="styles.css?v=2"> 
-    <link rel="stylesheet" href="generador-pdf.css?v=2">
+    <link rel="stylesheet" href="styles.css?v=3"> 
+    <link rel="stylesheet" href="generador-pdf.css?v=3">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -47,12 +47,12 @@
             
             <form id="form-presupuesto" class="modern-form">
                 
-                <div class="form-row-3" style="margin-bottom: 25px;">
+                <div class="pdf-datos-header">
                     <div class="form-group">
                         <label>NRO. PRESUPUESTO</label>
                         <div style="display: flex; align-items: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding-left: 12px; height: 43px;">
                             <span style="font-weight: bold; color: var(--testa-blue-dark);">M</span>
-                            <input type="number" id="nro-presupuesto-input" required style="border: none; background: transparent; height: 100%; box-shadow: none;">
+                            <input type="number" id="nro-presupuesto-input" required style="border: none; background: transparent; height: 100%; box-shadow: none; width: 100%;">
                         </div>
                     </div>
                     <div class="form-group">
@@ -169,7 +169,8 @@
                     <label>Detalles Técnicos</label>
                     <textarea id="nuevo-prod-detalles" placeholder="Modelo, accesorios..." required></textarea>
                 </div>
-                <div class="form-row-3">
+                
+                <div class="pdf-modal-grid">
                     <div class="form-group">
                         <label>Precio</label>
                         <input type="number" id="nuevo-prod-precio" step="0.01" placeholder="0.00" required>

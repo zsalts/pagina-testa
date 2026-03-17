@@ -1,7 +1,20 @@
 /* ============================================================
-   ESTILOS EXCLUSIVOS PARA LA TABLA DEL GENERADOR PDF
-   (Se basan en tu styles.css pero se adaptan a facturación)
+   ESTILOS EXCLUSIVOS PARA EL GENERADOR PDF
    ============================================================ */
+
+/* NUEVAS GRILLAS INDEPENDIENTES DEL CRM ORIGINAL */
+.pdf-datos-header {
+    display: grid;
+    grid-template-columns: 0.8fr 1.5fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.pdf-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
 
 .items-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
 .items-table th { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: left;}
@@ -23,7 +36,7 @@
 .value-total-cell { font-weight: 700; font-size: 13px; padding: 12px !important; border: 1px solid var(--border-color); color: var(--testa-blue-dark); }
 .total-highlight { background: var(--testa-blue-tint) !important; color: var(--testa-blue-dark) !important; font-size: 14px; }
 
-/* Botón Lupa en la tabla centrado perfecto */
+/* Botón Lupa centrado perfecto */
 .btn-search-prod { 
     background: var(--testa-blue); 
     color: white; 
@@ -36,52 +49,46 @@
     align-items: center; 
     justify-content: center; 
     transition: 0.2s; 
-    align-self: center; /* Centrado vertical */
-    margin: 0; /* Eliminamos el margen que lo empujaba hacia abajo */
+    align-self: center; /* Alineación perfecta vertical */
+    margin: 0; 
     flex-shrink: 0; 
 }
-.btn-search-prod:hover { 
-    background: var(--testa-blue-dark); 
-}
+.btn-search-prod:hover { background: var(--testa-blue-dark); }
 
-/* Adaptación del modal de resultados al estilo de tu Lista Modern */
+/* Adaptación del modal de resultados al estilo Lista Modern */
 .resultado-item-cat { cursor: pointer; transition: 0.2s; border: 1px solid transparent;}
 .resultado-item-cat:hover { background: #fbfdff; border: 1px solid var(--testa-blue-tint); }
 .cat-titulo { font-weight: 700; color: var(--testa-blue-dark); font-size: 14px; margin-bottom: 2px;}
 .cat-detalles { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
 .cat-precio { font-size: 12px; color: var(--testa-blue); font-weight: 600; }
 
-
 /* ============================================================
-   === ARREGLOS DE EMERGENCIA PARA CELULARES (RESPONSIVE) ===
+   FORZADO ABSOLUTO PARA CELULARES (RESPONSIVE)
    ============================================================ */
 @media screen and (max-width: 768px) {
-    
-    /* 1. Reducimos el padding exagerado de la tarjeta principal en el celular */
+    /* 1. Anular espacios enormes laterales en celular */
     main .table-card {
-        padding: 15px !important; /* Forzamos para anular el padding del CRM original */
+        padding: 12px !important; 
     }
 
-    /* 2. Forzamos a que la grilla de Nro, Cliente y Fecha se apile verticalmente */
-    .form-row-3 {
-        grid-template-columns: 1fr !important; /* Una sola columna */
-        gap: 10px; /* Menos espacio entre campos apilados */
+    /* 2. Forzamos a que nuestra nueva grilla se apile en 1 columna vertical */
+    .pdf-datos-header {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
         margin-bottom: 15px !important;
     }
 
-    /* 3. Aseguramos que el input de Nro (con la M) se vea bien centrado */
-    .form-row-3 .form-group:first-child div[style*="display: flex"] {
-        justify-content: center;
-        background: white !important; /* Fondo blanco para que destaque la M */
+    /* 3. Forzamos la grilla del modal de agregar producto a 1 columna */
+    .pdf-modal-grid {
+        grid-template-columns: 1fr !important;
     }
 
-    /* 4. Ajustes menores de espaciado */
-    .table-section-title h3 {
-        font-size: 14px;
+    /* 4. Ajustes menores */
+    .pdf-datos-header .form-group {
+        width: 100% !important;
     }
-    
-    .table-card > form > div[style*="text-align: right"] {
-        text-align: left !important; /* Botón agregar al catálogo a la izquierda */
-        margin-top: 10px;
+
+    .table-section-title h3 {
+        font-size: 15px;
     }
 }
