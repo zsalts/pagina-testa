@@ -1,4 +1,7 @@
-/* ESTILOS EXCLUSIVOS PARA LA TABLA DEL GENERADOR PDF */
+/* ============================================================
+   ESTILOS EXCLUSIVOS PARA LA TABLA DEL GENERADOR PDF
+   (Se basan en tu styles.css pero se adaptan a facturación)
+   ============================================================ */
 
 .items-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
 .items-table th { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: left;}
@@ -33,7 +36,7 @@
     align-items: center; 
     justify-content: center; 
     transition: 0.2s; 
-    align-self: center; /* Esta es la magia que lo centra en vertical */
+    align-self: center; /* Centrado vertical */
     margin: 0; /* Eliminamos el margen que lo empujaba hacia abajo */
     flex-shrink: 0; 
 }
@@ -47,3 +50,38 @@
 .cat-titulo { font-weight: 700; color: var(--testa-blue-dark); font-size: 14px; margin-bottom: 2px;}
 .cat-detalles { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
 .cat-precio { font-size: 12px; color: var(--testa-blue); font-weight: 600; }
+
+
+/* ============================================================
+   === ARREGLOS DE EMERGENCIA PARA CELULARES (RESPONSIVE) ===
+   ============================================================ */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Reducimos el padding exagerado de la tarjeta principal en el celular */
+    main .table-card {
+        padding: 15px !important; /* Forzamos para anular el padding del CRM original */
+    }
+
+    /* 2. Forzamos a que la grilla de Nro, Cliente y Fecha se apile verticalmente */
+    .form-row-3 {
+        grid-template-columns: 1fr !important; /* Una sola columna */
+        gap: 10px; /* Menos espacio entre campos apilados */
+        margin-bottom: 15px !important;
+    }
+
+    /* 3. Aseguramos que el input de Nro (con la M) se vea bien centrado */
+    .form-row-3 .form-group:first-child div[style*="display: flex"] {
+        justify-content: center;
+        background: white !important; /* Fondo blanco para que destaque la M */
+    }
+
+    /* 4. Ajustes menores de espaciado */
+    .table-section-title h3 {
+        font-size: 14px;
+    }
+    
+    .table-card > form > div[style*="text-align: right"] {
+        text-align: left !important; /* Botón agregar al catálogo a la izquierda */
+        margin-top: 10px;
+    }
+}
