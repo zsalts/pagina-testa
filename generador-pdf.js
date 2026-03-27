@@ -2,7 +2,7 @@ import { db } from "./firebase-config.js";
 import { collection, addDoc, onSnapshot, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 // === CONFIGURACIÓN DRIVE ===
-const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec";
+const urlGoogleScript = "https://script.google.com/macros/s/AKfycbxvfL1IEuVfRviOSouA_x3upBd60eldf6K64EuuBMcRi-zW8AwzdR_TZm_86y3PmbyQ/exec";
 
 document.addEventListener('DOMContentLoaded', () => {
     let PRODUCTOS_DB = [];
@@ -38,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('btn-abrir-modal-prod').addEventListener('click', () => modalCarga.classList.add('active'));
+    if (document.getElementById('btn-abrir-modal-prod')) {
+        document.getElementById('btn-abrir-modal-prod').addEventListener('click', () => modalCarga.classList.add('active'));
+    }
 
     document.getElementById('form-nuevo-producto').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -76,9 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
         inputBusqueda.focus();
     }
 
-    document.getElementById('btn-buscar-mob').addEventListener('click', () => {
-        abrirBuscador(filaEnEdicion, 'mobile');
-    });
+    if (document.getElementById('btn-buscar-mob')) {
+        document.getElementById('btn-buscar-mob').addEventListener('click', () => {
+            abrirBuscador(filaEnEdicion, 'mobile');
+        });
+    }
 
     function renderizarResultados(filtro) {
         contenedorResultados.innerHTML = '';
@@ -128,16 +132,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const nroInput = document.getElementById('nro-presupuesto-input');
     const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
-    nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
+    if (nroInput) {
+        nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
+    }
 
     const fechaInput = document.getElementById('fecha-presupuesto');
-    const hoy = new Date();
-    const offset = hoy.getTimezoneOffset() * 60000;
-    fechaInput.value = (new Date(hoy - offset)).toISOString().slice(0, 10);
+    if (fechaInput) {
+        const hoy = new Date();
+        const offset = hoy.getTimezoneOffset() * 60000;
+        fechaInput.value = (new Date(hoy - offset)).toISOString().slice(0, 10);
+    }
 
     const tbody = document.getElementById('items-tbody-presupuesto');
 
     function calcular() {
+        if (!tbody) return;
         let base = 0, i10 = 0, i21 = 0, sim = "$";
         tbody.querySelectorAll('tr').forEach(f => {
             const c = parseFloat(f.querySelector('.item-cant').value) || 0;
@@ -163,74 +172,80 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('web-total-final').textContent = (base + i10 + i21).toLocaleString('es-AR', {minimumFractionDigits: 2});
     }
 
-    document.getElementById('btn-add-presupuesto-item').addEventListener('click', () => {
-        const tr = document.createElement('tr');
-        tr.className = 'item-row';
-        tr.innerHTML = tbody.querySelector('tr').innerHTML;
-        tr.querySelectorAll('input:not([type="button"]), textarea').forEach(i => i.value = i.type === 'number' ? 0 : "");
-        tr.querySelector('.item-cant').value = 1;
-        tbody.appendChild(tr);
-        calcular();
-    });
-
-    tbody.addEventListener('input', calcular);
-    tbody.addEventListener('change', calcular);
-    
-    tbody.addEventListener('click', e => { 
-        const fila = e.target.closest('.item-row');
-        const btnBorrar = e.target.closest('.btn-remove-item');
-
-        if (btnBorrar && fila) { 
-            if (tbody.querySelectorAll('tr').length > 1) { 
-                fila.remove(); 
-            } else {
-                fila.querySelector('.item-desc').value = "";
-                fila.querySelector('.item-detalles').value = "";
-                fila.querySelector('.item-cant').value = 1;
-                fila.querySelector('.item-precio').value = 0;
-            }
-            calcular(); 
-            return;
-        }
-
-        if (e.target.closest('.btn-search-prod')) {
-            abrirBuscador(fila, 'desktop');
-            return;
-        }
-
-        if (window.innerWidth <= 768 && fila) {
-            filaEnEdicion = fila;
-            document.getElementById('mob-desc').value = fila.querySelector('.item-desc').value;
-            document.getElementById('mob-detalles').value = fila.querySelector('.item-detalles').value;
-            document.getElementById('mob-cant').value = fila.querySelector('.item-cant').value;
-            document.getElementById('mob-moneda').value = fila.querySelector('.item-moneda').value;
-            document.getElementById('mob-precio').value = fila.querySelector('.item-precio').value;
-            document.getElementById('mob-iva').value = fila.querySelector('.item-iva').value;
-            modalMobile.classList.add('active');
-        }
-    });
-
-    document.getElementById('form-edicion-mobile').addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (filaEnEdicion) {
-            filaEnEdicion.querySelector('.item-desc').value = document.getElementById('mob-desc').value;
-            filaEnEdicion.querySelector('.item-detalles').value = document.getElementById('mob-detalles').value;
-            filaEnEdicion.querySelector('.item-cant').value = document.getElementById('mob-cant').value;
-            filaEnEdicion.querySelector('.item-moneda').value = document.getElementById('mob-moneda').value;
-            filaEnEdicion.querySelector('.item-precio').value = document.getElementById('mob-precio').value;
-            filaEnEdicion.querySelector('.item-iva').value = document.getElementById('mob-iva').value;
+    if (document.getElementById('btn-add-presupuesto-item')) {
+        document.getElementById('btn-add-presupuesto-item').addEventListener('click', () => {
+            const tr = document.createElement('tr');
+            tr.className = 'item-row';
+            tr.innerHTML = tbody.querySelector('.item-row').innerHTML;
+            tr.querySelectorAll('input:not([type="button"]), textarea').forEach(i => i.value = i.type === 'number' ? 0 : "");
+            tr.querySelector('.item-cant').value = 1;
+            tbody.appendChild(tr);
             calcular();
-            modalMobile.classList.remove('active');
-        }
-    });
+        });
+    }
 
-    document.getElementById('condiciones-web').value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
+    if (tbody) {
+        tbody.addEventListener('input', calcular);
+        tbody.addEventListener('change', calcular);
+        
+        tbody.addEventListener('click', e => { 
+            const fila = e.target.closest('.item-row');
+            const btnBorrar = e.target.closest('.btn-remove-item');
+
+            if (btnBorrar && fila) { 
+                if (tbody.querySelectorAll('.item-row').length > 1) { 
+                    fila.remove(); 
+                } else {
+                    fila.querySelector('.item-desc').value = "";
+                    fila.querySelector('.item-detalles').value = "";
+                    fila.querySelector('.item-cant').value = 1;
+                    fila.querySelector('.item-precio').value = 0;
+                }
+                calcular(); 
+                return;
+            }
+
+            if (e.target.closest('.btn-search-prod')) {
+                abrirBuscador(fila, 'desktop');
+                return;
+            }
+
+            if (window.innerWidth <= 768 && fila) {
+                filaEnEdicion = fila;
+                document.getElementById('mob-desc').value = fila.querySelector('.item-desc').value;
+                document.getElementById('mob-detalles').value = fila.querySelector('.item-detalles').value;
+                document.getElementById('mob-cant').value = fila.querySelector('.item-cant').value;
+                document.getElementById('mob-moneda').value = fila.querySelector('.item-moneda').value;
+                document.getElementById('mob-precio').value = fila.querySelector('.item-precio').value;
+                document.getElementById('mob-iva').value = fila.querySelector('.item-iva').value;
+                modalMobile.classList.add('active');
+            }
+        });
+    }
+
+    if (document.getElementById('form-edicion-mobile')) {
+        document.getElementById('form-edicion-mobile').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (filaEnEdicion) {
+                filaEnEdicion.querySelector('.item-desc').value = document.getElementById('mob-desc').value;
+                filaEnEdicion.querySelector('.item-detalles').value = document.getElementById('mob-detalles').value;
+                filaEnEdicion.querySelector('.item-cant').value = document.getElementById('mob-cant').value;
+                filaEnEdicion.querySelector('.item-moneda').value = document.getElementById('mob-moneda').value;
+                filaEnEdicion.querySelector('.item-precio').value = document.getElementById('mob-precio').value;
+                filaEnEdicion.querySelector('.item-iva').value = document.getElementById('mob-iva').value;
+                calcular();
+                modalMobile.classList.remove('active');
+            }
+        });
+    }
+
+    if (document.getElementById('condiciones-web')) {
+        document.getElementById('condiciones-web').value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
+    }
 
     // ==========================================
     // 4. GENERACIÓN DEL PDF Y SUBIDA A DRIVE
     // ==========================================
-    
-    // Función segura para transformar a Base64
     const fileToBase64 = (blob) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -246,18 +261,27 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-upload-alt fa-spin"></i> Procesando...';
 
-        const cliente = document.getElementById('cliente-nombre').value;
+        const cliente = document.getElementById('cliente-nombre').value || "Desconocido";
         const nroBase = nroInput.value;
-        const fechaObj = new Date(fechaInput.value + 'T00:00:00');
+        const fechaElegida = fechaInput.value; // Viene en formato YYYY-MM-DD
+        const fechaObj = new Date(fechaElegida + 'T00:00:00');
         const anioCur = fechaObj.getFullYear().toString().slice(-2);
         
         localStorage.setItem('testa_ultimo_nro', nroBase);
         const primerProd = tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value : "Doc";
         
-        // Limpiamos caracteres raros por las dudas para que no rompa el nombre del archivo
+        // --- LA MAGIA DE LA FECHA: Transformamos YYYY-MM-DD a DD MM AA ---
+        const partesFecha = fechaElegida.split('-'); // Cortamos por los guiones
+        const dia = partesFecha[2];
+        const mes = partesFecha[1];
+        const anio = partesFecha[0].slice(-2); // Nos quedamos solo con los últimos 2 dígitos del año
+        const fechaFormateada = `${dia} ${mes} ${anio}`; // Queda "27 03 26"
+
+        // ARMAMOS LA CARPETA CON LA FECHA NUEVA
+        const nombreCarpetaDeseado = `${fechaFormateada} - ${cliente} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
         const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
 
-        // Preparar contenido PDF invisible
+        // Llenar contenido PDF invisible
         document.getElementById('pdf-cliente-nombre').textContent = cliente;
         document.getElementById('pdf-nro-presupuesto-texto').textContent = `M ${nroBase}-${anioCur}`;
         document.getElementById('pdf-fecha-text').textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
@@ -266,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pdfTbody = document.getElementById('pdf-tbody');
         pdfTbody.innerHTML = '';
         let sim = "$";
-        tbody.querySelectorAll('tr').forEach((f, idx) => {
+        tbody.querySelectorAll('.item-row').forEach((f, idx) => {
             sim = f.querySelector('.simbolo-linea').textContent;
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -297,23 +321,17 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.style.opacity = "1"; 
         wrapper.style.zIndex = "9999";
 
-        const element = document.getElementById('pdf-content');
-        const opt = { 
-            margin: 0, 
-            image: { type: 'jpeg', quality: 1 }, 
-            html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, 
-            jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } 
-        };
-
         try {
-            // Creamos el PDF inicial
+            const element = document.getElementById('pdf-content');
+            const opt = { margin: 0, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } };
+
+            // 1. Crear PDF base
             const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');
-            
-            // 1. Unir con folleto si existe
             const { PDFDocument } = PDFLib;
             let finalPdf = await PDFDocument.load(pdfObj.output('arraybuffer'));
-            const fileInput = document.getElementById('input-folleto-pdf');
             
+            // 2. Unir folleto si existe
+            const fileInput = document.getElementById('input-folleto-pdf');
             if (fileInput.files.length > 0) {
                 const folletoPdf = await PDFDocument.load(await fileInput.files[0].arrayBuffer());
                 const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
@@ -321,25 +339,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const pdfBytes = await finalPdf.save();
-            
-            // 2. Descarga local para backup
             const blob = new Blob([pdfBytes], { type: "application/pdf" });
+
+            // 3. Descarga Local (Backup)
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             link.download = fileName;
             link.click();
 
-            // 3. Convertir a Base64 de forma segura
+            // 4. Subida a Google Drive y obtener el Link generado
             const base64data = await fileToBase64(blob);
             
-            // Hacemos el envío a Google Script (Drive)
-            const response = await fetch(urlGoogleScript, {
+            const peticionDrive = await fetch(urlGoogleScript, {
                 method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({ pdfBase64: base64data, fileName: fileName })
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ 
+                    pdfBase64: base64data, 
+                    fileName: fileName,
+                    carpeta: nombreCarpetaDeseado // Acá viaja la carpeta con DD MM AA
+                })
             });
 
-            // 4. Actualizar Firebase
+            // Leemos la respuesta JSON que retorna el Apps Script
+            const respuestaDrive = await peticionDrive.json();
+            const linkDrive = respuestaDrive.url; // <--- EL LINK GENERADO
+
+            // 5. Actualizar Firestore (Guardando el Link)
             const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
             const querySnap = await getDocs(q);
             
@@ -347,24 +372,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 await updateDoc(doc(db, "presupuestos", querySnap.docs[0].id), { 
                     nombreArchivo: fileName, 
                     estado: 'pendiente',
-                    fecha: fechaInput.value 
+                    fecha: fechaInput.value,
+                    link: linkDrive // Guarda el link en el documento existente
                 });
             } else {
                 await addDoc(collection(db, "presupuestos"), { 
                     medico: cliente, 
                     fecha: fechaInput.value, 
                     estado: 'pendiente', 
-                    nombreArchivo: fileName, 
+                    nombreArchivo: fileName,
+                    link: linkDrive, // Guarda el link en un nuevo documento
                     archivosExtra: {} 
                 });
             }
             
-            alert("¡PDF descargado para tu backup y enviado a Drive!");
+            alert("¡Presupuesto guardado en Drive y vinculado al CRM!");
             window.location.href = "presupuesto.html";
 
         } catch (error) { 
-            console.error("Error procesando el archivo:", error); 
-            alert("Hubo un error procesando o subiendo el PDF. Revisá tu conexión."); 
+            console.error("Error:", error); 
+            alert("Error al procesar el PDF."); 
         } finally { 
             wrapper.style.opacity = "0"; 
             wrapper.style.zIndex = "-9999"; 
