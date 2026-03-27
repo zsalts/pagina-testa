@@ -1,21 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-
-// ==========================================
-// 1. CONEXIÓN A FIREBASE
-// ==========================================
-const firebaseConfig = {
-    apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
-    authDomain: "testa-crm.firebaseapp.com",
-    projectId: "testa-crm",
-    storageBucket: "testa-crm.firebasestorage.app",
-    messagingSenderId: "616199192563",
-    appId: "1:616199192563:web:20b35acba2f635b9735c86",
-    measurementId: "G-7Q3BQS18FH"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db } from "./firebase-config.js";
+import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 let listaMedicos = [];
 let listaClinicas = [];
@@ -166,7 +150,6 @@ window.actualizarTablaClientes = function() {
     document.getElementById('stat-completadas').innerText = stats.c;
 }
 
-// FUNCIONES DE ACCIÓN
 window.borrarVisita = async (id, idx) => {
     if(confirm("¿Estás seguro de borrar esta visita?")) {
         try {
@@ -192,7 +175,6 @@ window.borrarClinica = async (id) => {
     } 
 };
 
-// FORMULARIOS
 document.getElementById('btn-nueva-visita-modal').onclick = () => {
     document.getElementById('form-nueva-visita').reset();
     document.getElementById('nv-fecha-visita').value = new Date().toISOString().split('T')[0];
@@ -255,7 +237,6 @@ document.getElementById('form-cliente').onsubmit = (e) => {
     document.getElementById('input-select-medico').value = medicoPendienteDeGuardar.nombre;
 };
 
-// GESTIÓN MÉDICOS
 document.getElementById('btn-gestion-medicos').onclick = () => document.getElementById('modal-gestion-medicos').classList.add('active');
 
 window.borrarMedicoPorCompleto = async (id) => { 
@@ -320,7 +301,6 @@ document.getElementById('btn-borrar-todo').onclick = async () => {
     }
 };
 
-// CALENDARIO
 window.dibujarCalendario = () => {
     const g = document.getElementById('cuadricula-calendario');
     g.innerHTML = ['D','L','M','X','J','V','S'].map(d => `<div style="text-align:center;font-weight:700;padding:10px;background:#f8fafc;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border-color);">${d}</div>`).join('');
@@ -339,9 +319,6 @@ window.dibujarCalendario = () => {
 };
 document.getElementById('btn-calendario').onclick = () => { window.dibujarCalendario(); document.getElementById('modal-calendario').classList.add('active'); };
 
-// ==========================================
-// BUSCADOR EN TIEMPO REAL (Visitas)
-// ==========================================
 document.getElementById('buscador').addEventListener('input', (e) => {
     const textoBuscado = e.target.value.toLowerCase().trim();
     document.querySelectorAll('.testa-table tbody tr').forEach(fila => {

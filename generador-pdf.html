@@ -4,16 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador PDF | Testa CRM</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0284c7">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="styles.css?v=3"> 
-    <link rel="stylesheet" href="generador-pdf.css?v=3">
-
+    <link rel="stylesheet" href="generador-pdf.css?v=4">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
@@ -90,7 +86,7 @@
                             <tr class="item-row">
                                 <td>
                                     <div style="display: flex; gap: 5px; height: 100%;">
-                                        <input type="text" placeholder="Producto" class="item-desc" style="flex: 1;">
+                                        <input type="text" placeholder="Tocar para editar..." class="item-desc" style="flex: 1;">
                                         <button type="button" class="btn-search-prod" title="Buscar en catálogo"><i class="fas fa-search"></i></button>
                                     </div>
                                 </td>
@@ -134,7 +130,7 @@
 
                 <div class="modern-form">
                     <div class="form-group">
-                        <label>CONDICIONES PARTICULARES (EDITABLES EN EL PDF)</label>
+                        <label>CONDICIONES PARTICULARES</label>
                         <textarea id="condiciones-web" style="height: 150px; background: #f8fafc;"></textarea>
                     </div>
 
@@ -143,7 +139,6 @@
                             <i class="fa-solid fa-paperclip"></i> ADJUNTAR FOLLETO TÉCNICO (Solo PDF - Opcional)
                         </label>
                         <input type="file" id="input-folleto-pdf" accept=".pdf" style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
-                        <small style="color: var(--text-muted); display: block; margin-top: 5px;">Si seleccionás un PDF acá, se unirá automáticamente a la hoja del presupuesto formando un solo archivo.</small>
                     </div>
                 </div>
 
@@ -158,42 +153,17 @@
         <div class="modal modern-modal">
             <div class="modal-header">
                 <h3>Nuevo Producto al Catálogo</h3>
-                <button type="button" class="btn-close-modal" id="btn-cerrar-modal"><i class="fa-solid fa-times"></i></button>
+                <button type="button" class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
             </div>
             <form id="form-nuevo-producto" class="modern-form">
-                <div class="form-group">
-                    <label>Nombre del Producto</label>
-                    <input type="text" id="nuevo-prod-nombre" placeholder="Ej. Monitor Mindray" required>
-                </div>
-                <div class="form-group">
-                    <label>Detalles Técnicos</label>
-                    <textarea id="nuevo-prod-detalles" placeholder="Modelo, accesorios..." required></textarea>
-                </div>
-                
+                <div class="form-group"><label>Nombre del Producto</label><input type="text" id="nuevo-prod-nombre" required></div>
+                <div class="form-group"><label>Detalles Técnicos</label><textarea id="nuevo-prod-detalles" required></textarea></div>
                 <div class="pdf-modal-grid">
-                    <div class="form-group">
-                        <label>Precio</label>
-                        <input type="number" id="nuevo-prod-precio" step="0.01" placeholder="0.00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Moneda</label>
-                        <select id="nuevo-prod-moneda">
-                            <option value="USD">USD</option>
-                            <option value="ARS">ARS</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>IVA %</label>
-                        <select id="nuevo-prod-iva">
-                            <option value="21">21%</option>
-                            <option value="10.5">10.5%</option>
-                            <option value="0">0%</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label>Precio</label><input type="number" id="nuevo-prod-precio" step="0.01" required></div>
+                    <div class="form-group"><label>Moneda</label><select id="nuevo-prod-moneda"><option value="USD">USD</option><option value="ARS">ARS</option></select></div>
+                    <div class="form-group"><label>IVA %</label><select id="nuevo-prod-iva"><option value="21">21%</option><option value="10.5">10.5%</option><option value="0">0%</option></select></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 15px;">Guardar en Nube</button>
-                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-add width-100" style="padding: 15px;">Guardar en Nube</button></div>
             </form>
         </div>
     </div>
@@ -202,7 +172,7 @@
         <div class="modal modern-modal modal-md">
             <div class="modal-header">
                 <h3>Seleccionar Producto</h3>
-                <button type="button" class="btn-close-modal" id="btn-cerrar-buscador"><i class="fa-solid fa-times"></i></button>
+                <button type="button" class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="modern-form">
                 <div class="form-group">
@@ -212,8 +182,43 @@
                     </div>
                 </div>
             </div>
-            <div id="lista-resultados-busqueda" class="modern-list-container" style="max-height: 350px;">
+            <div id="lista-resultados-busqueda" class="modern-list-container" style="max-height: 350px;"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-edicion-mobile">
+        <div class="modal modern-modal">
+            <div class="modal-header">
+                <h3>Editar Renglón</h3>
+                <button type="button" class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-edicion-mobile" class="modern-form">
+                <div class="form-group">
+                    <label>Producto</label>
+                    <div class="input-with-action">
+                        <input type="text" id="mob-desc" required>
+                        <button type="button" class="btn-input-action" id="btn-buscar-mob" style="background: var(--testa-blue); color: white; border: none;"><i class="fas fa-search"></i></button>
+                    </div>
                 </div>
+                <div class="form-group"><label>Detalles</label><textarea id="mob-detalles"></textarea></div>
+                <div class="form-row-2">
+                    <div class="form-group"><label>Cantidad</label><input type="number" id="mob-cant" min="1"></div>
+                    <div class="form-group">
+                        <label>Moneda</label>
+                        <select id="mob-moneda"><option value="ARS">ARS $</option><option value="USD">USD U$S</option></select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group"><label>Precio Unit.</label><input type="number" step="0.01" id="mob-precio"></div>
+                    <div class="form-group">
+                        <label>IVA %</label>
+                        <select id="mob-iva"><option value="21">21%</option><option value="10.5">10.5%</option><option value="0">Exento</option></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; background: var(--green-success);">Confirmar Datos</button>
+                </div>
+            </form>
         </div>
     </div>
 

@@ -1,47 +1,30 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-
-// ==========================================
-// 1. CONEXIÓN A FIREBASE
-// ==========================================
-const firebaseConfig = {
-    apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
-    authDomain: "testa-crm.firebaseapp.com",
-    projectId: "testa-crm",
-    storageBucket: "testa-crm.firebasestorage.app", 
-    messagingSenderId: "616199192563",
-    appId: "1:616199192563:web:20b35acba2f635b9735c86",
-    measurementId: "G-7Q3BQS18FH"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db } from "./firebase-config.js";
+import { collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ==========================================
-    // 1.5. CARGAR MÉDICOS DESDE FIREBASE
-    // ==========================================
-    onSnapshot(collection(db, "clientes"), (snap) => {
-        let listaMedicos = snap.docs.map(d => d.data().nombre);
-        const dl = document.getElementById('lista-nombres-medicos');
-        if (dl) {
-            dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
-        }
-    }, (error) => {
-        console.error("Error cargando médicos:", error);
-    });
-
-    // ==========================================
-    // 2. CATÁLOGO DESDE LA NUBE (FIREBASE)
-    // ==========================================
     let PRODUCTOS_DB = [];
+    let listaMedicos = [];
+
+    onSnapshot(collection(db, "clientes"), (snap) => {
+        listaMedicos = snap.docs.map(d => d.data().nombre);
+        const dl = document.getElementById('lista-nombres-medicos');
+        if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
+    }, (error) => console.error("Error cargando médicos:", error));
 
     onSnapshot(collection(db, "productos"), (snap) => {
         PRODUCTOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }, (error) => {
-        console.error("Error cargando productos:", error);
-    });
+    }, (error) => console.error("Error cargando productos:", error));
+
+
+    const modalCarga = document.getElementById('modal-producto');
+    const modalBuscador = document.getElementById('modal-buscador-productos');
+    const modalMobile = document.getElementById('modal-edicion-mobile');
+    const inputBusqueda = document.getElementById('input-busqueda-rapida');
+    const contenedorResultados = document.getElementById('lista-resultados-busqueda');
+    
+    let filaEnEdicion = null;
+    let destinoBuscador = 'desktop'; // Para saber si la lupa se tocó en la tabla o en el modal celular
 
     document.addEventListener('click', (e) => {
         if (e.target.closest('.btn-close-modal')) {
@@ -49,13 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- MODAL 1: AÑADIR PRODUCTO (A FIREBASE) ---
-    const modalCarga = document.getElementById('modal-producto');
     document.getElementById('btn-abrir-modal-prod').addEventListener('click', () => modalCarga.classList.add('active'));
 
     document.getElementById('form-nuevo-producto').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const btnGuardar = e.target.querySelector('button[type="submit"]');
         btnGuardar.disabled = true;
         btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
@@ -72,28 +52,24 @@ document.addEventListener('DOMContentLoaded', () => {
             await addDoc(collection(db, "productos"), nuevoProd);
             e.target.reset();
             modalCarga.classList.remove('active');
-            alert("¡Producto añadido al catálogo de la nube!");
-        } catch (error) {
-            alert("Error al guardar en la nube.");
-        } finally {
-            btnGuardar.disabled = false;
-            btnGuardar.innerText = "Guardar en Nube";
-        }
+            alert("¡Producto añadido al catálogo!");
+        } catch (error) { alert("Error al guardar en la nube."); } 
+        finally { btnGuardar.disabled = false; btnGuardar.innerText = "Guardar en Nube"; }
     });
 
-    // --- MODAL 2: BUSCADOR EN LA TABLA ---
-    const modalBuscador = document.getElementById('modal-buscador-productos');
-    const inputBusqueda = document.getElementById('input-busqueda-rapida');
-    const contenedorResultados = document.getElementById('lista-resultados-busqueda');
-    let filaEnEdicion = null;
-
-    function abrirBuscador(fila) {
+    // Lupa Universal (funciona para PC y Celular)
+    function abrirBuscador(fila, destino = 'desktop') {
         filaEnEdicion = fila;
+        destinoBuscador = destino;
         inputBusqueda.value = '';
         renderizarResultados('');
         modalBuscador.classList.add('active');
         inputBusqueda.focus();
     }
+
+    document.getElementById('btn-buscar-mob').addEventListener('click', () => {
+        abrirBuscador(filaEnEdicion, 'mobile');
+    });
 
     function renderizarResultados(filtro) {
         contenedorResultados.innerHTML = '';
@@ -101,10 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtrados = PRODUCTOS_DB.filter(p => p.nombre.toLowerCase().includes(term) || p.detalles.toLowerCase().includes(term));
         
         if (filtrados.length === 0) {
-            contenedorResultados.innerHTML = '<p style="padding:15px; color:var(--text-muted); text-align:center;">No se encontraron productos en la nube.</p>';
-            return;
+            contenedorResultados.innerHTML = '<p style="padding:15px; color:var(--text-muted); text-align:center;">No se encontraron productos.</p>'; return;
         }
-
         filtrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
         filtrados.forEach(prod => {
@@ -118,7 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             div.addEventListener('click', () => {
-                if (filaEnEdicion) {
+                if (destinoBuscador === 'mobile') {
+                    // Si elegimos producto desde el celular, llenamos el modal celular
+                    document.getElementById('mob-desc').value = prod.nombre;
+                    document.getElementById('mob-detalles').value = prod.detalles;
+                    document.getElementById('mob-precio').value = prod.precio;
+                    document.getElementById('mob-moneda').value = prod.moneda;
+                    document.getElementById('mob-iva').value = prod.iva;
+                } else if (filaEnEdicion) {
+                    // Si es desde PC, llenamos la tabla directo
                     filaEnEdicion.querySelector('.item-desc').value = prod.nombre;
                     filaEnEdicion.querySelector('.item-detalles').value = prod.detalles;
                     filaEnEdicion.querySelector('.item-precio').value = prod.precio;
@@ -134,10 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inputBusqueda.addEventListener('input', (e) => renderizarResultados(e.target.value));
 
 
-    // ==========================================
-    // 3. LÓGICA DEL PRESUPUESTO
-    // ==========================================
-    
+    // LÓGICA DE CÁLCULO
     const nroInput = document.getElementById('nro-presupuesto-input');
     const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
     nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
@@ -148,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fechaInput.value = (new Date(hoy - offset)).toISOString().slice(0, 10);
 
     const tbody = document.getElementById('items-tbody-presupuesto');
+
     function calcular() {
         let base = 0, i10 = 0, i21 = 0, sim = "$";
         tbody.querySelectorAll('tr').forEach(f => {
@@ -155,13 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const p = parseFloat(f.querySelector('.item-precio').value) || 0;
             const i = parseFloat(f.querySelector('.item-iva').value) || 0;
             sim = f.querySelector('.item-moneda').value === 'USD' ? 'U$S' : '$';
-            const sub = c * p;
-            const vIva = sub * (i / 100);
-            f.querySelector('.item-subtotal').textContent = (sub + vIva).toLocaleString('es-AR', {minimumFractionDigits: 2});
+            
+            const sub = c * p; 
+            const vIva = sub * (i / 100); 
+            
+            f.querySelector('.item-subtotal').textContent = sub.toLocaleString('es-AR', {minimumFractionDigits: 2});
             f.querySelector('.simbolo-linea').textContent = sim;
+            
             base += sub;
-            if (i === 10.5) i10 += vIva; if (i === 21) i21 += vIva;
+            if (i === 10.5) i10 += vIva; 
+            if (i === 21) i21 += vIva;
         });
+        
         document.querySelectorAll('.simbolo-total').forEach(s => s.textContent = sim);
         document.getElementById('web-base-imponible').textContent = base.toLocaleString('es-AR', {minimumFractionDigits: 2});
         document.getElementById('web-iva-10').textContent = i10.toLocaleString('es-AR', {minimumFractionDigits: 2});
@@ -182,27 +167,72 @@ document.addEventListener('DOMContentLoaded', () => {
     tbody.addEventListener('input', calcular);
     tbody.addEventListener('change', calcular);
     
+    // CLICK EN LA TABLA (Maneja PC, Tachito y Celular)
     tbody.addEventListener('click', e => { 
-        if (e.target.closest('.btn-remove-item') && tbody.rows.length > 1) { 
-            e.target.closest('tr').remove(); 
+        const fila = e.target.closest('.item-row');
+        const btnBorrar = e.target.closest('.btn-remove-item');
+
+        // 1. Lógica del tachito
+        if (btnBorrar && fila) { 
+            if (tbody.querySelectorAll('tr').length > 1) { 
+                fila.remove(); 
+            } else {
+                fila.querySelector('.item-desc').value = "";
+                fila.querySelector('.item-detalles').value = "";
+                fila.querySelector('.item-cant').value = 1;
+                fila.querySelector('.item-precio').value = 0;
+            }
             calcular(); 
+            return; // Cortamos acá para que no abra nada más
         }
+
+        // 2. Lógica de Lupa en PC
         if (e.target.closest('.btn-search-prod')) {
-            abrirBuscador(e.target.closest('tr'));
+            abrirBuscador(fila, 'desktop');
+            return;
+        }
+
+        // 3. LA MAGIA MOBILE: Si tocan la fila en celular, abrimos el modal
+        if (window.innerWidth <= 768 && fila) {
+            filaEnEdicion = fila; // Guardamos en memoria qué fila estamos tocando
+            
+            // Chupamos los datos de la fila oculta y los metemos en el modal lindo
+            document.getElementById('mob-desc').value = fila.querySelector('.item-desc').value;
+            document.getElementById('mob-detalles').value = fila.querySelector('.item-detalles').value;
+            document.getElementById('mob-cant').value = fila.querySelector('.item-cant').value;
+            document.getElementById('mob-moneda').value = fila.querySelector('.item-moneda').value;
+            document.getElementById('mob-precio').value = fila.querySelector('.item-precio').value;
+            document.getElementById('mob-iva').value = fila.querySelector('.item-iva').value;
+
+            modalMobile.classList.add('active');
+        }
+    });
+
+    // GUARDAR DATOS DEL MODAL CELULAR
+    document.getElementById('form-edicion-mobile').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (filaEnEdicion) {
+            // Escupimos los datos del modal hacia la tabla (que está oculta en celular)
+            filaEnEdicion.querySelector('.item-desc').value = document.getElementById('mob-desc').value;
+            filaEnEdicion.querySelector('.item-detalles').value = document.getElementById('mob-detalles').value;
+            filaEnEdicion.querySelector('.item-cant').value = document.getElementById('mob-cant').value;
+            filaEnEdicion.querySelector('.item-moneda').value = document.getElementById('mob-moneda').value;
+            filaEnEdicion.querySelector('.item-precio').value = document.getElementById('mob-precio').value;
+            filaEnEdicion.querySelector('.item-iva').value = document.getElementById('mob-iva').value;
+            
+            calcular();
+            modalMobile.classList.remove('active');
         }
     });
 
     document.getElementById('condiciones-web').value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
 
-    // ==========================================
-    // 4. GENERACIÓN DEL PDF Y ENGRAPADO DE FOLLETO
-    // ==========================================
+    // GENERAR PDF
     document.getElementById('form-presupuesto').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uniendo Documentos...';
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
 
         const cliente = document.getElementById('cliente-nombre').value;
         const nroBase = nroInput.value;
@@ -210,7 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const anioCur = fechaObj.getFullYear().toString().slice(-2);
         
         localStorage.setItem('testa_ultimo_nro', nroBase);
-
         const primerProd = tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value : "Doc";
         const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`;
 
@@ -225,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.querySelectorAll('tr').forEach((f, idx) => {
             sim = f.querySelector('.simbolo-linea').textContent;
             const tr = document.createElement('tr');
+            
             tr.innerHTML = `
                 <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
                 <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
@@ -251,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const wrapper = document.getElementById('pdf-wrapper');
         wrapper.style.opacity = "1"; wrapper.style.zIndex = "9999";
-        
+
         const element = document.getElementById('pdf-content');
         const opt = {
             margin: 0, image: { type: 'jpeg', quality: 1 },
@@ -279,10 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.href = window.URL.createObjectURL(blob);
                 link.download = fileName;
                 link.click();
-
             } catch (error) {
-                console.error(error);
-                alert("Hubo un error al unir los PDFs. Revisá que el folleto no esté dañado.");
+                alert("Error al procesar el PDF.");
             } finally {
                 wrapper.style.opacity = "0"; wrapper.style.zIndex = "-9999";
                 btnSubmit.disabled = false;
