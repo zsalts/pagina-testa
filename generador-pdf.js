@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 2. GESTIÓN DE MODALES Y BUSCADOR
+    // 2. GESTIÓN DE MODALES Y BUSCADOR (BLINDADO)
     // ==========================================
     const modalCarga = document.getElementById('modal-producto');
     const modalBuscador = document.getElementById('modal-buscador-productos');
@@ -51,9 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const nuevoProd = {
             nombre: document.getElementById('nuevo-prod-nombre').value.trim(),
             detalles: document.getElementById('nuevo-prod-detalles').value.trim(),
-            precio: parseFloat(document.getElementById('nuevo-prod-precio').value),
-            moneda: document.getElementById('nuevo-prod-moneda').value,
-            iva: parseFloat(document.getElementById('nuevo-prod-iva').value)
+            precio: parseFloat(document.getElementById('nuevo-prod-precio').value) || 0,
+            moneda: document.getElementById('nuevo-prod-moneda').value || 'ARS',
+            iva: parseFloat(document.getElementById('nuevo-prod-iva').value) || 21
         };
         
         try {
@@ -72,10 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function abrirBuscador(fila, destino = 'desktop') {
         filaEnEdicion = fila;
         destinoBuscador = destino;
-        inputBusqueda.value = '';
+        if(inputBusqueda) inputBusqueda.value = '';
         renderizarResultados('');
-        modalBuscador.classList.add('active');
-        inputBusqueda.focus();
+        if(modalBuscador) {
+            modalBuscador.classList.add('active');
+            setTimeout(() => inputBusqueda.focus(), 100);
+        }
     }
 
     if (document.getElementById('btn-buscar-mob')) {
@@ -85,39 +87,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderizarResultados(filtro) {
+        if(!contenedorResultados) return;
         contenedorResultados.innerHTML = '';
-        const term = filtro.toLowerCase();
-        const filtrados = PRODUCTOS_DB.filter(p => p.nombre.toLowerCase().includes(term) || p.detalles.toLowerCase().includes(term));
+        const term = filtro.toLowerCase().trim();
+        
+        // FILTRO SEGURO: Previene crasheos si hay productos mal cargados en Firebase
+        const filtrados = PRODUCTOS_DB.filter(p => {
+            const n = p.nombre ? p.nombre.toLowerCase() : "";
+            const d = p.detalles ? p.detalles.toLowerCase() : "";
+            return n.includes(term) || d.includes(term);
+        });
         
         if (filtrados.length === 0) {
             contenedorResultados.innerHTML = '<p style="padding:15px; color:var(--text-muted); text-align:center;">No se encontraron productos.</p>'; 
             return;
         }
-        filtrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        
+        filtrados.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
 
         filtrados.forEach(prod => {
             const div = document.createElement('div');
             div.className = 'modern-list-item resultado-item-cat';
+            const precioSeguro = (prod.precio || 0).toLocaleString('es-AR', {minimumFractionDigits: 2});
+            
             div.innerHTML = `
                 <div style="width:100%;">
-                    <div class="cat-titulo">${prod.nombre}</div>
-                    <div class="cat-detalles">${prod.detalles}</div>
-                    <div class="cat-precio">Precio: ${prod.moneda} ${prod.precio.toLocaleString('es-AR', {minimumFractionDigits: 2})} | IVA: ${prod.iva}%</div>
+                    <div class="cat-titulo">${prod.nombre || "Sin nombre"}</div>
+                    <div class="cat-detalles">${prod.detalles || "Sin detalles"}</div>
+                    <div class="cat-precio">Precio: ${prod.moneda || "ARS"} ${precioSeguro} | IVA: ${prod.iva || 0}%</div>
                 </div>
             `;
+            
             div.addEventListener('click', () => {
                 if (destinoBuscador === 'mobile') {
-                    document.getElementById('mob-desc').value = prod.nombre;
-                    document.getElementById('mob-detalles').value = prod.detalles;
-                    document.getElementById('mob-precio').value = prod.precio;
-                    document.getElementById('mob-moneda').value = prod.moneda;
-                    document.getElementById('mob-iva').value = prod.iva;
+                    document.getElementById('mob-desc').value = prod.nombre || '';
+                    document.getElementById('mob-detalles').value = prod.detalles || '';
+                    document.getElementById('mob-precio').value = prod.precio || 0;
+                    document.getElementById('mob-moneda').value = prod.moneda || 'ARS';
+                    document.getElementById('mob-iva').value = prod.iva || 0;
                 } else if (filaEnEdicion) {
-                    filaEnEdicion.querySelector('.item-desc').value = prod.nombre;
-                    filaEnEdicion.querySelector('.item-detalles').value = prod.detalles;
-                    filaEnEdicion.querySelector('.item-precio').value = prod.precio;
-                    filaEnEdicion.querySelector('.item-moneda').value = prod.moneda;
-                    filaEnEdicion.querySelector('.item-iva').value = prod.iva;
+                    filaEnEdicion.querySelector('.item-desc').value = prod.nombre || '';
+                    filaEnEdicion.querySelector('.item-detalles').value = prod.detalles || '';
+                    filaEnEdicion.querySelector('.item-precio').value = prod.precio || 0;
+                    filaEnEdicion.querySelector('.item-moneda').value = prod.moneda || 'ARS';
+                    filaEnEdicion.querySelector('.item-iva').value = prod.iva || 0;
                     calcular();
                 }
                 modalBuscador.classList.remove('active');
@@ -125,16 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
             contenedorResultados.appendChild(div);
         });
     }
-    inputBusqueda.addEventListener('input', (e) => renderizarResultados(e.target.value));
+    
+    if(inputBusqueda) {
+        inputBusqueda.addEventListener('input', (e) => renderizarResultados(e.target.value));
+    }
 
     // ==========================================
-    // 3. LÓGICA DE CÁLCULO
+    // 3. LÓGICA DE CÁLCULO Y TABLA
     // ==========================================
     const nroInput = document.getElementById('nro-presupuesto-input');
     const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
-    if (nroInput) {
-        nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
-    }
+    if (nroInput) nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
 
     const fechaInput = document.getElementById('fecha-presupuesto');
     if (fechaInput) {
@@ -148,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function calcular() {
         if (!tbody) return;
         let base = 0, i10 = 0, i21 = 0, sim = "$";
-        tbody.querySelectorAll('tr').forEach(f => {
+        tbody.querySelectorAll('.item-row').forEach(f => {
             const c = parseFloat(f.querySelector('.item-cant').value) || 0;
             const p = parseFloat(f.querySelector('.item-precio').value) || 0;
             const i = parseFloat(f.querySelector('.item-iva').value) || 0;
@@ -174,9 +188,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('btn-add-presupuesto-item')) {
         document.getElementById('btn-add-presupuesto-item').addEventListener('click', () => {
+            const primeraFila = tbody.querySelector('.item-row');
+            if(!primeraFila) return;
             const tr = document.createElement('tr');
             tr.className = 'item-row';
-            tr.innerHTML = tbody.querySelector('.item-row').innerHTML;
+            tr.innerHTML = primeraFila.innerHTML;
             tr.querySelectorAll('input:not([type="button"]), textarea').forEach(i => i.value = i.type === 'number' ? 0 : "");
             tr.querySelector('.item-cant').value = 1;
             tbody.appendChild(tr);
@@ -190,9 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         tbody.addEventListener('click', e => { 
             const fila = e.target.closest('.item-row');
-            const btnBorrar = e.target.closest('.btn-remove-item');
+            if(!fila) return;
 
-            if (btnBorrar && fila) { 
+            const btnBorrar = e.target.closest('.btn-remove-item');
+            if (btnBorrar) { 
                 if (tbody.querySelectorAll('.item-row').length > 1) { 
                     fila.remove(); 
                 } else {
@@ -210,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (window.innerWidth <= 768 && fila) {
+            if (window.innerWidth <= 768) {
                 filaEnEdicion = fila;
                 document.getElementById('mob-desc').value = fila.querySelector('.item-desc').value;
                 document.getElementById('mob-detalles').value = fila.querySelector('.item-detalles').value;
@@ -255,148 +272,143 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    document.getElementById('form-presupuesto').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btnSubmit = e.target.querySelector('button[type="submit"]');
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-upload-alt fa-spin"></i> Procesando...';
+    const formPresupuesto = document.getElementById('form-presupuesto');
+    if(formPresupuesto) {
+        formPresupuesto.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-upload-alt fa-spin"></i> Procesando...';
 
-        const cliente = document.getElementById('cliente-nombre').value || "Desconocido";
-        const nroBase = nroInput.value;
-        const fechaElegida = fechaInput.value; // Viene en formato YYYY-MM-DD
-        const fechaObj = new Date(fechaElegida + 'T00:00:00');
-        const anioCur = fechaObj.getFullYear().toString().slice(-2);
-        
-        localStorage.setItem('testa_ultimo_nro', nroBase);
-        const primerProd = tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value : "Doc";
-        
-        // --- LA MAGIA DE LA FECHA: Transformamos YYYY-MM-DD a DD MM AA ---
-        const partesFecha = fechaElegida.split('-'); // Cortamos por los guiones
-        const dia = partesFecha[2];
-        const mes = partesFecha[1];
-        const anio = partesFecha[0].slice(-2); // Nos quedamos solo con los últimos 2 dígitos del año
-        const fechaFormateada = `${dia} ${mes} ${anio}`; // Queda "27 03 26"
-
-        // ARMAMOS LA CARPETA CON LA FECHA NUEVA
-        const nombreCarpetaDeseado = `${fechaFormateada} - ${cliente} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
-        const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
-
-        // Llenar contenido PDF invisible
-        document.getElementById('pdf-cliente-nombre').textContent = cliente;
-        document.getElementById('pdf-nro-presupuesto-texto').textContent = `M ${nroBase}-${anioCur}`;
-        document.getElementById('pdf-fecha-text').textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-        document.getElementById('pdf-condiciones-container').textContent = document.getElementById('condiciones-web').value;
-
-        const pdfTbody = document.getElementById('pdf-tbody');
-        pdfTbody.innerHTML = '';
-        let sim = "$";
-        tbody.querySelectorAll('.item-row').forEach((f, idx) => {
-            sim = f.querySelector('.simbolo-linea').textContent;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
-                <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
-                    <strong style="display:block; margin-bottom:4px;">${f.querySelector('.item-desc').value}</strong>
-                    <div style="font-size: 9px; color: #444; white-space: pre-wrap;">${f.querySelector('.item-detalles').value}</div>
-                </td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-cant').value}</td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${parseFloat(f.querySelector('.item-precio').value).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-iva').value}%</td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${f.querySelector('.item-subtotal').textContent}</td>`;
-            pdfTbody.appendChild(tr);
-        });
-
-        const b = document.getElementById('web-base-imponible').textContent;
-        const i10 = document.getElementById('web-iva-10').textContent;
-        const i21 = document.getElementById('web-iva-21').textContent;
-        const t = document.getElementById('web-total-final').textContent;
-
-        document.getElementById('pdf-tfoot').innerHTML = `
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">BASE IMPONIBLE</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">${sim} ${b}</td></tr>
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 10,5 %</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i10}</td></tr>
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 21%</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i21}</td></tr>
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">TOTAL CON IVA INCLUIDO</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">${sim} ${t}</td></tr>`;
-
-        const wrapper = document.getElementById('pdf-wrapper');
-        wrapper.style.opacity = "1"; 
-        wrapper.style.zIndex = "9999";
-
-        try {
-            const element = document.getElementById('pdf-content');
-            const opt = { margin: 0, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } };
-
-            // 1. Crear PDF base
-            const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');
-            const { PDFDocument } = PDFLib;
-            let finalPdf = await PDFDocument.load(pdfObj.output('arraybuffer'));
+            const cliente = document.getElementById('cliente-nombre').value || "Desconocido";
+            const nroBase = nroInput.value;
+            const fechaElegida = fechaInput.value; 
+            const fechaObj = new Date(fechaElegida + 'T00:00:00');
+            const anioCur = fechaObj.getFullYear().toString().slice(-2);
             
-            // 2. Unir folleto si existe
-            const fileInput = document.getElementById('input-folleto-pdf');
-            if (fileInput.files.length > 0) {
-                const folletoPdf = await PDFDocument.load(await fileInput.files[0].arrayBuffer());
-                const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
-                paginasCopiadas.forEach(page => finalPdf.addPage(page));
-            }
-
-            const pdfBytes = await finalPdf.save();
-            const blob = new Blob([pdfBytes], { type: "application/pdf" });
-
-            // 3. Descarga Local (Backup)
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = fileName;
-            link.click();
-
-            // 4. Subida a Google Drive y obtener el Link generado
-            const base64data = await fileToBase64(blob);
+            localStorage.setItem('testa_ultimo_nro', nroBase);
+            const primerProd = tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value || "Doc" : "Doc";
             
-            const peticionDrive = await fetch(urlGoogleScript, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ 
-                    pdfBase64: base64data, 
-                    fileName: fileName,
-                    carpeta: nombreCarpetaDeseado // Acá viaja la carpeta con DD MM AA
-                })
+            // Transformamos YYYY-MM-DD a DD MM AA
+            const partesFecha = fechaElegida.split('-'); 
+            const dia = partesFecha[2];
+            const mes = partesFecha[1];
+            const anio = partesFecha[0].slice(-2); 
+            const fechaFormateada = `${dia} ${mes} ${anio}`; 
+
+            const nombreCarpetaDeseado = `${fechaFormateada} - ${cliente} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
+            const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
+
+            document.getElementById('pdf-cliente-nombre').textContent = cliente;
+            document.getElementById('pdf-nro-presupuesto-texto').textContent = `M ${nroBase}-${anioCur}`;
+            document.getElementById('pdf-fecha-text').textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+            document.getElementById('pdf-condiciones-container').textContent = document.getElementById('condiciones-web').value;
+
+            const pdfTbody = document.getElementById('pdf-tbody');
+            pdfTbody.innerHTML = '';
+            let sim = "$";
+            tbody.querySelectorAll('.item-row').forEach((f, idx) => {
+                sim = f.querySelector('.simbolo-linea').textContent;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
+                    <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
+                        <strong style="display:block; margin-bottom:4px;">${f.querySelector('.item-desc').value}</strong>
+                        <div style="font-size: 9px; color: #444; white-space: pre-wrap;">${f.querySelector('.item-detalles').value}</div>
+                    </td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-cant').value}</td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${parseFloat(f.querySelector('.item-precio').value).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-iva').value}%</td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${f.querySelector('.item-subtotal').textContent}</td>`;
+                pdfTbody.appendChild(tr);
             });
 
-            // Leemos la respuesta JSON que retorna el Apps Script
-            const respuestaDrive = await peticionDrive.json();
-            const linkDrive = respuestaDrive.url; // <--- EL LINK GENERADO
+            const b = document.getElementById('web-base-imponible').textContent;
+            const i10 = document.getElementById('web-iva-10').textContent;
+            const i21 = document.getElementById('web-iva-21').textContent;
+            const t = document.getElementById('web-total-final').textContent;
 
-            // 5. Actualizar Firestore (Guardando el Link)
-            const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
-            const querySnap = await getDocs(q);
-            
-            if (!querySnap.empty) {
-                await updateDoc(doc(db, "presupuestos", querySnap.docs[0].id), { 
-                    nombreArchivo: fileName, 
-                    estado: 'pendiente',
-                    fecha: fechaInput.value,
-                    link: linkDrive // Guarda el link en el documento existente
+            document.getElementById('pdf-tfoot').innerHTML = `
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">BASE IMPONIBLE</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">${sim} ${b}</td></tr>
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 10,5 %</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i10}</td></tr>
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 21%</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i21}</td></tr>
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">TOTAL CON IVA INCLUIDO</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">${sim} ${t}</td></tr>`;
+
+            const wrapper = document.getElementById('pdf-wrapper');
+            wrapper.style.opacity = "1"; 
+            wrapper.style.zIndex = "9999";
+
+            try {
+                const element = document.getElementById('pdf-content');
+                const opt = { margin: 0, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } };
+
+                const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');
+                const { PDFDocument } = PDFLib;
+                let finalPdf = await PDFDocument.load(pdfObj.output('arraybuffer'));
+                
+                const fileInput = document.getElementById('input-folleto-pdf');
+                if (fileInput.files.length > 0) {
+                    const folletoPdf = await PDFDocument.load(await fileInput.files[0].arrayBuffer());
+                    const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
+                    paginasCopiadas.forEach(page => finalPdf.addPage(page));
+                }
+
+                const pdfBytes = await finalPdf.save();
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+
+                const base64data = await fileToBase64(blob);
+                
+                const peticionDrive = await fetch(urlGoogleScript, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ 
+                        pdfBase64: base64data, 
+                        fileName: fileName,
+                        carpeta: nombreCarpetaDeseado 
+                    })
                 });
-            } else {
-                await addDoc(collection(db, "presupuestos"), { 
-                    medico: cliente, 
-                    fecha: fechaInput.value, 
-                    estado: 'pendiente', 
-                    nombreArchivo: fileName,
-                    link: linkDrive, // Guarda el link en un nuevo documento
-                    archivosExtra: {} 
-                });
+
+                const respuestaDrive = await peticionDrive.json();
+                const linkDrive = respuestaDrive.url; 
+
+                const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
+                const querySnap = await getDocs(q);
+                
+                if (!querySnap.empty) {
+                    await updateDoc(doc(db, "presupuestos", querySnap.docs[0].id), { 
+                        nombreArchivo: fileName, 
+                        estado: 'pendiente',
+                        fecha: fechaInput.value,
+                        link: linkDrive 
+                    });
+                } else {
+                    await addDoc(collection(db, "presupuestos"), { 
+                        medico: cliente, 
+                        fecha: fechaInput.value, 
+                        estado: 'pendiente', 
+                        nombreArchivo: fileName,
+                        link: linkDrive, 
+                        archivosExtra: {} 
+                    });
+                }
+                
+                alert("¡Presupuesto guardado en Drive y vinculado al CRM!");
+                window.location.href = "presupuesto.html";
+
+            } catch (error) { 
+                console.error("Error:", error); 
+                alert("Error al procesar el PDF."); 
+            } finally { 
+                wrapper.style.opacity = "0"; 
+                wrapper.style.zIndex = "-9999"; 
+                btnSubmit.disabled = false; 
+                btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR PDF'; 
             }
-            
-            alert("¡Presupuesto guardado en Drive y vinculado al CRM!");
-            window.location.href = "presupuesto.html";
-
-        } catch (error) { 
-            console.error("Error:", error); 
-            alert("Error al procesar el PDF."); 
-        } finally { 
-            wrapper.style.opacity = "0"; 
-            wrapper.style.zIndex = "-9999"; 
-            btnSubmit.disabled = false; 
-            btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR PDF'; 
-        }
-    });
+        });
+    }
 });
