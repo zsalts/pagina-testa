@@ -56,12 +56,12 @@
     .pdf-datos-header .form-group { width: 100% !important; }
     .table-section-title h3 { font-size: 15px; }
 
-    /* 1. Destruimos las columnas del medio en celular */
-    .items-table th:nth-child(2), .items-table td:nth-child(2), /* Detalles */
-    .items-table th:nth-child(3), .items-table td:nth-child(3), /* Cantidad */
-    .items-table th:nth-child(4), .items-table td:nth-child(4), /* Moneda */
-    .items-table th:nth-child(5), .items-table td:nth-child(5), /* P.Unitario */
-    .items-table th:nth-child(6), .items-table td:nth-child(6)  /* IVA */ {
+    /* 1. Destruimos las columnas del medio en celular (solo cuerpo y encabezado, no en los totales) */
+    .items-table thead th:nth-child(2), .items-table tbody td:nth-child(2), /* Detalles */
+    .items-table thead th:nth-child(3), .items-table tbody td:nth-child(3), /* Cantidad */
+    .items-table thead th:nth-child(4), .items-table tbody td:nth-child(4), /* Moneda */
+    .items-table thead th:nth-child(5), .items-table tbody td:nth-child(5), /* P.Unitario */
+    .items-table thead th:nth-child(6), .items-table tbody td:nth-child(6)  /* IVA */ {
         display: none !important;
     }
 
@@ -76,6 +76,7 @@
 
     /* 4. Hacemos que la fila parezca tocable */
     .item-row { cursor: pointer; }
+    
     /* Bloqueamos la edición directa en la celda para que al tocar se abra el modal */
     .item-desc { pointer-events: none; background: transparent !important; }
     .item-subtotal-cell { pointer-events: none; }

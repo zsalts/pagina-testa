@@ -1,30 +1,36 @@
 import { db } from "./firebase-config.js";
-import { collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { collection, addDoc, onSnapshot, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+// === CONFIGURACIÓN DRIVE ===
+const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec";
 
 document.addEventListener('DOMContentLoaded', () => {
-
     let PRODUCTOS_DB = [];
     let listaMedicos = [];
+    let filaEnEdicion = null;
+    let destinoBuscador = 'desktop';
 
+    // ==========================================
+    // 1. CARGA DE DATOS DESDE FIREBASE
+    // ==========================================
     onSnapshot(collection(db, "clientes"), (snap) => {
         listaMedicos = snap.docs.map(d => d.data().nombre);
         const dl = document.getElementById('lista-nombres-medicos');
-        if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
-    }, (error) => console.error("Error cargando médicos:", error));
+        if (dl) dl.innerHTML = listaMedicos.map(n => `<option value="${n}">${n}</option>`).join('');
+    });
 
     onSnapshot(collection(db, "productos"), (snap) => {
         PRODUCTOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }, (error) => console.error("Error cargando productos:", error));
+    });
 
-
+    // ==========================================
+    // 2. GESTIÓN DE MODALES Y BUSCADOR
+    // ==========================================
     const modalCarga = document.getElementById('modal-producto');
     const modalBuscador = document.getElementById('modal-buscador-productos');
     const modalMobile = document.getElementById('modal-edicion-mobile');
     const inputBusqueda = document.getElementById('input-busqueda-rapida');
     const contenedorResultados = document.getElementById('lista-resultados-busqueda');
-    
-    let filaEnEdicion = null;
-    let destinoBuscador = 'desktop'; // Para saber si la lupa se tocó en la tabla o en el modal celular
 
     document.addEventListener('click', (e) => {
         if (e.target.closest('.btn-close-modal')) {
@@ -53,11 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.reset();
             modalCarga.classList.remove('active');
             alert("¡Producto añadido al catálogo!");
-        } catch (error) { alert("Error al guardar en la nube."); } 
-        finally { btnGuardar.disabled = false; btnGuardar.innerText = "Guardar en Nube"; }
+        } catch (error) { 
+            alert("Error al guardar en la nube."); 
+        } finally { 
+            btnGuardar.disabled = false; 
+            btnGuardar.innerText = "Guardar en Nube"; 
+        }
     });
 
-    // Lupa Universal (funciona para PC y Celular)
     function abrirBuscador(fila, destino = 'desktop') {
         filaEnEdicion = fila;
         destinoBuscador = destino;
@@ -77,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtrados = PRODUCTOS_DB.filter(p => p.nombre.toLowerCase().includes(term) || p.detalles.toLowerCase().includes(term));
         
         if (filtrados.length === 0) {
-            contenedorResultados.innerHTML = '<p style="padding:15px; color:var(--text-muted); text-align:center;">No se encontraron productos.</p>'; return;
+            contenedorResultados.innerHTML = '<p style="padding:15px; color:var(--text-muted); text-align:center;">No se encontraron productos.</p>'; 
+            return;
         }
         filtrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
@@ -93,14 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             div.addEventListener('click', () => {
                 if (destinoBuscador === 'mobile') {
-                    // Si elegimos producto desde el celular, llenamos el modal celular
                     document.getElementById('mob-desc').value = prod.nombre;
                     document.getElementById('mob-detalles').value = prod.detalles;
                     document.getElementById('mob-precio').value = prod.precio;
                     document.getElementById('mob-moneda').value = prod.moneda;
                     document.getElementById('mob-iva').value = prod.iva;
                 } else if (filaEnEdicion) {
-                    // Si es desde PC, llenamos la tabla directo
                     filaEnEdicion.querySelector('.item-desc').value = prod.nombre;
                     filaEnEdicion.querySelector('.item-detalles').value = prod.detalles;
                     filaEnEdicion.querySelector('.item-precio').value = prod.precio;
@@ -115,8 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     inputBusqueda.addEventListener('input', (e) => renderizarResultados(e.target.value));
 
-
-    // LÓGICA DE CÁLCULO
+    // ==========================================
+    // 3. LÓGICA DE CÁLCULO
+    // ==========================================
     const nroInput = document.getElementById('nro-presupuesto-input');
     const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
     nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
@@ -167,12 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tbody.addEventListener('input', calcular);
     tbody.addEventListener('change', calcular);
     
-    // CLICK EN LA TABLA (Maneja PC, Tachito y Celular)
     tbody.addEventListener('click', e => { 
         const fila = e.target.closest('.item-row');
         const btnBorrar = e.target.closest('.btn-remove-item');
 
-        // 1. Lógica del tachito
         if (btnBorrar && fila) { 
             if (tbody.querySelectorAll('tr').length > 1) { 
                 fila.remove(); 
@@ -183,43 +190,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 fila.querySelector('.item-precio').value = 0;
             }
             calcular(); 
-            return; // Cortamos acá para que no abra nada más
+            return;
         }
 
-        // 2. Lógica de Lupa en PC
         if (e.target.closest('.btn-search-prod')) {
             abrirBuscador(fila, 'desktop');
             return;
         }
 
-        // 3. LA MAGIA MOBILE: Si tocan la fila en celular, abrimos el modal
         if (window.innerWidth <= 768 && fila) {
-            filaEnEdicion = fila; // Guardamos en memoria qué fila estamos tocando
-            
-            // Chupamos los datos de la fila oculta y los metemos en el modal lindo
+            filaEnEdicion = fila;
             document.getElementById('mob-desc').value = fila.querySelector('.item-desc').value;
             document.getElementById('mob-detalles').value = fila.querySelector('.item-detalles').value;
             document.getElementById('mob-cant').value = fila.querySelector('.item-cant').value;
             document.getElementById('mob-moneda').value = fila.querySelector('.item-moneda').value;
             document.getElementById('mob-precio').value = fila.querySelector('.item-precio').value;
             document.getElementById('mob-iva').value = fila.querySelector('.item-iva').value;
-
             modalMobile.classList.add('active');
         }
     });
 
-    // GUARDAR DATOS DEL MODAL CELULAR
     document.getElementById('form-edicion-mobile').addEventListener('submit', (e) => {
         e.preventDefault();
         if (filaEnEdicion) {
-            // Escupimos los datos del modal hacia la tabla (que está oculta en celular)
             filaEnEdicion.querySelector('.item-desc').value = document.getElementById('mob-desc').value;
             filaEnEdicion.querySelector('.item-detalles').value = document.getElementById('mob-detalles').value;
             filaEnEdicion.querySelector('.item-cant').value = document.getElementById('mob-cant').value;
             filaEnEdicion.querySelector('.item-moneda').value = document.getElementById('mob-moneda').value;
             filaEnEdicion.querySelector('.item-precio').value = document.getElementById('mob-precio').value;
             filaEnEdicion.querySelector('.item-iva').value = document.getElementById('mob-iva').value;
-            
             calcular();
             modalMobile.classList.remove('active');
         }
@@ -227,12 +226,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('condiciones-web').value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
 
-    // GENERAR PDF
+    // ==========================================
+    // 4. GENERACIÓN DEL PDF Y SUBIDA A DRIVE
+    // ==========================================
+    
+    // Función segura para transformar a Base64
+    const fileToBase64 = (blob) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+        });
+    };
+
     document.getElementById('form-presupuesto').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
+        btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-upload-alt fa-spin"></i> Procesando...';
 
         const cliente = document.getElementById('cliente-nombre').value;
         const nroBase = nroInput.value;
@@ -241,8 +253,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         localStorage.setItem('testa_ultimo_nro', nroBase);
         const primerProd = tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value : "Doc";
-        const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`;
+        
+        // Limpiamos caracteres raros por las dudas para que no rompa el nombre del archivo
+        const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
 
+        // Preparar contenido PDF invisible
         document.getElementById('pdf-cliente-nombre').textContent = cliente;
         document.getElementById('pdf-nro-presupuesto-texto').textContent = `M ${nroBase}-${anioCur}`;
         document.getElementById('pdf-fecha-text').textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
@@ -254,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.querySelectorAll('tr').forEach((f, idx) => {
             sim = f.querySelector('.simbolo-linea').textContent;
             const tr = document.createElement('tr');
-            
             tr.innerHTML = `
                 <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
                 <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
@@ -280,42 +294,82 @@ document.addEventListener('DOMContentLoaded', () => {
             <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">TOTAL CON IVA INCLUIDO</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">${sim} ${t}</td></tr>`;
 
         const wrapper = document.getElementById('pdf-wrapper');
-        wrapper.style.opacity = "1"; wrapper.style.zIndex = "9999";
+        wrapper.style.opacity = "1"; 
+        wrapper.style.zIndex = "9999";
 
         const element = document.getElementById('pdf-content');
-        const opt = {
-            margin: 0, image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 2, width: 800, height: 1131, scrollX: 0, scrollY: 0 },
-            jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' }
+        const opt = { 
+            margin: 0, 
+            image: { type: 'jpeg', quality: 1 }, 
+            html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, 
+            jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } 
         };
 
-        html2pdf().set(opt).from(element).toPdf().get('pdf').then(async function(pdfObj) {
-            try {
-                const presupuestoBuffer = pdfObj.output('arraybuffer');
-                const { PDFDocument } = PDFLib;
-                const finalPdf = await PDFDocument.load(presupuestoBuffer);
-                const fileInput = document.getElementById('input-folleto-pdf');
-                
-                if (fileInput.files.length > 0) {
-                    const folletoBuffer = await fileInput.files[0].arrayBuffer();
-                    const folletoPdf = await PDFDocument.load(folletoBuffer);
-                    const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
-                    paginasCopiadas.forEach(page => finalPdf.addPage(page));
-                }
-
-                const pdfBytes = await finalPdf.save();
-                const blob = new Blob([pdfBytes], { type: "application/pdf" });
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = fileName;
-                link.click();
-            } catch (error) {
-                alert("Error al procesar el PDF.");
-            } finally {
-                wrapper.style.opacity = "0"; wrapper.style.zIndex = "-9999";
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR Y DESCARGAR PDF';
+        try {
+            // Creamos el PDF inicial
+            const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');
+            
+            // 1. Unir con folleto si existe
+            const { PDFDocument } = PDFLib;
+            let finalPdf = await PDFDocument.load(pdfObj.output('arraybuffer'));
+            const fileInput = document.getElementById('input-folleto-pdf');
+            
+            if (fileInput.files.length > 0) {
+                const folletoPdf = await PDFDocument.load(await fileInput.files[0].arrayBuffer());
+                const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
+                paginasCopiadas.forEach(page => finalPdf.addPage(page));
             }
-        });
+
+            const pdfBytes = await finalPdf.save();
+            
+            // 2. Descarga local para backup
+            const blob = new Blob([pdfBytes], { type: "application/pdf" });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+
+            // 3. Convertir a Base64 de forma segura
+            const base64data = await fileToBase64(blob);
+            
+            // Hacemos el envío a Google Script (Drive)
+            const response = await fetch(urlGoogleScript, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ pdfBase64: base64data, fileName: fileName })
+            });
+
+            // 4. Actualizar Firebase
+            const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
+            const querySnap = await getDocs(q);
+            
+            if (!querySnap.empty) {
+                await updateDoc(doc(db, "presupuestos", querySnap.docs[0].id), { 
+                    nombreArchivo: fileName, 
+                    estado: 'pendiente',
+                    fecha: fechaInput.value 
+                });
+            } else {
+                await addDoc(collection(db, "presupuestos"), { 
+                    medico: cliente, 
+                    fecha: fechaInput.value, 
+                    estado: 'pendiente', 
+                    nombreArchivo: fileName, 
+                    archivosExtra: {} 
+                });
+            }
+            
+            alert("¡PDF descargado para tu backup y enviado a Drive!");
+            window.location.href = "presupuesto.html";
+
+        } catch (error) { 
+            console.error("Error procesando el archivo:", error); 
+            alert("Hubo un error procesando o subiendo el PDF. Revisá tu conexión."); 
+        } finally { 
+            wrapper.style.opacity = "0"; 
+            wrapper.style.zIndex = "-9999"; 
+            btnSubmit.disabled = false; 
+            btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR PDF'; 
+        }
     });
 });

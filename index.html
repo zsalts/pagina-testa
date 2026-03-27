@@ -4,108 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Testa CRM - Gestión de Visitas Médicas</title>
-
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0284c7">
+    <meta name="theme-color" content="#003b5c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Testa CRM">
     <link rel="apple-touch-icon" href="IMG_2317.png">
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <header>
-        <div class="header-container">
-            <div class="brand-id">
-                <img src="IMG_2317.png" alt="Testa Equipamiento Médico" class="company-logo-img">
-                <div class="header-titles">
-                    <span class="company-name-text">Testa</span>
-                    <p class="company-subtitle-text">Equipamiento Médico</p>
+    <div class="dashboard-container">
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <span class="app-title-text">CRM Visitas</span>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="active"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Creador PDF</a>
+            </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+            
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title">Panel de Visitas</h2>
+                </div>
                 <div class="user-profile-circle"><i class="fa-solid fa-user-circle"></i></div>
-            </div>
+            </header>
+
+            <main class="dashboard-content">
+                <section class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-user-md"></i></div>
+                            <div class="stat-data"><h3 id="contador-clientes">0</h3><p>Médicos</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                            <div class="stat-data"><h3 id="stat-visitas">0</h3><p>Visitas</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
+                            <div class="stat-data"><h3 id="stat-completadas">0</h3><p>Completadas</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="toolbar-section">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="buscador" placeholder="Buscar médico, clínica, pedido o fecha...">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="btn-clinicas"><i class="fa-solid fa-hospital"></i> Clínicas</button>
+                        <button class="btn btn-secondary" id="btn-gestion-medicos"><i class="fa-solid fa-users-gear"></i> Médicos</button>
+                        <button class="btn btn-secondary" id="btn-calendario"><i class="fa-solid fa-calendar-alt"></i> Calendario</button>
+                        <button class="btn btn-add" id="btn-nueva-visita-modal"><i class="fa-solid fa-plus-circle"></i> Nueva Visita</button>
+                    </div>
+                </section>
+
+                <section class="content-section">
+                    <div class="table-section-title">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Visitas Pendientes</h3>
+                    </div>
+                    <div class="table-card" style="margin-bottom: 30px;">
+                        <table class="testa-table">
+                            <thead>
+                                <tr>
+                                    <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado / Límite</th><th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpo-tabla-pendientes"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-section-title">
+                        <h3><i class="fa-solid fa-check-double"></i> Historial de Completadas</h3>
+                    </div>
+                    <div class="table-card" style="opacity: 0.85;">
+                        <table class="testa-table">
+                            <thead>
+                                <tr>
+                                    <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado</th><th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpo-tabla-completadas"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
         </div>
-    </header>
-
-    <main>
-        <a href="presupuesto.html" class="btn width-100" style="background: var(--testa-blue-dark); color: white; margin-bottom: 20px; text-decoration: none; padding: 14px; font-size: 15px; display: flex; justify-content: center; gap: 10px; box-shadow: var(--shadow-md);">
-            <i class="fa-solid fa-folder-open" style="font-size: 18px;"></i> Ir a Gestión de Expedientes
-        </a>
-
-        <section class="stats-section">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-user-md"></i></div>
-                    <div class="stat-data"><h3 id="contador-clientes">0</h3><p>Médicos</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                    <div class="stat-data"><h3 id="stat-visitas">0</h3><p>Visitas</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                    <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
-                    <div class="stat-data"><h3 id="stat-completadas">0</h3><p>Completadas</p></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="toolbar-section">
-            <div class="search-bar">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="buscador" placeholder="Buscar médico, clínica, pedido o fecha...">
-            </div>
-            
-            <div class="action-buttons">
-                <button class="btn btn-secondary" id="btn-clinicas"><i class="fa-solid fa-hospital"></i> Clínicas</button>
-                <button class="btn btn-secondary" id="btn-gestion-medicos"><i class="fa-solid fa-users-gear"></i> Médicos</button>
-                <button class="btn btn-secondary" id="btn-calendario"><i class="fa-solid fa-calendar-alt"></i> Calendario</button>
-                <button class="btn btn-add" id="btn-nueva-visita-modal"><i class="fa-solid fa-plus-circle"></i> Nueva Visita</button>
-            </div>
-        </section>
-
-        <section class="content-section">
-            
-            <div class="table-section-title">
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> Visitas Pendientes</h3>
-            </div>
-            <div class="table-card" style="margin-bottom: 30px;">
-                <table class="testa-table">
-                    <thead>
-                        <tr>
-                            <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado / Límite</th><th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-pendientes"></tbody>
-                </table>
-            </div>
-
-            <div class="table-section-title">
-                <h3><i class="fa-solid fa-check-double"></i> Historial de Completadas</h3>
-            </div>
-            <div class="table-card" style="opacity: 0.85;">
-                <table class="testa-table">
-                    <thead>
-                        <tr>
-                            <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado</th><th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-completadas"></tbody>
-                </table>
-            </div>
-
-        </section>
-    </main>
+    </div>
 
     <div class="modal-overlay" id="modal-nueva-visita">
         <div class="modal modern-modal">
@@ -188,5 +193,13 @@
     </div>
 
     <script type="module" src="script.js"></script>
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        function toggleMenu() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); }
+        if(btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if(overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
 </body>
 </html>

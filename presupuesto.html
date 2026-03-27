@@ -1,113 +1,98 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Expedientes | Testa CRM</title>
-
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0284c7">
+    <meta name="theme-color" content="#003b5c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Testa CRM">
     <link rel="apple-touch-icon" href="IMG_2317.png">
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
 
-    <header>
-        <div class="header-container">
-            <div class="brand-id">
-                <img src="IMG_2317.png" alt="Testa Equipamiento Médico" class="company-logo-img">
-                <div class="header-titles">
-                    <span class="company-name-text">Testa</span>
-                    <p class="company-subtitle-text">Equipamiento Médico</p>
+    <div class="dashboard-container">
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <span class="app-title-text">Expedientes</span>
+            <nav class="sidebar-nav">
+                <a href="index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html" class="active"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Creador PDF</a>
+            </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+            
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title">Gestión de Expedientes</h2>
+                </div>
                 <div class="user-profile-circle"><i class="fa-solid fa-user-circle"></i></div>
-            </div>
+            </header>
+
+            <main class="dashboard-content">
+                <section class="stats-section">
+                    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: var(--yellow-tint); color: var(--yellow-pending);"><i class="fa-solid fa-hourglass-half"></i></div>
+                            <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: var(--green-tint); color: var(--green-success);"><i class="fa-solid fa-check-circle"></i></div>
+                            <div class="stat-data"><h3 id="stat-aprobados">0</h3><p>Aprobados</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #f1f5f9; color: #475569;"><i class="fa-solid fa-lock"></i></div>
+                            <div class="stat-data"><h3 id="stat-cerrados">0</h3><p>Cerrados</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="toolbar-section">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="buscador-presupuestos" placeholder="Buscar por médico o equipo...">
+                    </div>
+                    <div class="action-buttons">
+                        <a href="generador-pdf.html" class="btn" style="background-color: var(--testa-blue); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-file-pdf"></i> Generar PDF
+                        </a>
+                        <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Iniciar Expediente</button>
+                        <a href="https://drive.google.com/drive/folders/1W0K6c1pysbXS5cDYQrRi_sMJQLFVdtF_?usp=share_link" target="_blank" class="btn" style="background-color: #0f9d58; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-brands fa-google-drive"></i> Mi Drive
+                        </a>
+                    </div>
+                </section>
+
+                <section class="content-section">
+                    <div class="table-card">
+                        <table class="testa-table">
+                            <thead>
+                                <tr>
+                                    <th>Médico / Institución</th><th>Fecha</th><th>Detalle</th><th>Estado</th><th>Documentación</th><th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpo-tabla-presupuestos"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
         </div>
-    </header>
-
-    <main>
-        <a href="index.html" class="btn width-100"
-            style="background: var(--testa-blue-dark); color: white; margin-bottom: 20px; text-decoration: none; padding: 14px; font-size: 15px; display: flex; justify-content: center; gap: 10px; box-shadow: var(--shadow-md);">
-            <i class="fa-solid fa-arrow-left" style="font-size: 18px;"></i> ir a CRM Visitas
-        </a>
-
-        <section class="stats-section" style="margin-top: 15px;">
-            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: var(--yellow-tint); color: var(--yellow-pending);"><i
-                            class="fa-solid fa-hourglass-half"></i></div>
-                    <div class="stat-data">
-                        <h3 id="stat-pendientes">0</h3>
-                        <p>Pendientes</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: var(--green-tint); color: var(--green-success);"><i
-                            class="fa-solid fa-check-circle"></i></div>
-                    <div class="stat-data">
-                        <h3 id="stat-aprobados">0</h3>
-                        <p>Aprobados</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #f1f5f9; color: #475569;"><i
-                            class="fa-solid fa-lock"></i></div>
-                    <div class="stat-data">
-                        <h3 id="stat-cerrados">0</h3>
-                        <p>Cerrados</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="toolbar-section">
-            <div class="search-bar">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="buscador-presupuestos" placeholder="Buscar por médico o equipo...">
-            </div>
-            <div class="action-buttons">
-                <a href="generador-pdf.html" class="btn" style="background-color: var(--testa-blue); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-file-pdf"></i> Generar Presupuesto PDF
-                </a>
-                <button class="btn btn-add" id="btn-nuevo-presupuesto"><i class="fa-solid fa-plus-circle"></i> Iniciar
-                    Expediente</button>
-                <a href="https://drive.google.com/drive/folders/1W0K6c1pysbXS5cDYQrRi_sMJQLFVdtF_?usp=share_link"
-                    target="_blank" class="btn"
-                    style="background-color: #0f9d58; color: white; margin-left: 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-brands fa-google-drive"></i> Mi Drive
-                </a>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="table-card">
-                <table class="testa-table">
-                    <thead>
-                        <tr>
-                            <th>Médico / Institución</th>
-                            <th>Fecha</th>
-                            <th>Detalle</th>
-                            <th>Estado</th>
-                            <th>Documentación</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-presupuestos"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+    </div>
 
     <div class="modal-overlay" id="modal-presupuesto">
         <div class="modal modern-modal">
@@ -200,5 +185,13 @@
     </div>
 
     <script type="module" src="presupuesto.js"></script>
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        function toggleMenu() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); }
+        if(btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if(overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
 </body>
 </html>
