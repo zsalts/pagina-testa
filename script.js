@@ -1,83 +1,236 @@
 import { db } from "./firebase-config.js";
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
+// Variables Globales
 let listaMedicos = [];
 let listaClinicas = [];
 let medicoPendienteDeGuardar = null;
 
 // ==========================================
-// 2. CERRAR VENTANAS
+// INICIO SEGURO (Espera a que cargue el HTML)
 // ==========================================
-document.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-close-modal')) {
-        e.target.closest('.modal-overlay').classList.remove('active');
-    }
-    if (e.target.classList.contains('modal-overlay')) {
-        e.target.classList.remove('active');
-    }
-});
+document.addEventListener('DOMContentLoaded', () => {
 
-// ==========================================
-// 3. BASE DE DATOS: CLÍNICAS
-// ==========================================
-onSnapshot(collection(db, "instituciones"), (snap) => {
-    listaClinicas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    
-    const dl = document.getElementById('lista-instituciones');
-    if(dl) dl.innerHTML = listaClinicas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
-    
-    const gestor = document.getElementById('lista-clinicas-gestion');
-    if(gestor) {
-        gestor.innerHTML = listaClinicas.length ? listaClinicas.map(c => `
-            <div class="modern-list-item">
-                <span><b>${c.nombre}</b><br><small style="color:var(--text-muted)">${c.direccion}</small></span>
-                <button class="btn-icon btn-delete" onclick="window.borrarClinica('${c.id}')"><i class="fa-regular fa-trash-can"></i></button>
-            </div>
-        `).join('') : '<p style="text-align:center;color:gray;padding:10px;">No hay clínicas cargadas.</p>';
-    }
+    // 1. CERRAR VENTANAS
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-close-modal')) {
+            e.target.closest('.modal-overlay').classList.remove('active');
+        }
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+        }
+    });
 
-    const btnMdp = document.getElementById('btn-cargar-clinicas-mdp');
-    if(btnMdp && listaClinicas.length >= 7) btnMdp.style.display = 'none';
-}, (error) => console.error("Error cargando clínicas:", error));
+    // 2. BASE DE DATOS: CLÍNICAS
+    onSnapshot(collection(db, "instituciones"), (snap) => {
+        listaClinicas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const dl = document.getElementById('lista-instituciones');
+        if(dl) dl.innerHTML = listaClinicas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+        
+        const gestor = document.getElementById('lista-clinicas-gestion');
+        if(gestor) {
+            gestor.innerHTML = listaClinicas.length ? listaClinicas.map(c => `
+                <div class="modern-list-item">
+                    <span><b>${c.nombre}</b><br><small style="color:var(--text-muted)">${c.direccion}</small></span>
+                    <button class="btn-icon btn-delete" onclick="window.borrarClinica('${c.id}')"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
+            `).join('') : '<p style="text-align:center;color:gray;padding:10px;">No hay clínicas cargadas.</p>';
+        }
 
-document.getElementById('btn-cargar-clinicas-mdp').onclick = async () => {
-    if(confirm("¿Querés cargar automáticamente las clínicas principales de MDP?")) {
-        const clinicasMdp = [
-            { nombre: "HPC", direccion: "Córdoba 4545" },
-            { nombre: "Clínica Colón", direccion: "Av. Colón 3629" },
-            { nombre: "Clínica 25 de Mayo", direccion: "25 de Mayo 3542" },
-            { nombre: "Clínica Pueyrredon", direccion: "Jujuy 2176" },
-            { nombre: "Hospital Materno Infantil", direccion: "Castelli 2450" },
-            { nombre: "Clínica del Niño y la Madre", direccion: "Av. Colón 2749" },
-            { nombre: "Particulares", direccion: "Sin dirección" }
-        ];
-        try {
-            for (const c of clinicasMdp) {
-                if (!listaClinicas.find(ex => ex.nombre.trim().toLowerCase() === c.nombre.trim().toLowerCase())) {
-                    await addDoc(collection(db, "instituciones"), c);
+        const btnMdp = document.getElementById('btn-cargar-clinicas-mdp');
+        if(btnMdp && listaClinicas.length >= 7) btnMdp.style.display = 'none';
+    }, (error) => console.error("Error cargando clínicas:", error));
+
+    const btnCargarMdp = document.getElementById('btn-cargar-clinicas-mdp');
+    if (btnCargarMdp) {
+        btnCargarMdp.onclick = async () => {
+            if(confirm("¿Querés cargar automáticamente las clínicas principales de MDP?")) {
+                const clinicasMdp = [
+                    { nombre: "HPC", direccion: "Córdoba 4545" },
+                    { nombre: "Clínica Colón", direccion: "Av. Colón 3629" },
+                    { nombre: "Clínica 25 de Mayo", direccion: "25 de Mayo 3542" },
+                    { nombre: "Clínica Pueyrredon", direccion: "Jujuy 2176" },
+                    { nombre: "Hospital Materno Infantil", direccion: "Castelli 2450" },
+                    { nombre: "Clínica del Niño y la Madre", direccion: "Av. Colón 2749" },
+                    { nombre: "Particulares", direccion: "Sin dirección" }
+                ];
+                try {
+                    for (const c of clinicasMdp) {
+                        if (!listaClinicas.find(ex => ex.nombre.trim().toLowerCase() === c.nombre.trim().toLowerCase())) {
+                            await addDoc(collection(db, "instituciones"), c);
+                        }
+                    }
+                    alert("Clínicas de Mar del Plata cargadas exitosamente.");
+                } catch (error) {
+                    alert("Hubo un error al cargar las clínicas. Revisá tu conexión.");
                 }
             }
-            alert("Clínicas de Mar del Plata cargadas exitosamente.");
-        } catch (error) {
-            alert("Hubo un error al cargar las clínicas. Revisá tu conexión.");
-        }
+        };
     }
-};
 
-document.getElementById('institucion').oninput = (e) => {
-    const found = listaClinicas.find(c => c.nombre.trim().toLowerCase() === e.target.value.trim().toLowerCase());
-    if(found) document.getElementById('direccion').value = found.direccion;
-};
+    const inputInstitucion = document.getElementById('institucion');
+    if (inputInstitucion) {
+        inputInstitucion.oninput = (e) => {
+            const found = listaClinicas.find(c => c.nombre.trim().toLowerCase() === e.target.value.trim().toLowerCase());
+            if(found) document.getElementById('direccion').value = found.direccion;
+        };
+    }
+
+    // 3. BASE DE DATOS: MÉDICOS Y VISITAS 
+    onSnapshot(collection(db, "clientes"), (snap) => {
+        listaMedicos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if(window.actualizarTablaClientes) window.actualizarTablaClientes();
+        if(window.dibujarListaMedicosGestion) window.dibujarListaMedicosGestion(); 
+    }, (error) => console.error("Error cargando médicos:", error));
+
+    // Botones de Modales
+    const btnNuevaVisita = document.getElementById('btn-nueva-visita-modal');
+    if (btnNuevaVisita) {
+        btnNuevaVisita.onclick = () => {
+            document.getElementById('form-nueva-visita').reset();
+            document.getElementById('nv-fecha-visita').value = new Date().toISOString().split('T')[0];
+            medicoPendienteDeGuardar = null; 
+            document.getElementById('modal-nueva-visita').classList.add('active');
+        };
+    }
+
+    const btnNuevoMedico = document.getElementById('btn-crear-medico-rapido');
+    if (btnNuevoMedico) {
+        btnNuevoMedico.onclick = () => {
+            document.getElementById('form-cliente').reset();
+            document.getElementById('modal-nueva-visita').classList.remove('active');
+            document.getElementById('modal-nuevo-cliente').classList.add('active');
+        };
+    }
+
+    const btnGestion = document.getElementById('btn-gestion-medicos');
+    if (btnGestion) {
+        btnGestion.onclick = () => document.getElementById('modal-gestion-medicos').classList.add('active');
+    }
+
+    // Este botón faltaba enlazar
+    const btnClinicas = document.getElementById('btn-clinicas');
+    if (btnClinicas) {
+        btnClinicas.onclick = () => document.getElementById('modal-clinicas').classList.add('active');
+    }
+
+    const btnCalendario = document.getElementById('btn-calendario');
+    if (btnCalendario) {
+        btnCalendario.onclick = () => { window.dibujarCalendario(); document.getElementById('modal-calendario').classList.add('active'); };
+    }
+
+    // Formularios
+    const formNuevaVisita = document.getElementById('form-nueva-visita');
+    if (formNuevaVisita) {
+        formNuevaVisita.onsubmit = async (e) => {
+            e.preventDefault();
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true; 
+            btnSubmit.innerText = "Guardando...";
+
+            const nombreMedico = document.getElementById('input-select-medico').value.trim();
+            const nuevaV = {
+                fecha: document.getElementById('nv-fecha-visita').value,
+                entrega: document.getElementById('nv-fecha-entrega').value || null,
+                estado: document.getElementById('nv-estado-visita').value,
+                pedido: document.getElementById('nv-pedido-visita').value.trim()
+            };
+            
+            try {
+                const med = listaMedicos.find(m => m.nombre.trim().toLowerCase() === nombreMedico.toLowerCase());
+                if (med) {
+                    await updateDoc(doc(db, "clientes", med.id), { visitas: [...(med.visitas || []), nuevaV] });
+                } else if (medicoPendienteDeGuardar && medicoPendienteDeGuardar.nombre.toLowerCase() === nombreMedico.toLowerCase()) {
+                    medicoPendienteDeGuardar.visitas = [nuevaV];
+                    await addDoc(collection(db, "clientes"), medicoPendienteDeGuardar);
+                    medicoPendienteDeGuardar = null;
+                } else {
+                    alert("El médico no existe. Hacé clic en el ícono '+' para agregarlo.");
+                    return;
+                }
+                document.getElementById('modal-nueva-visita').classList.remove('active');
+            } catch (error) {
+                alert("Hubo un error al guardar. Reintentá.");
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Guardar Registro de Visita";
+            }
+        };
+    }
+
+    const formCliente = document.getElementById('form-cliente');
+    if (formCliente) {
+        formCliente.onsubmit = (e) => {
+            e.preventDefault();
+            medicoPendienteDeGuardar = {
+                nombre: document.getElementById('nombre').value.trim(),
+                institucion: document.getElementById('institucion').value.trim(),
+                contacto: document.getElementById('contacto').value.trim(),
+                direccion: document.getElementById('direccion').value.trim(),
+                visitas: []
+            };
+            document.getElementById('modal-nuevo-cliente').classList.remove('active');
+            document.getElementById('modal-nueva-visita').classList.add('active');
+            document.getElementById('input-select-medico').value = medicoPendienteDeGuardar.nombre;
+        };
+    }
+
+    const formEditarMedico = document.getElementById('form-editar-medico');
+    if (formEditarMedico) {
+        formEditarMedico.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            try {
+                const id = document.getElementById('edit-medico-id').value;
+                await updateDoc(doc(db, "clientes", id), {
+                    nombre: document.getElementById('edit-medico-nombre').value.trim(),
+                    institucion: document.getElementById('edit-medico-institucion').value.trim(),
+                    contacto: document.getElementById('edit-medico-contacto').value.trim(),
+                    direccion: document.getElementById('edit-medico-direccion').value.trim()
+                });
+                document.getElementById('form-editar-medico').reset();
+                document.getElementById('form-editar-medico').style.display = 'none';
+            } catch (error) { alert("Error al actualizar."); } finally { btn.disabled = false; }
+        };
+    }
+
+    const btnCancelarEdicion = document.getElementById('btn-cancelar-edicion-medico');
+    if (btnCancelarEdicion) btnCancelarEdicion.onclick = () => { document.getElementById('form-editar-medico').style.display = 'none'; };
+
+    const btnBorrarTodo = document.getElementById('btn-borrar-todo');
+    if (btnBorrarTodo) {
+        btnBorrarTodo.onclick = async () => {
+            if(confirm("⚠️ ATENCIÓN: ¿Querés eliminar TODOS los registros?")) {
+                const pass = prompt("Escribí BORRAR (en mayúsculas):");
+                if(pass === 'BORRAR') {
+                    try {
+                        for (const m of listaMedicos) await deleteDoc(doc(db, "clientes", m.id));
+                        alert("Base de datos limpia.");
+                        document.getElementById('modal-gestion-medicos').classList.remove('active');
+                    } catch(e) { alert("Hubo un error al borrar los registros."); }
+                }
+            }
+        };
+    }
+
+    const buscador = document.getElementById('buscador');
+    if (buscador) {
+        buscador.addEventListener('input', (e) => {
+            const textoBuscado = e.target.value.toLowerCase().trim();
+            document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
+                if (fila.querySelector('.row-empty')) return; 
+                const contenidoFila = fila.textContent.toLowerCase();
+                fila.style.display = contenidoFila.includes(textoBuscado) ? '' : 'none';
+            });
+        });
+    }
+}); // FIN DOMContentLoaded
 
 // ==========================================
-// 4. BASE DE DATOS: MÉDICOS Y VISITAS 
+// FUNCIONES GLOBALES (ACCESIBLES DESDE EL HTML)
 // ==========================================
-onSnapshot(collection(db, "clientes"), (snap) => {
-    listaMedicos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    actualizarTablaClientes();
-    dibujarListaMedicosGestion(); 
-}, (error) => console.error("Error cargando médicos:", error));
-
 window.actualizarTablaClientes = function() {
     const cuerpoPendientes = document.getElementById('cuerpo-tabla-pendientes');
     const cuerpoCompletadas = document.getElementById('cuerpo-tabla-completadas');
@@ -144,11 +297,11 @@ window.actualizarTablaClientes = function() {
     cuerpoPendientes.innerHTML = htmlPendientes !== '' ? htmlPendientes : `<tr><td colspan="6" class="row-empty"><i class="fa-solid fa-check"></i> ¡Excelente! No tenés visitas pendientes.</td></tr>`;
     cuerpoCompletadas.innerHTML = htmlCompletadas !== '' ? htmlCompletadas : `<tr><td colspan="6" class="row-empty">Aún no hay visitas completadas.</td></tr>`;
 
-    document.getElementById('contador-clientes').innerText = listaMedicos.length;
-    document.getElementById('stat-visitas').innerText = stats.v;
-    document.getElementById('stat-pendientes').innerText = stats.p;
-    document.getElementById('stat-completadas').innerText = stats.c;
-}
+    if(document.getElementById('contador-clientes')) document.getElementById('contador-clientes').innerText = listaMedicos.length;
+    if(document.getElementById('stat-visitas')) document.getElementById('stat-visitas').innerText = stats.v;
+    if(document.getElementById('stat-pendientes')) document.getElementById('stat-pendientes').innerText = stats.p;
+    if(document.getElementById('stat-completadas')) document.getElementById('stat-completadas').innerText = stats.c;
+};
 
 window.borrarVisita = async (id, idx) => {
     if(confirm("¿Estás seguro de borrar esta visita?")) {
@@ -174,70 +327,6 @@ window.borrarClinica = async (id) => {
         try { await deleteDoc(doc(db, "instituciones", id)); } catch (e) { alert("Error al borrar."); }
     } 
 };
-
-document.getElementById('btn-nueva-visita-modal').onclick = () => {
-    document.getElementById('form-nueva-visita').reset();
-    document.getElementById('nv-fecha-visita').value = new Date().toISOString().split('T')[0];
-    medicoPendienteDeGuardar = null; 
-    document.getElementById('modal-nueva-visita').classList.add('active');
-};
-
-document.getElementById('form-nueva-visita').onsubmit = async (e) => {
-    e.preventDefault();
-    const btnSubmit = e.target.querySelector('button[type="submit"]');
-    btnSubmit.disabled = true; 
-    btnSubmit.innerText = "Guardando...";
-
-    const nombreMedico = document.getElementById('input-select-medico').value.trim();
-    const nuevaV = {
-        fecha: document.getElementById('nv-fecha-visita').value,
-        entrega: document.getElementById('nv-fecha-entrega').value || null,
-        estado: document.getElementById('nv-estado-visita').value,
-        pedido: document.getElementById('nv-pedido-visita').value.trim()
-    };
-    
-    try {
-        const med = listaMedicos.find(m => m.nombre.trim().toLowerCase() === nombreMedico.toLowerCase());
-        if (med) {
-            await updateDoc(doc(db, "clientes", med.id), { visitas: [...(med.visitas || []), nuevaV] });
-        } else if (medicoPendienteDeGuardar && medicoPendienteDeGuardar.nombre.toLowerCase() === nombreMedico.toLowerCase()) {
-            medicoPendienteDeGuardar.visitas = [nuevaV];
-            await addDoc(collection(db, "clientes"), medicoPendienteDeGuardar);
-            medicoPendienteDeGuardar = null;
-        } else {
-            alert("El médico no existe. Hacé clic en el ícono '+' para agregarlo.");
-            return;
-        }
-        document.getElementById('modal-nueva-visita').classList.remove('active');
-    } catch (error) {
-        alert("Hubo un error al guardar. Reintentá.");
-    } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = "Guardar Registro de Visita";
-    }
-};
-
-document.getElementById('btn-crear-medico-rapido').onclick = () => {
-    document.getElementById('form-cliente').reset();
-    document.getElementById('modal-nueva-visita').classList.remove('active');
-    document.getElementById('modal-nuevo-cliente').classList.add('active');
-};
-
-document.getElementById('form-cliente').onsubmit = (e) => {
-    e.preventDefault();
-    medicoPendienteDeGuardar = {
-        nombre: document.getElementById('nombre').value.trim(),
-        institucion: document.getElementById('institucion').value.trim(),
-        contacto: document.getElementById('contacto').value.trim(),
-        direccion: document.getElementById('direccion').value.trim(),
-        visitas: []
-    };
-    document.getElementById('modal-nuevo-cliente').classList.remove('active');
-    document.getElementById('modal-nueva-visita').classList.add('active');
-    document.getElementById('input-select-medico').value = medicoPendienteDeGuardar.nombre;
-};
-
-document.getElementById('btn-gestion-medicos').onclick = () => document.getElementById('modal-gestion-medicos').classList.add('active');
 
 window.borrarMedicoPorCompleto = async (id) => { 
     if(confirm("¿Estás 100% seguro de borrar el médico y todo su historial?")) {
@@ -269,40 +358,9 @@ window.prepararEdicionMedico = (id) => {
     document.getElementById('form-editar-medico').style.display = 'block';
 };
 
-document.getElementById('form-editar-medico').onsubmit = async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    try {
-        const id = document.getElementById('edit-medico-id').value;
-        await updateDoc(doc(db, "clientes", id), {
-            nombre: document.getElementById('edit-medico-nombre').value.trim(),
-            institucion: document.getElementById('edit-medico-institucion').value.trim(),
-            contacto: document.getElementById('edit-medico-contacto').value.trim(),
-            direccion: document.getElementById('edit-medico-direccion').value.trim()
-        });
-        document.getElementById('form-editar-medico').reset();
-        document.getElementById('form-editar-medico').style.display = 'none';
-    } catch (error) { alert("Error al actualizar."); } finally { btn.disabled = false; }
-};
-
-document.getElementById('btn-cancelar-edicion-medico').onclick = () => { document.getElementById('form-editar-medico').style.display = 'none'; };
-
-document.getElementById('btn-borrar-todo').onclick = async () => {
-    if(confirm("⚠️ ATENCIÓN: ¿Querés eliminar TODOS los registros?")) {
-        const pass = prompt("Escribí BORRAR (en mayúsculas):");
-        if(pass === 'BORRAR') {
-            try {
-                for (const m of listaMedicos) await deleteDoc(doc(db, "clientes", m.id));
-                alert("Base de datos limpia.");
-                document.getElementById('modal-gestion-medicos').classList.remove('active');
-            } catch(e) { alert("Hubo un error al borrar los registros."); }
-        }
-    }
-};
-
 window.dibujarCalendario = () => {
     const g = document.getElementById('cuadricula-calendario');
+    if (!g) return;
     g.innerHTML = ['D','L','M','X','J','V','S'].map(d => `<div style="text-align:center;font-weight:700;padding:10px;background:#f8fafc;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border-color);">${d}</div>`).join('');
     const hoy = new Date(), mes = hoy.getMonth(), anio = hoy.getFullYear();
     const pDia = new Date(anio, mes, 1).getDay(), dMes = new Date(anio, mes+1, 0).getDate();
@@ -317,13 +375,3 @@ window.dibujarCalendario = () => {
         g.innerHTML += `<div class="cal-day"><div class="cal-date-num">${d}</div>${vts}</div>`;
     }
 };
-document.getElementById('btn-calendario').onclick = () => { window.dibujarCalendario(); document.getElementById('modal-calendario').classList.add('active'); };
-
-document.getElementById('buscador').addEventListener('input', (e) => {
-    const textoBuscado = e.target.value.toLowerCase().trim();
-    document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
-        if (fila.querySelector('.row-empty')) return; 
-        const contenidoFila = fila.textContent.toLowerCase();
-        fila.style.display = contenidoFila.includes(textoBuscado) ? '' : 'none';
-    });
-});
