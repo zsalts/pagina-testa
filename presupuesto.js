@@ -3,7 +3,7 @@ import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
 
 // ==========================================
-// 1. CONEXIÓN A FIREBASE
+// CONEXIÓN A FIREBASE
 // ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
@@ -18,7 +18,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
 const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec"; 
 
 let listaPresupuestos = [];
@@ -26,219 +25,24 @@ let listaMedicos = [];
 let vistaActual = 'pendientes'; 
 
 // ==========================================
-// INICIO SEGURO
+// ANTI-CONGELAMIENTO
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
-            document.getElementById('modal-presupuesto')?.classList.remove('active');
-            document.getElementById('modal-archivo-extra')?.classList.remove('active');
-            document.getElementById('modal-editar-presupuesto')?.classList.remove('active');
-        }
-    });
-
-    onSnapshot(collection(db, "clientes"), (snap) => {
-        listaMedicos = snap.docs.map(d => d.data().nombre);
-        const dl = document.getElementById('lista-nombres-medicos');
-        if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
-    });
-
-    onSnapshot(collection(db, "presupuestos"), (snap) => {
-        listaPresupuestos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        if(window.dibujarTablaPresupuestos) window.dibujarTablaPresupuestos();
-    });
-
-    const btnNuevoPresupuesto = document.getElementById('btn-nuevo-presupuesto');
-    if (btnNuevoPresupuesto) {
-        btnNuevoPresupuesto.addEventListener('click', () => {
-            document.getElementById('form-presupuesto').reset();
-            document.getElementById('pres-fecha').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-presupuesto').classList.add('active');
-        });
-    }
-
-    const formEditarPresupuesto = document.getElementById('form-editar-presupuesto');
-    if (formEditarPresupuesto) {
-        formEditarPresupuesto.onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const id = document.getElementById('edit-id').value;
-            const nuevaFecha = document.getElementById('edit-fecha').value;
-            const nuevoDetalle = document.getElementById('edit-detalle').value;
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-
-            try {
-                await updateDoc(doc(db, "presupuestos", id), {
-                    fecha: nuevaFecha,
-                    detalle: nuevoDetalle
-                });
-                document.getElementById('modal-editar-presupuesto').classList.remove('active');
-            } catch (error) {
-                alert("Error al actualizar el expediente.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Guardar Cambios";
-            }
-        };
-    }
-
-    const presMedico = document.getElementById('pres-medico');
-    if (presMedico) {
-        presMedico.addEventListener('change', async (e) => {
-            const medicoElegido = e.target.value.trim();
-            const selectVisitas = document.getElementById('pres-visita');
-            if (!medicoElegido) { selectVisitas.innerHTML = '<option value="">-- Escribí un médico primero --</option>'; return; }
-            selectVisitas.innerHTML = '<option value="">Buscando visitas...</option>';
-            try {
-                const q = query(collection(db, "clientes"), where("nombre", "==", medicoElegido));
-                const snap = await getDocs(q);
-                if (snap.empty) { selectVisitas.innerHTML = '<option value="">El médico no existe</option>'; return; }
-                let opciones = '<option value="">-- Elegí la visita --</option>';
-                let tieneVisitas = false;
-                snap.forEach(documento => {
-                    const cliente = documento.data();
-                    if (cliente.visitas) {
-                        tieneVisitas = true;
-                        cliente.visitas.forEach((v, index) => {
-                            opciones += `<option value="${documento.id}_${index}">${v.fecha} - ${v.pedido.substring(0,30)}...</option>`;
-                        });
-                    }
-                });
-                selectVisitas.innerHTML = tieneVisitas ? opciones : '<option value="">No tiene visitas cargadas</option>';
-            } catch (e) { selectVisitas.innerHTML = '<option value="">Error al buscar</option>'; }
-        });
-    }
-
-    const formPresupuesto = document.getElementById('form-presupuesto');
-    if (formPresupuesto) {
-        formPresupuesto.onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const archivoFisico = document.getElementById('pres-archivo').files[0];
-            const medico = document.getElementById('pres-medico').value.trim();
-            if (!archivoFisico) return;
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-
-            try {
-                const nombreOriginalConExt = archivoFisico.name;
-                const nombreOriginalSinExt = nombreOriginalConExt.split('.').slice(0, -1).join('.');
-                const fechaInput = document.getElementById('pres-fecha').value; 
-                const partes = fechaInput.split('-');
-                const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
-                const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
-                
-                const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
-                const nombreArchivoFinal = nombreOriginalConExt;
-
-                const refArch = ref(storage, `expedientes/${nombreCarpeta}/${nombreArchivoFinal}`);
-                const snap = await uploadBytes(refArch, archivoFisico);
-                const urlPublica = await getDownloadURL(snap.ref);
-
-                await addDoc(collection(db, "presupuestos"), {
-                    medico, 
-                    fecha: fechaInput,
-                    estado: document.getElementById('pres-estado').value,
-                    detalle: document.getElementById('pres-detalle').value.trim(),
-                    nombreArchivo: nombreOriginalSinExt, 
-                    link: urlPublica, 
-                    carpetaUnica: nombreCarpeta, 
-                    archivosExtra: {}
-                });
-
-                const visitaVal = document.getElementById('pres-visita').value;
-                if (visitaVal) {
-                    const [cId, vIdx] = visitaVal.split('_');
-                    const cRef = doc(db, "clientes", cId);
-                    const cSnap = await getDoc(cRef);
-                    if (cSnap.exists()) {
-                        let vits = cSnap.data().visitas;
-                        vits[vIdx].presupuestoLink = urlPublica;
-                        await updateDoc(cRef, { visitas: vits });
-                    }
-                }
-
-                fetch(urlGoogleScript, {
-                    method: 'POST', mode: 'no-cors',
-                    body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
-                }).catch(e => console.log("Drive Error:", e));
-
-                document.getElementById('modal-presupuesto').classList.remove('active');
-            } catch (e) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Presupuesto"; }
-        };
-    }
-
-    const formArchivoExtra = document.getElementById('form-archivo-extra');
-    if (formArchivoExtra) {
-        formArchivoExtra.onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const id = document.getElementById('extra-id').value;
-            const carpeta = document.getElementById('extra-carpeta').value;
-            const tipo = document.getElementById('extra-tipo').value;
-            const file = document.getElementById('extra-archivo').files[0];
-            if (!file) return;
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...';
-            try {
-                const nombreArchivoExtra = file.name;
-                const refArch = ref(storage, `expedientes/${carpeta}/${nombreArchivoExtra}`);
-                const snap = await uploadBytes(refArch, file);
-                const url = await getDownloadURL(snap.ref);
-
-                const pRef = doc(db, "presupuestos", id);
-                await updateDoc(pRef, { [`archivosExtra.${tipo}`]: url });
-
-                const pGuardado = listaPresupuestos.find(x => x.id === id);
-                if (pGuardado) {
-                    let archivosActuales = pGuardado.archivosExtra ? Object.keys(pGuardado.archivosExtra) : [];
-                    if (!archivosActuales.includes(tipo)) archivosActuales.push(tipo);
-
-                    const obligatorios = ["Orden de Compra Proveedor", "Factura", "Remito", "Recibo de Cobro"];
-                    const tieneTodos = obligatorios.every(req => archivosActuales.includes(req));
-
-                    if (tieneTodos && pGuardado.estado !== 'cerrado') {
-                        await updateDoc(pRef, { estado: 'cerrado' });
-                    }
-                }
-
-                fetch(urlGoogleScript, {
-                    method: 'POST', mode: 'no-cors',
-                    body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
-                }).catch(e => console.log("Drive Error:", e));
-
-                document.getElementById('modal-archivo-extra').classList.remove('active');
-            } catch (e) { 
-                alert("Error al adjuntar."); 
-            } finally { 
-                btn.disabled = false; 
-                btn.innerText = "Subir a la Carpeta";
-            }
-        };
-    }
-
-    const buscadorPresupuestos = document.getElementById('buscador-presupuestos');
-    if (buscadorPresupuestos) {
-        buscadorPresupuestos.addEventListener('input', (e) => {
-            const textoBuscado = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
-                if (fila.querySelector('.row-empty')) return; 
-                const contenidoFila = fila.textContent.toLowerCase();
-                fila.style.display = contenidoFila.includes(textoBuscado) ? '' : 'none';
-            });
-        });
-    }
-}); // FIN DOMContentLoaded
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) { window.location.reload(); }
+});
 
 // ==========================================
-// FUNCIONES GLOBALES (ACCESIBLES DESDE HTML)
+// FUNCIONES DE INTERFAZ, ORDEN Y DIBUJO
 // ==========================================
-function pesoDoc(tipoDocumento) {
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('modal-presupuesto')?.classList.remove('active');
+        document.getElementById('modal-archivo-extra')?.classList.remove('active');
+        document.getElementById('modal-editar-presupuesto')?.classList.remove('active');
+    }
+});
+
+window.pesoDoc = function(tipoDocumento) {
     let t = tipoDocumento.toLowerCase();
     if (t.includes("presupuesto")) return 1;
     if (t.includes("cliente")) return 2;
@@ -248,9 +52,9 @@ function pesoDoc(tipoDocumento) {
     if (t.includes("remito")) return 6;
     if (t.includes("recibo")) return 7;
     return 8; 
-}
+};
 
-function obtenerAbreviatura(tipoDocumento) {
+window.obtenerAbreviatura = function(tipoDocumento) {
     let tipo = tipoDocumento.toLowerCase(); 
     if (tipo.includes("presupuesto")) return `PRE`;
     if (tipo.includes("cliente")) return `OCC`;
@@ -260,7 +64,18 @@ function obtenerAbreviatura(tipoDocumento) {
     if (tipo.includes("remito")) return `REM`;
     if (tipo.includes("recibo")) return `REC`;
     return `DOC`; 
-}
+};
+
+onSnapshot(collection(db, "clientes"), (snap) => {
+    listaMedicos = snap.docs.map(d => d.data().nombre);
+    const dl = document.getElementById('lista-nombres-medicos');
+    if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
+});
+
+onSnapshot(collection(db, "presupuestos"), (snap) => {
+    listaPresupuestos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if(window.dibujarTablaPresupuestos) window.dibujarTablaPresupuestos();
+});
 
 window.dibujarTablaPresupuestos = function() {
     const cuerpo = document.getElementById('cuerpo-tabla-presupuestos');
@@ -289,7 +104,7 @@ window.dibujarTablaPresupuestos = function() {
             document.getElementById('tab-completados').style.background = 'transparent';
             document.getElementById('tab-completados').style.color = '#64748b';
             document.getElementById('tab-completados').style.borderBottom = '3px solid transparent';
-            dibujarTablaPresupuestos(); 
+            window.dibujarTablaPresupuestos(); 
         };
 
         document.getElementById('tab-completados').onclick = () => {
@@ -300,7 +115,7 @@ window.dibujarTablaPresupuestos = function() {
             document.getElementById('tab-pendientes').style.background = 'transparent';
             document.getElementById('tab-pendientes').style.color = '#64748b';
             document.getElementById('tab-pendientes').style.borderBottom = '3px solid transparent';
-            dibujarTablaPresupuestos(); 
+            window.dibujarTablaPresupuestos(); 
         };
     }
     
@@ -336,10 +151,10 @@ window.dibujarTablaPresupuestos = function() {
             
             if (p.archivosExtra) {
                 let extras = Object.entries(p.archivosExtra);
-                extras.sort((a, b) => pesoDoc(a[0]) - pesoDoc(b[0]));
+                extras.sort((a, b) => window.pesoDoc(a[0]) - window.pesoDoc(b[0]));
                 
                 extras.forEach(([tipo, url]) => {
-                    let abreviatura = obtenerAbreviatura(tipo);
+                    let abreviatura = window.obtenerAbreviatura(tipo);
                     docsHTML += `<a href="${url}" target="_blank" style="${estiloBadgeDoc}" title="${tipo}">${abreviatura}</a>`;
                 });
             }
@@ -375,6 +190,12 @@ window.dibujarTablaPresupuestos = function() {
     if(document.getElementById('stat-pendientes')) document.getElementById('stat-pendientes').innerText = stats.pen;
     if(document.getElementById('stat-aprobados')) document.getElementById('stat-aprobados').innerText = stats.apr;
     if(document.getElementById('stat-cerrados')) document.getElementById('stat-cerrados').innerText = stats.cer;
+    
+    // Re-aplicar el filtro del buscador si había algo escrito
+    const buscador = document.getElementById('buscador-presupuestos');
+    if(buscador && buscador.value) {
+        buscador.dispatchEvent(new Event('input'));
+    }
 };
 
 window.abrirModalEditar = (id) => {
@@ -432,3 +253,194 @@ window.rotarEstado = async (id, actual) => {
 };
 
 window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente completo?")) await deleteDoc(doc(db, "presupuestos", id)); };
+
+
+// ==========================================
+// ASIGNACIÓN SEGURA DE EVENTOS (BLINDADO)
+// ==========================================
+const btnNuevoPresupuesto = document.getElementById('btn-nuevo-presupuesto');
+if (btnNuevoPresupuesto) {
+    btnNuevoPresupuesto.addEventListener('click', () => {
+        document.getElementById('form-presupuesto').reset();
+        document.getElementById('pres-fecha').value = new Date().toISOString().split('T')[0];
+        document.getElementById('modal-presupuesto').classList.add('active');
+    });
+}
+
+const formEditarPres = document.getElementById('form-editar-presupuesto');
+if (formEditarPres) {
+    formEditarPres.onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const id = document.getElementById('edit-id').value;
+        const nuevaFecha = document.getElementById('edit-fecha').value;
+        const nuevoDetalle = document.getElementById('edit-detalle').value;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+        try {
+            await updateDoc(doc(db, "presupuestos", id), {
+                fecha: nuevaFecha,
+                detalle: nuevoDetalle
+            });
+            document.getElementById('modal-editar-presupuesto').classList.remove('active');
+        } catch (error) {
+            alert("Error al actualizar el expediente.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Guardar Cambios";
+        }
+    };
+}
+
+const presMedico = document.getElementById('pres-medico');
+if (presMedico) {
+    presMedico.addEventListener('change', async (e) => {
+        const medicoElegido = e.target.value.trim();
+        const selectVisitas = document.getElementById('pres-visita');
+        if(!selectVisitas) return;
+
+        if (!medicoElegido) { selectVisitas.innerHTML = '<option value="">-- Escribí un médico primero --</option>'; return; }
+        selectVisitas.innerHTML = '<option value="">Buscando visitas...</option>';
+        try {
+            const q = query(collection(db, "clientes"), where("nombre", "==", medicoElegido));
+            const snap = await getDocs(q);
+            if (snap.empty) { selectVisitas.innerHTML = '<option value="">El médico no existe</option>'; return; }
+            let opciones = '<option value="">-- Elegí la visita --</option>';
+            let tieneVisitas = false;
+            snap.forEach(documento => {
+                const cliente = documento.data();
+                if (cliente.visitas) {
+                    tieneVisitas = true;
+                    cliente.visitas.forEach((v, index) => {
+                        opciones += `<option value="${documento.id}_${index}">${v.fecha} - ${v.pedido.substring(0,30)}...</option>`;
+                    });
+                }
+            });
+            selectVisitas.innerHTML = tieneVisitas ? opciones : '<option value="">No tiene visitas cargadas</option>';
+        } catch (e) { selectVisitas.innerHTML = '<option value="">Error al buscar</option>'; }
+    });
+}
+
+const formPres = document.getElementById('form-presupuesto');
+if (formPres) {
+    formPres.onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const archivoFisico = document.getElementById('pres-archivo').files[0];
+        const medico = document.getElementById('pres-medico').value.trim();
+        if (!archivoFisico) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+        try {
+            const nombreOriginalConExt = archivoFisico.name;
+            const nombreOriginalSinExt = nombreOriginalConExt.split('.').slice(0, -1).join('.');
+            const fechaInput = document.getElementById('pres-fecha').value; 
+            const partes = fechaInput.split('-');
+            const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
+            const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
+            
+            const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
+            const nombreArchivoFinal = nombreOriginalConExt;
+
+            const refArch = ref(storage, `expedientes/${nombreCarpeta}/${nombreArchivoFinal}`);
+            const snap = await uploadBytes(refArch, archivoFisico);
+            const urlPublica = await getDownloadURL(snap.ref);
+
+            await addDoc(collection(db, "presupuestos"), {
+                medico, 
+                fecha: fechaInput,
+                estado: document.getElementById('pres-estado').value,
+                detalle: document.getElementById('pres-detalle').value.trim(),
+                nombreArchivo: nombreOriginalSinExt, 
+                link: urlPublica, 
+                carpetaUnica: nombreCarpeta, 
+                archivosExtra: {}
+            });
+
+            const visitaVal = document.getElementById('pres-visita').value;
+            if (visitaVal) {
+                const [cId, vIdx] = visitaVal.split('_');
+                const cRef = doc(db, "clientes", cId);
+                const cSnap = await getDoc(cRef);
+                if (cSnap.exists()) {
+                    let vits = cSnap.data().visitas;
+                    vits[vIdx].presupuestoLink = urlPublica;
+                    await updateDoc(cRef, { visitas: vits });
+                }
+            }
+
+            fetch(urlGoogleScript, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
+            }).catch(e => console.log("Drive Error:", e));
+
+            document.getElementById('modal-presupuesto').classList.remove('active');
+        } catch (e) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Presupuesto"; }
+    };
+}
+
+const formExtra = document.getElementById('form-archivo-extra');
+if (formExtra) {
+    formExtra.onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const id = document.getElementById('extra-id').value;
+        const carpeta = document.getElementById('extra-carpeta').value;
+        const tipo = document.getElementById('extra-tipo').value;
+        const file = document.getElementById('extra-archivo').files[0];
+        if (!file) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...';
+        try {
+            const nombreArchivoExtra = file.name;
+            const refArch = ref(storage, `expedientes/${carpeta}/${nombreArchivoExtra}`);
+            const snap = await uploadBytes(refArch, file);
+            const url = await getDownloadURL(snap.ref);
+
+            const pRef = doc(db, "presupuestos", id);
+            await updateDoc(pRef, { [`archivosExtra.${tipo}`]: url });
+
+            const pGuardado = listaPresupuestos.find(x => x.id === id);
+            if (pGuardado) {
+                let archivosActuales = pGuardado.archivosExtra ? Object.keys(pGuardado.archivosExtra) : [];
+                if (!archivosActuales.includes(tipo)) archivosActuales.push(tipo);
+
+                const obligatorios = ["Orden de Compra Proveedor", "Factura", "Remito", "Recibo de Cobro"];
+                const tieneTodos = obligatorios.every(req => archivosActuales.includes(req));
+
+                if (tieneTodos && pGuardado.estado !== 'cerrado') {
+                    await updateDoc(pRef, { estado: 'cerrado' });
+                }
+            }
+
+            fetch(urlGoogleScript, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
+            }).catch(e => console.log("Drive Error:", e));
+
+            document.getElementById('modal-archivo-extra').classList.remove('active');
+        } catch (e) { 
+            alert("Error al adjuntar."); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "Subir a la Carpeta";
+        }
+    };
+}
+
+const buscadorPres = document.getElementById('buscador-presupuestos');
+if (buscadorPres) {
+    buscadorPres.addEventListener('input', (e) => {
+        const textoBuscado = e.target.value.toLowerCase().trim();
+        document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
+            if (fila.querySelector('.row-empty')) return; 
+            const contenidoFila = fila.textContent.toLowerCase();
+            fila.style.display = contenidoFila.includes(textoBuscado) ? '' : 'none';
+        });
+    });
+}

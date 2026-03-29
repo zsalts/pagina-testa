@@ -59,13 +59,20 @@
                             </div>
                             <div class="form-group">
                                 <label>CLIENTE</label>
-                                <input list="lista-nombres-medicos" id="cliente-nombre" placeholder="Buscá o escribí el médico..." required>
+                                <input list="lista-nombres-medicos" id="cliente-nombre" placeholder="Buscá o escribí el médico..." required autocomplete="off">
                                 <datalist id="lista-nombres-medicos"></datalist>
                             </div>
                             <div class="form-group">
                                 <label>FECHA</label>
                                 <input type="date" id="fecha-presupuesto" required>
                             </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 25px; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px dashed var(--testa-blue);">
+                            <label style="color: var(--testa-blue-dark); font-weight: 700;"><i class="fa-solid fa-handshake"></i> VINCULAR A UNA VISITA DEL CRM (OPCIONAL)</label>
+                            <select id="vinculo-visita" style="width: 100%; border: none; background: white; padding: 10px; border-radius: 6px; margin-top: 8px; box-shadow: var(--shadow-sm); color: var(--testa-blue-dark); font-family: 'Inter', sans-serif;">
+                                <option value="">-- Escribí un médico arriba para ver sus visitas --</option>
+                            </select>
                         </div>
 
                         <div style="text-align: right; margin-bottom: 15px;">
@@ -149,7 +156,6 @@
                                     <i class="fa-solid fa-paperclip"></i> ADJUNTAR FOLLETO TÉCNICO (Solo PDF - Opcional)
                                 </label>
                                 <input type="file" id="input-folleto-pdf" accept=".pdf" style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
-                                <small style="color: var(--text-muted); display: block; margin-top: 5px;">Si seleccionás un PDF acá, se unirá automáticamente a la hoja del presupuesto formando un solo archivo.</small>
                             </div>
                         </div>
 
@@ -177,7 +183,6 @@
                     <label>Detalles Técnicos</label>
                     <textarea id="nuevo-prod-detalles" placeholder="Modelo, accesorios..." required></textarea>
                 </div>
-                
                 <div class="pdf-modal-grid">
                     <div class="form-group">
                         <label>Precio</label>
@@ -291,7 +296,14 @@
                 </table>
 
                 <div><h3 style="font-size: 12px; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 3px;">Condiciones Particulares</h3><div id="pdf-condiciones-container" style="font-size: 10px; line-height: 1.4; white-space: pre-wrap;"></div></div>
-                <div style="margin-top: 15px; font-size: 11px;"><p style="margin: 0;">Ate.:</p><div style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #004b7c;">Álvaro Testa</div><p style="margin: 0;">Álvaro Testa<br>Gerente</p></div>
+                
+                <div style="margin-top: 15px; font-size: 11px;">
+                    <p style="margin: 0;">Ate.:</p>
+                    <img src="firma.png" style="height: 65px; margin: 5px 0; display: block;" alt="Firma Álvaro Testa">
+                    <p style="margin: 0; font-weight: bold; color: #004b7c; font-size: 13px;">Álvaro Testa</p>
+                    <p style="margin: 0;">Gerente</p>
+                </div>
+
                 <div style="margin-top: auto; text-align: center; font-size: 9px; color: #555;"><div style="border-top: 2px solid #007bff; margin-bottom: 5px;"></div><p>Alsina 2161 1°A - Mar del Plata - 223 - 632 3245 - ventas@emtesta.com</p></div>
             </div>
         </div>
