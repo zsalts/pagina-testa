@@ -311,14 +311,19 @@ if(formPresupuesto) {
         localStorage.setItem('testa_ultimo_nro', nroBase);
         const primerProd = tbody && tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value || "Doc" : "Doc";
         
+        // --- AQUÍ ESTÁ EL CAMBIO PARA EL NOMBRE LARG0 EXACTO ---
         const partesFecha = fechaElegida.split('-'); 
         const dia = partesFecha[2];
         const mes = partesFecha[1];
         const anio = partesFecha[0].slice(-2); 
-        const fechaFormateada = `${dia} ${mes} ${anio}`; 
+        
+        const fechaFormateada = `${dia} - ${mes} - ${anio}`; 
 
-        const nombreCarpetaDeseado = `${fechaFormateada} - ${cliente} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
-        const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
+        // Crea el nombre largo como: 26 - 03 - 26 - Compras CNYF - M181-26 - Camillas de Traslado
+        const nombreDeseado = `${fechaFormateada} - ${cliente} - M${nroBase}-${anioCur} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
+        
+        const nombreCarpetaDeseado = nombreDeseado;
+        const fileName = `${nombreDeseado}.pdf`;
 
         const pClienteNom = document.getElementById('pdf-cliente-nombre'); if(pClienteNom) pClienteNom.textContent = cliente;
         const pNroPres = document.getElementById('pdf-nro-presupuesto-texto'); if(pNroPres) pNroPres.textContent = `M ${nroBase}-${anioCur}`;
@@ -403,13 +408,13 @@ if(formPresupuesto) {
             const respuestaDrive = await peticionDrive.json();
             const linkDrive = respuestaDrive.url; 
 
-            // GUARDAMOS EL EXPEDIENTE EN FIREBASE
+            // GUARDAMOS EL EXPEDIENTE EN FIREBASE CON EL NOMBRE LARGO
             const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
             const querySnap = await getDocs(q);
             
             if (!querySnap.empty) {
                 await updateDoc(doc(db, "presupuestos", querySnap.docs[0].id), { 
-                    nombreArchivo: fileName, 
+                    nombreArchivo: nombreDeseado, 
                     estado: 'pendiente',
                     fecha: fechaElegida,
                     link: linkDrive 
@@ -419,7 +424,7 @@ if(formPresupuesto) {
                     medico: cliente, 
                     fecha: fechaElegida, 
                     estado: 'pendiente', 
-                    nombreArchivo: fileName,
+                    nombreArchivo: nombreDeseado,
                     link: linkDrive, 
                     archivosExtra: {} 
                 });

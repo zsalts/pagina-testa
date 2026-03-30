@@ -155,10 +155,20 @@ window.dibujarTablaPresupuestos = function() {
                 </div>
             `;
 
+            // === ACÁ ESTÁ EL FILTRO MÁGICO ===
+            // Agarra el nombre largo (ej: 26 - 03 - 26 - Dr. Casa - M181-26 - Camillas) y busca desde la "M"
+            let textoLimpio = p.nombreArchivo || 'Presupuesto Inicial';
+            const coincidencia = textoLimpio.match(/(M\d+-\d+\s*-\s*.*)/);
+            if (coincidencia) {
+                textoLimpio = coincidencia[1]; // Se queda solo con "M181-26 - Camillas..."
+            }
+            // Por las dudas, le sacamos el .pdf si quedó pegado
+            textoLimpio = textoLimpio.replace('.pdf', '');
+
             htmlFilas += `<tr>
                 <td><strong>${p.medico}</strong></td>
                 <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                <td data-label="Nombre del Presupuesto"><div class="pedido-text">${p.nombreArchivo || 'Presupuesto Inicial'}</div></td>
+                <td data-label="Nombre del Presupuesto"><div class="pedido-text">${textoLimpio}</div></td>
                 <td><span class="badge ${colorBadge}" onclick="window.rotarEstado('${p.id}', '${p.estado}')" style="cursor:pointer; background:${colorFondoBadge}; color:${colorTextoBadge}" title="Hacé clic para cambiar estado">${p.estado.toUpperCase()} <i class="${p.estado === 'cerrado' ? 'fa-solid fa-lock' : ''}"></i></span></td>
                 <td><div style="display:flex; flex-wrap: wrap; gap:5px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
                 <td>${botonesAccion}</td>
