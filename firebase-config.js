@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+// Quitamos enableIndexedDbPersistence de la importación
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -12,20 +13,9 @@ const firebaseConfig = {
     measurementId: "G-7Q3BQS18FH"
 };
 
+// Inicializamos la app
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
-// Persistencia offline para evitar problemas de carga
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn("La persistencia falló (múltiples pestañas)");
-    } else if (err.code == 'unimplemented') {
-        console.warn("El navegador no soporta persistencia");
-    }
-});
-
-export { db, storage };
-
-console.log("🔥 Firebase Config: Cargado correctamente");
-console.log("DB Instance:", db);
+// Exportamos las bases de datos SIN la persistencia offline activada
+export const db = getFirestore(app);
+export const storage = getStorage(app);

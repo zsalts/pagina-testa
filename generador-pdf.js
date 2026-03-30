@@ -1,37 +1,25 @@
 import { db } from "./firebase-config.js";
 import { collection, addDoc, onSnapshot, query, where, getDocs, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-// === CONFIGURACIÓN DRIVE ===
 const urlGoogleScript = "https://script.google.com/macros/s/AKfycbxvfL1IEuVfRviOSouA_x3upBd60eldf6K64EuuBMcRi-zW8AwzdR_TZm_86y3PmbyQ/exec";
 
-// Variables globales
 let PRODUCTOS_DB = [];
 let listaMedicosCompletos = []; 
 let filaEnEdicion = null;
 let destinoBuscador = 'desktop';
 
 // ==========================================
-// 1. CARGA INMEDIATA DE DATOS (FIREBASE)
+// 1. ANTI-CONGELAMIENTO
 // ==========================================
-onSnapshot(collection(db, "clientes"), (snap) => {
-    listaMedicosCompletos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const dl = document.getElementById('lista-nombres-medicos');
-    if (dl) {
-        dl.innerHTML = listaMedicosCompletos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('');
-    }
-});
-
-onSnapshot(collection(db, "productos"), (snap) => {
-    PRODUCTOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) { window.location.reload(); }
 });
 
 // ==========================================
-// 2. VINCULACIÓN CON VISITAS DEL CRM
+// 2. FUNCIONES DE VINCULACIÓN Y TABLA
 // ==========================================
-const clienteInput = document.getElementById('cliente-nombre');
-const selectVisita = document.getElementById('vinculo-visita');
-
 const actualizarSelectorVisitas = (e) => {
+    const selectVisita = document.getElementById('vinculo-visita');
     if (!selectVisita) return;
     const medicoElegido = String(e.target.value).trim().toLowerCase();
     const medicoEncontrado = listaMedicosCompletos.find(m => String(m.nombre || '').trim().toLowerCase() === medicoElegido);
@@ -54,83 +42,37 @@ const actualizarSelectorVisitas = (e) => {
     selectVisita.innerHTML = opciones;
 };
 
-if (clienteInput && selectVisita) {
+const clienteInput = document.getElementById('cliente-nombre');
+if (clienteInput) {
     clienteInput.addEventListener('input', actualizarSelectorVisitas);
     clienteInput.addEventListener('change', actualizarSelectorVisitas);
 }
 
-// ==========================================
-// 3. GESTIÓN DE MODALES Y BUSCADOR
-// ==========================================
-const modalCarga = document.getElementById('modal-producto');
-const modalBuscador = document.getElementById('modal-buscador-productos');
-const modalMobile = document.getElementById('modal-edicion-mobile');
-const inputBusqueda = document.getElementById('input-busqueda-rapida');
-const contenedorResultados = document.getElementById('lista-resultados-busqueda');
-
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal')) {
-        e.target.closest('.modal-overlay').classList.remove('active');
+        e.target.closest('.modal-overlay')?.classList.remove('active');
     }
 });
-
-if (document.getElementById('btn-abrir-modal-prod')) {
-    document.getElementById('btn-abrir-modal-prod').addEventListener('click', () => modalCarga.classList.add('active'));
-}
-
-const formNuevoProd = document.getElementById('form-nuevo-producto');
-if (formNuevoProd) {
-    formNuevoProd.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btnGuardar = e.target.querySelector('button[type="submit"]');
-        btnGuardar.disabled = true;
-        btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-
-        const nuevoProd = {
-            nombre: document.getElementById('nuevo-prod-nombre').value.trim(),
-            detalles: document.getElementById('nuevo-prod-detalles').value.trim(),
-            precio: parseFloat(document.getElementById('nuevo-prod-precio').value) || 0,
-            moneda: document.getElementById('nuevo-prod-moneda').value || 'ARS',
-            iva: parseFloat(document.getElementById('nuevo-prod-iva').value) || 21
-        };
-        
-        try {
-            await addDoc(collection(db, "productos"), nuevoProd);
-            e.target.reset();
-            modalCarga.classList.remove('active');
-            alert("¡Producto añadido al catálogo!");
-        } catch (error) { 
-            alert("Error al guardar en la nube."); 
-        } finally { 
-            btnGuardar.disabled = false; 
-            btnGuardar.innerText = "Guardar en Nube"; 
-        }
-    });
-}
 
 function abrirBuscador(fila, destino = 'desktop') {
     filaEnEdicion = fila;
     destinoBuscador = destino;
+    const inputBusqueda = document.getElementById('input-busqueda-rapida');
     if(inputBusqueda) inputBusqueda.value = '';
     renderizarResultados('');
+    const modalBuscador = document.getElementById('modal-buscador-productos');
     if(modalBuscador) {
         modalBuscador.classList.add('active');
-        setTimeout(() => inputBusqueda.focus(), 100);
+        setTimeout(() => { if(inputBusqueda) inputBusqueda.focus() }, 100);
     }
 }
 
-if (document.getElementById('btn-buscar-mob')) {
-    document.getElementById('btn-buscar-mob').addEventListener('click', () => {
-        abrirBuscador(filaEnEdicion, 'mobile');
-    });
-}
-
 function renderizarResultados(filtro) {
+    const contenedorResultados = document.getElementById('lista-resultados-busqueda');
     if(!contenedorResultados) return;
     contenedorResultados.innerHTML = '';
     const term = String(filtro).toLowerCase().trim();
     
-    // BÚSQUEDA BLINDADA CONTRA NÚMEROS Y ERRORES
     const filtrados = PRODUCTOS_DB.filter(p => {
         const n = String(p.nombre || "").toLowerCase();
         const d = String(p.detalles || "").toLowerCase();
@@ -159,11 +101,11 @@ function renderizarResultados(filtro) {
         
         div.addEventListener('click', () => {
             if (destinoBuscador === 'mobile') {
-                document.getElementById('mob-desc').value = prod.nombre || '';
-                document.getElementById('mob-detalles').value = prod.detalles || '';
-                document.getElementById('mob-precio').value = prod.precio || 0;
-                document.getElementById('mob-moneda').value = prod.moneda || 'ARS';
-                document.getElementById('mob-iva').value = prod.iva || 0;
+                const md = document.getElementById('mob-desc'); if(md) md.value = prod.nombre || '';
+                const mdet = document.getElementById('mob-detalles'); if(mdet) mdet.value = prod.detalles || '';
+                const mp = document.getElementById('mob-precio'); if(mp) mp.value = prod.precio || 0;
+                const mm = document.getElementById('mob-moneda'); if(mm) mm.value = prod.moneda || 'ARS';
+                const mi = document.getElementById('mob-iva'); if(mi) mi.value = prod.iva || 0;
             } else if (filaEnEdicion) {
                 filaEnEdicion.querySelector('.item-desc').value = prod.nombre || '';
                 filaEnEdicion.querySelector('.item-detalles').value = prod.detalles || '';
@@ -172,33 +114,14 @@ function renderizarResultados(filtro) {
                 filaEnEdicion.querySelector('.item-iva').value = prod.iva || 0;
                 calcular();
             }
-            modalBuscador.classList.remove('active');
+            document.getElementById('modal-buscador-productos')?.classList.remove('active');
         });
         contenedorResultados.appendChild(div);
     });
 }
 
-if(inputBusqueda) {
-    inputBusqueda.addEventListener('input', (e) => renderizarResultados(e.target.value));
-}
-
-// ==========================================
-// 4. LÓGICA DE CÁLCULO Y TABLA
-// ==========================================
-const nroInput = document.getElementById('nro-presupuesto-input');
-const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
-if (nroInput) nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
-
-const fechaInput = document.getElementById('fecha-presupuesto');
-if (fechaInput) {
-    const hoy = new Date();
-    const offset = hoy.getTimezoneOffset() * 60000;
-    fechaInput.value = (new Date(hoy - offset)).toISOString().slice(0, 10);
-}
-
-const tbody = document.getElementById('items-tbody-presupuesto');
-
 function calcular() {
+    const tbody = document.getElementById('items-tbody-presupuesto');
     if (!tbody) return;
     let base = 0, i10 = 0, i21 = 0, sim = "$";
     tbody.querySelectorAll('.item-row').forEach(f => {
@@ -219,26 +142,72 @@ function calcular() {
     });
     
     document.querySelectorAll('.simbolo-total').forEach(s => s.textContent = sim);
-    document.getElementById('web-base-imponible').textContent = base.toLocaleString('es-AR', {minimumFractionDigits: 2});
-    document.getElementById('web-iva-10').textContent = i10.toLocaleString('es-AR', {minimumFractionDigits: 2});
-    document.getElementById('web-iva-21').textContent = i21.toLocaleString('es-AR', {minimumFractionDigits: 2});
-    document.getElementById('web-total-final').textContent = (base + i10 + i21).toLocaleString('es-AR', {minimumFractionDigits: 2});
+    const bImp = document.getElementById('web-base-imponible'); if(bImp) bImp.textContent = base.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    const iva10 = document.getElementById('web-iva-10'); if(iva10) iva10.textContent = i10.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    const iva21 = document.getElementById('web-iva-21'); if(iva21) iva21.textContent = i21.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    const tFinal = document.getElementById('web-total-final'); if(tFinal) tFinal.textContent = (base + i10 + i21).toLocaleString('es-AR', {minimumFractionDigits: 2});
 }
 
-if (document.getElementById('btn-add-presupuesto-item')) {
-    document.getElementById('btn-add-presupuesto-item').addEventListener('click', () => {
-        const primeraFila = tbody.querySelector('.item-row');
-        if(!primeraFila) return;
-        const tr = document.createElement('tr');
-        tr.className = 'item-row';
-        tr.innerHTML = primeraFila.innerHTML;
-        tr.querySelectorAll('input:not([type="button"]), textarea').forEach(i => i.value = i.type === 'number' ? 0 : "");
-        tr.querySelector('.item-cant').value = 1;
-        tbody.appendChild(tr);
-        calcular();
+// ==========================================
+// 3. EVENTOS DE BOTONES
+// ==========================================
+const btnAbrirModalProd = document.getElementById('btn-abrir-modal-prod');
+if (btnAbrirModalProd) {
+    btnAbrirModalProd.addEventListener('click', () => document.getElementById('modal-producto')?.classList.add('active'));
+}
+
+const formNuevoProd = document.getElementById('form-nuevo-producto');
+if (formNuevoProd) {
+    formNuevoProd.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnGuardar = e.target.querySelector('button[type="submit"]');
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+        const nuevoProd = {
+            nombre: document.getElementById('nuevo-prod-nombre').value.trim(),
+            detalles: document.getElementById('nuevo-prod-detalles').value.trim(),
+            precio: parseFloat(document.getElementById('nuevo-prod-precio').value) || 0,
+            moneda: document.getElementById('nuevo-prod-moneda').value || 'ARS',
+            iva: parseFloat(document.getElementById('nuevo-prod-iva').value) || 21
+        };
+        
+        try {
+            await addDoc(collection(db, "productos"), nuevoProd);
+            e.target.reset();
+            document.getElementById('modal-producto')?.classList.remove('active');
+            alert("¡Producto añadido al catálogo!");
+        } catch (error) { 
+            alert("Error al guardar en la nube."); 
+        } finally { 
+            btnGuardar.disabled = false; 
+            btnGuardar.innerText = "Guardar en Nube"; 
+        }
     });
 }
 
+const btnBuscarMob = document.getElementById('btn-buscar-mob');
+if (btnBuscarMob) {
+    btnBuscarMob.addEventListener('click', () => { abrirBuscador(filaEnEdicion, 'mobile'); });
+}
+
+const inputBusquedaRapida = document.getElementById('input-busqueda-rapida');
+if(inputBusquedaRapida) {
+    inputBusquedaRapida.addEventListener('input', (e) => renderizarResultados(e.target.value));
+}
+
+const nroInput = document.getElementById('nro-presupuesto-input');
+const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
+if (nroInput) nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
+
+const fechaInput = document.getElementById('fecha-presupuesto');
+if (fechaInput) {
+    const hoy = new Date();
+    const offset = hoy.getTimezoneOffset() * 60000;
+    fechaInput.value = (new Date(hoy - offset)).toISOString().slice(0, 10);
+}
+
+const tbody = document.getElementById('items-tbody-presupuesto');
 if (tbody) {
     tbody.addEventListener('input', calcular);
     tbody.addEventListener('change', calcular);
@@ -268,14 +237,29 @@ if (tbody) {
 
         if (window.innerWidth <= 768) {
             filaEnEdicion = fila;
-            document.getElementById('mob-desc').value = fila.querySelector('.item-desc').value;
-            document.getElementById('mob-detalles').value = fila.querySelector('.item-detalles').value;
-            document.getElementById('mob-cant').value = fila.querySelector('.item-cant').value;
-            document.getElementById('mob-moneda').value = fila.querySelector('.item-moneda').value;
-            document.getElementById('mob-precio').value = fila.querySelector('.item-precio').value;
-            document.getElementById('mob-iva').value = fila.querySelector('.item-iva').value;
-            modalMobile.classList.add('active');
+            const md = document.getElementById('mob-desc'); if(md) md.value = fila.querySelector('.item-desc').value;
+            const mdet = document.getElementById('mob-detalles'); if(mdet) mdet.value = fila.querySelector('.item-detalles').value;
+            const mc = document.getElementById('mob-cant'); if(mc) mc.value = fila.querySelector('.item-cant').value;
+            const mm = document.getElementById('mob-moneda'); if(mm) mm.value = fila.querySelector('.item-moneda').value;
+            const mp = document.getElementById('mob-precio'); if(mp) mp.value = fila.querySelector('.item-precio').value;
+            const mi = document.getElementById('mob-iva'); if(mi) mi.value = fila.querySelector('.item-iva').value;
+            document.getElementById('modal-edicion-mobile')?.classList.add('active');
         }
+    });
+}
+
+const btnAddPresItem = document.getElementById('btn-add-presupuesto-item');
+if (btnAddPresItem && tbody) {
+    btnAddPresItem.addEventListener('click', () => {
+        const primeraFila = tbody.querySelector('.item-row');
+        if(!primeraFila) return;
+        const tr = document.createElement('tr');
+        tr.className = 'item-row';
+        tr.innerHTML = primeraFila.innerHTML;
+        tr.querySelectorAll('input:not([type="button"]), textarea').forEach(i => i.value = i.type === 'number' ? 0 : "");
+        tr.querySelector('.item-cant').value = 1;
+        tbody.appendChild(tr);
+        calcular();
     });
 }
 
@@ -291,19 +275,16 @@ if (formEdicionMobile) {
             filaEnEdicion.querySelector('.item-precio').value = document.getElementById('mob-precio').value;
             filaEnEdicion.querySelector('.item-iva').value = document.getElementById('mob-iva').value;
             calcular();
-            modalMobile.classList.remove('active');
+            document.getElementById('modal-edicion-mobile')?.classList.remove('active');
         }
     });
 }
 
-// CARGA DE CONDICIONES WEB
-if (document.getElementById('condiciones-web')) {
-    document.getElementById('condiciones-web').value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
+const condWeb = document.getElementById('condiciones-web');
+if (condWeb) {
+    condWeb.value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
 }
 
-// ==========================================
-// 5. GENERACIÓN DEL PDF Y SUBIDA A DRIVE
-// ==========================================
 const fileToBase64 = (blob) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -322,13 +303,13 @@ if(formPresupuesto) {
         btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-upload-alt fa-spin"></i> Procesando...';
 
         const cliente = document.getElementById('cliente-nombre').value || "Desconocido";
-        const nroBase = nroInput.value;
-        const fechaElegida = fechaInput.value; 
+        const nroBase = nroInput ? nroInput.value : "0";
+        const fechaElegida = fechaInput ? fechaInput.value : new Date().toISOString().split('T')[0]; 
         const fechaObj = new Date(fechaElegida + 'T00:00:00');
         const anioCur = fechaObj.getFullYear().toString().slice(-2);
         
         localStorage.setItem('testa_ultimo_nro', nroBase);
-        const primerProd = tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value || "Doc" : "Doc";
+        const primerProd = tbody && tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value || "Doc" : "Doc";
         
         const partesFecha = fechaElegida.split('-'); 
         const dia = partesFecha[2];
@@ -339,47 +320,53 @@ if(formPresupuesto) {
         const nombreCarpetaDeseado = `${fechaFormateada} - ${cliente} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
         const fileName = `M${nroBase}-${anioCur} - ${cliente} - ${primerProd}.pdf`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
 
-        document.getElementById('pdf-cliente-nombre').textContent = cliente;
-        document.getElementById('pdf-nro-presupuesto-texto').textContent = `M ${nroBase}-${anioCur}`;
-        document.getElementById('pdf-fecha-text').textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-        document.getElementById('pdf-condiciones-container').textContent = document.getElementById('condiciones-web').value;
+        const pClienteNom = document.getElementById('pdf-cliente-nombre'); if(pClienteNom) pClienteNom.textContent = cliente;
+        const pNroPres = document.getElementById('pdf-nro-presupuesto-texto'); if(pNroPres) pNroPres.textContent = `M ${nroBase}-${anioCur}`;
+        const pFechaText = document.getElementById('pdf-fecha-text'); if(pFechaText) pFechaText.textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+        const pCondContainer = document.getElementById('pdf-condiciones-container'); if(pCondContainer && condWeb) pCondContainer.textContent = condWeb.value;
 
         const pdfTbody = document.getElementById('pdf-tbody');
-        pdfTbody.innerHTML = '';
-        let sim = "$";
-        tbody.querySelectorAll('.item-row').forEach((f, idx) => {
-            sim = f.querySelector('.simbolo-linea').textContent;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
-                <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
-                    <strong style="display:block; margin-bottom:4px;">${f.querySelector('.item-desc').value}</strong>
-                    <div style="font-size: 9px; color: #444; white-space: pre-wrap;">${f.querySelector('.item-detalles').value}</div>
-                </td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-cant').value}</td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${parseFloat(f.querySelector('.item-precio').value).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-iva').value}%</td>
-                <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${f.querySelector('.item-subtotal').textContent}</td>`;
-            pdfTbody.appendChild(tr);
-        });
+        if(pdfTbody && tbody) {
+            pdfTbody.innerHTML = '';
+            let sim = "$";
+            tbody.querySelectorAll('.item-row').forEach((f, idx) => {
+                sim = f.querySelector('.simbolo-linea').textContent;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
+                    <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
+                        <strong style="display:block; margin-bottom:4px;">${f.querySelector('.item-desc').value}</strong>
+                        <div style="font-size: 9px; color: #444; white-space: pre-wrap;">${f.querySelector('.item-detalles').value}</div>
+                    </td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-cant').value}</td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${parseFloat(f.querySelector('.item-precio').value).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-iva').value}%</td>
+                    <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${f.querySelector('.item-subtotal').textContent}</td>`;
+                pdfTbody.appendChild(tr);
+            });
+        }
 
-        const b = document.getElementById('web-base-imponible').textContent;
-        const i10 = document.getElementById('web-iva-10').textContent;
-        const i21 = document.getElementById('web-iva-21').textContent;
-        const t = document.getElementById('web-total-final').textContent;
+        const b = document.getElementById('web-base-imponible')?.textContent || "0.00";
+        const i10 = document.getElementById('web-iva-10')?.textContent || "0.00";
+        const i21 = document.getElementById('web-iva-21')?.textContent || "0.00";
+        const t = document.getElementById('web-total-final')?.textContent || "0.00";
+        let sim = tbody?.querySelector('.simbolo-linea')?.textContent || "$";
 
-        document.getElementById('pdf-tfoot').innerHTML = `
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">BASE IMPONIBLE</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">${sim} ${b}</td></tr>
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 10,5 %</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i10}</td></tr>
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 21%</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i21}</td></tr>
-            <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">TOTAL CON IVA INCLUIDO</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">${sim} ${t}</td></tr>`;
+        const pTfoot = document.getElementById('pdf-tfoot');
+        if(pTfoot) {
+            pTfoot.innerHTML = `
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">BASE IMPONIBLE</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">${sim} ${b}</td></tr>
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 10,5 %</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i10}</td></tr>
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 21%</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i21}</td></tr>
+                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">TOTAL CON IVA INCLUIDO</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">${sim} ${t}</td></tr>`;
+        }
 
         const wrapper = document.getElementById('pdf-wrapper');
-        wrapper.style.opacity = "1"; 
-        wrapper.style.zIndex = "9999";
+        if(wrapper) { wrapper.style.opacity = "1"; wrapper.style.zIndex = "9999"; }
 
         try {
             const element = document.getElementById('pdf-content');
+            if(!element) throw new Error("No se encontró el contenedor del PDF");
             const opt = { margin: 0, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } };
 
             const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');
@@ -387,7 +374,7 @@ if(formPresupuesto) {
             let finalPdf = await PDFDocument.load(pdfObj.output('arraybuffer'));
             
             const fileInput = document.getElementById('input-folleto-pdf');
-            if (fileInput.files.length > 0) {
+            if (fileInput && fileInput.files.length > 0) {
                 const folletoPdf = await PDFDocument.load(await fileInput.files[0].arrayBuffer());
                 const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
                 paginasCopiadas.forEach(page => finalPdf.addPage(page));
@@ -424,13 +411,13 @@ if(formPresupuesto) {
                 await updateDoc(doc(db, "presupuestos", querySnap.docs[0].id), { 
                     nombreArchivo: fileName, 
                     estado: 'pendiente',
-                    fecha: fechaInput.value,
+                    fecha: fechaElegida,
                     link: linkDrive 
                 });
             } else {
                 await addDoc(collection(db, "presupuestos"), { 
                     medico: cliente, 
-                    fecha: fechaInput.value, 
+                    fecha: fechaElegida, 
                     estado: 'pendiente', 
                     nombreArchivo: fileName,
                     link: linkDrive, 
@@ -458,10 +445,24 @@ if(formPresupuesto) {
             console.error("Error:", error); 
             alert("Error al procesar el PDF."); 
         } finally { 
-            wrapper.style.opacity = "0"; 
-            wrapper.style.zIndex = "-9999"; 
+            if(wrapper) { wrapper.style.opacity = "0"; wrapper.style.zIndex = "-9999"; }
             btnSubmit.disabled = false; 
             btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR PDF'; 
         }
     });
 }
+
+// ==========================================
+// 4. LECTURA DE FIREBASE (AL FINAL DE TODO)
+// ==========================================
+onSnapshot(collection(db, "clientes"), (snap) => {
+    listaMedicosCompletos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const dl = document.getElementById('lista-nombres-medicos');
+    if (dl) {
+        dl.innerHTML = listaMedicosCompletos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('');
+    }
+});
+
+onSnapshot(collection(db, "productos"), (snap) => {
+    PRODUCTOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+});

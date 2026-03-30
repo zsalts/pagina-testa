@@ -6,18 +6,18 @@ let listaClinicas = [];
 let medicoPendienteDeGuardar = null;
 
 // ==========================================
-// ANTI-CONGELAMIENTO (Si volvés atrás con el celular)
+// 1. ANTI-CONGELAMIENTO (Evita que el celular deje la tabla vacía al volver atrás)
 // ==========================================
 window.addEventListener('pageshow', (event) => {
-    if (event.persisted) { window.location.reload(); }
+    if (event.persisted) window.location.reload();
 });
 
 // ==========================================
-// CERRAR VENTANAS
+// 2. CERRAR VENTANAS
 // ==========================================
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal')) {
-        e.target.closest('.modal-overlay').classList.remove('active');
+        e.target.closest('.modal-overlay')?.classList.remove('active');
     }
     if (e.target.classList.contains('modal-overlay')) {
         e.target.classList.remove('active');
@@ -25,37 +25,8 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// BASE DE DATOS: CLÍNICAS
+// 3. FUNCIONES GLOBALES (DECLARADAS PRIMERO)
 // ==========================================
-onSnapshot(collection(db, "instituciones"), (snap) => {
-    listaClinicas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    
-    const dl = document.getElementById('lista-instituciones');
-    if(dl) dl.innerHTML = listaClinicas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
-    
-    const gestor = document.getElementById('lista-clinicas-gestion');
-    if(gestor) {
-        gestor.innerHTML = listaClinicas.length ? listaClinicas.map(c => `
-            <div class="modern-list-item">
-                <span><b>${c.nombre}</b><br><small style="color:var(--text-muted)">${c.direccion}</small></span>
-                <button class="btn-icon btn-delete" onclick="window.borrarClinica('${c.id}')"><i class="fa-regular fa-trash-can"></i></button>
-            </div>
-        `).join('') : '<p style="text-align:center;color:gray;padding:10px;">No hay clínicas cargadas.</p>';
-    }
-
-    const btnMdp = document.getElementById('btn-cargar-clinicas-mdp');
-    if(btnMdp && listaClinicas.length >= 7) btnMdp.style.display = 'none';
-}, (error) => console.error("Error cargando clínicas:", error));
-
-// ==========================================
-// BASE DE DATOS: MÉDICOS Y VISITAS 
-// ==========================================
-onSnapshot(collection(db, "clientes"), (snap) => {
-    listaMedicos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if(window.actualizarTablaClientes) window.actualizarTablaClientes();
-    if(window.dibujarListaMedicosGestion) window.dibujarListaMedicosGestion(); 
-}, (error) => console.error("Error cargando médicos:", error));
-
 window.actualizarTablaClientes = function() {
     const cuerpoPendientes = document.getElementById('cuerpo-tabla-pendientes');
     const cuerpoCompletadas = document.getElementById('cuerpo-tabla-completadas');
@@ -122,13 +93,19 @@ window.actualizarTablaClientes = function() {
     cuerpoPendientes.innerHTML = htmlPendientes !== '' ? htmlPendientes : `<tr><td colspan="6" class="row-empty"><i class="fa-solid fa-check"></i> ¡Excelente! No tenés visitas pendientes.</td></tr>`;
     cuerpoCompletadas.innerHTML = htmlCompletadas !== '' ? htmlCompletadas : `<tr><td colspan="6" class="row-empty">Aún no hay visitas completadas.</td></tr>`;
 
-    if(document.getElementById('contador-clientes')) document.getElementById('contador-clientes').innerText = listaMedicos.length;
-    if(document.getElementById('stat-visitas')) document.getElementById('stat-visitas').innerText = stats.v;
-    if(document.getElementById('stat-pendientes')) document.getElementById('stat-pendientes').innerText = stats.p;
-    if(document.getElementById('stat-completadas')) document.getElementById('stat-completadas').innerText = stats.c;
-};
+    const elContadorClientes = document.getElementById('contador-clientes');
+    if(elContadorClientes) elContadorClientes.innerText = listaMedicos.length;
+    
+    const elStatVisitas = document.getElementById('stat-visitas');
+    if(elStatVisitas) elStatVisitas.innerText = stats.v;
+    
+    const elStatPendientes = document.getElementById('stat-pendientes');
+    if(elStatPendientes) elStatPendientes.innerText = stats.p;
+    
+    const elStatCompletadas = document.getElementById('stat-completadas');
+    if(elStatCompletadas) elStatCompletadas.innerText = stats.c;
+}
 
-// Funciones globales (borrar, estado, etc)
 window.borrarVisita = async (id, idx) => {
     if(confirm("¿Estás seguro de borrar esta visita?")) {
         try {
@@ -184,12 +161,30 @@ window.prepararEdicionMedico = (id) => {
     document.getElementById('form-editar-medico').style.display = 'block';
 };
 
+window.dibujarCalendario = () => {
+    const g = document.getElementById('cuadricula-calendario');
+    if (!g) return;
+    g.innerHTML = ['D','L','M','X','J','V','S'].map(d => `<div style="text-align:center;font-weight:700;padding:10px;background:#f8fafc;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border-color);">${d}</div>`).join('');
+    const hoy = new Date(), mes = hoy.getMonth(), anio = hoy.getFullYear();
+    const pDia = new Date(anio, mes, 1).getDay(), dMes = new Date(anio, mes+1, 0).getDate();
+    for(let i=0; i<pDia; i++) g.innerHTML += '<div class="cal-day" style="background:#f8fafc;"></div>';
+    for(let d=1; d<=dMes; d++){
+        const fStr = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        let vts = '';
+        listaMedicos.forEach(m => (m.visitas||[]).forEach(v => {
+            if(v.fecha === fStr) vts += `<div class="cal-visit-badge" style="background:var(--testa-blue-tint);">${m.nombre}</div>`;
+            if(v.entrega === fStr && v.estado === 'pendiente') vts += `<div class="cal-visit-badge" style="background:var(--red-tint);color:var(--red-alert);"><i class="fa-solid fa-truck-fast"></i> ${m.nombre}</div>`;
+        }));
+        g.innerHTML += `<div class="cal-day"><div class="cal-date-num">${d}</div>${vts}</div>`;
+    }
+};
+
 // ==========================================
-// ASIGNACIÓN SEGURA DE EVENTOS (BLINDADO)
+// 4. EVENTOS DE BOTONES
 // ==========================================
-const btnMdp = document.getElementById('btn-cargar-clinicas-mdp');
-if (btnMdp) {
-    btnMdp.onclick = async () => {
+const btnCargarClinicas = document.getElementById('btn-cargar-clinicas-mdp');
+if (btnCargarClinicas) {
+    btnCargarClinicas.onclick = async () => {
         if(confirm("¿Querés cargar automáticamente las clínicas principales de MDP?")) {
             const clinicasMdp = [
                 { nombre: "HPC", direccion: "Córdoba 4545" },
@@ -214,36 +209,39 @@ if (btnMdp) {
     };
 }
 
-const inputInst = document.getElementById('institucion');
-if (inputInst) {
-    inputInst.oninput = (e) => {
+const inputInstitucion = document.getElementById('institucion');
+if (inputInstitucion) {
+    inputInstitucion.oninput = (e) => {
         const found = listaClinicas.find(c => c.nombre.trim().toLowerCase() === e.target.value.trim().toLowerCase());
-        if(found) document.getElementById('direccion').value = found.direccion;
+        const inputDir = document.getElementById('direccion');
+        if(found && inputDir) inputDir.value = found.direccion;
     };
 }
 
-const btnNuevaV = document.getElementById('btn-nueva-visita-modal');
-if (btnNuevaV) {
-    btnNuevaV.onclick = () => {
-        document.getElementById('form-nueva-visita').reset();
-        document.getElementById('nv-fecha-visita').value = new Date().toISOString().split('T')[0];
+const btnNuevaVisitaModal = document.getElementById('btn-nueva-visita-modal');
+if (btnNuevaVisitaModal) {
+    btnNuevaVisitaModal.onclick = () => {
+        document.getElementById('form-nueva-visita')?.reset();
+        const nvFechaVisita = document.getElementById('nv-fecha-visita');
+        if(nvFechaVisita) nvFechaVisita.value = new Date().toISOString().split('T')[0];
         medicoPendienteDeGuardar = null; 
-        document.getElementById('modal-nueva-visita').classList.add('active');
+        document.getElementById('modal-nueva-visita')?.classList.add('active');
     };
 }
 
-const formVisita = document.getElementById('form-nueva-visita');
-if (formVisita) {
-    formVisita.onsubmit = async (e) => {
+const formNuevaVisita = document.getElementById('form-nueva-visita');
+if (formNuevaVisita) {
+    formNuevaVisita.onsubmit = async (e) => {
         e.preventDefault();
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         btnSubmit.disabled = true; 
         btnSubmit.innerText = "Guardando...";
 
         const nombreMedico = document.getElementById('input-select-medico').value.trim();
+        const nvFechaEntrega = document.getElementById('nv-fecha-entrega');
         const nuevaV = {
             fecha: document.getElementById('nv-fecha-visita').value,
-            entrega: document.getElementById('nv-fecha-entrega').value || null,
+            entrega: nvFechaEntrega ? nvFechaEntrega.value : null,
             estado: document.getElementById('nv-estado-visita').value,
             pedido: document.getElementById('nv-pedido-visita').value.trim()
         };
@@ -258,9 +256,11 @@ if (formVisita) {
                 medicoPendienteDeGuardar = null;
             } else {
                 alert("El médico no existe. Hacé clic en el ícono '+' para agregarlo.");
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Guardar Registro de Visita";
                 return;
             }
-            document.getElementById('modal-nueva-visita').classList.remove('active');
+            document.getElementById('modal-nueva-visita')?.classList.remove('active');
         } catch (error) {
             alert("Hubo un error al guardar. Reintentá.");
         } finally {
@@ -270,18 +270,18 @@ if (formVisita) {
     };
 }
 
-const btnCrearMed = document.getElementById('btn-crear-medico-rapido');
-if (btnCrearMed) {
-    btnCrearMed.onclick = () => {
-        document.getElementById('form-cliente').reset();
-        document.getElementById('modal-nueva-visita').classList.remove('active');
-        document.getElementById('modal-nuevo-cliente').classList.add('active');
+const btnCrearMedicoRapido = document.getElementById('btn-crear-medico-rapido');
+if (btnCrearMedicoRapido) {
+    btnCrearMedicoRapido.onclick = () => {
+        document.getElementById('form-cliente')?.reset();
+        document.getElementById('modal-nueva-visita')?.classList.remove('active');
+        document.getElementById('modal-nuevo-cliente')?.classList.add('active');
     };
 }
 
-const formC = document.getElementById('form-cliente');
-if (formC) {
-    formC.onsubmit = (e) => {
+const formCliente = document.getElementById('form-cliente');
+if (formCliente) {
+    formCliente.onsubmit = (e) => {
         e.preventDefault();
         medicoPendienteDeGuardar = {
             nombre: document.getElementById('nombre').value.trim(),
@@ -290,20 +290,21 @@ if (formC) {
             direccion: document.getElementById('direccion').value.trim(),
             visitas: []
         };
-        document.getElementById('modal-nuevo-cliente').classList.remove('active');
-        document.getElementById('modal-nueva-visita').classList.add('active');
-        document.getElementById('input-select-medico').value = medicoPendienteDeGuardar.nombre;
+        document.getElementById('modal-nuevo-cliente')?.classList.remove('active');
+        document.getElementById('modal-nueva-visita')?.classList.add('active');
+        const inputSelectMedico = document.getElementById('input-select-medico');
+        if(inputSelectMedico) inputSelectMedico.value = medicoPendienteDeGuardar.nombre;
     };
 }
 
-const btnGest = document.getElementById('btn-gestion-medicos');
-if (btnGest) {
-    btnGest.onclick = () => document.getElementById('modal-gestion-medicos').classList.add('active');
+const btnGestionMedicos = document.getElementById('btn-gestion-medicos');
+if (btnGestionMedicos) {
+    btnGestionMedicos.onclick = () => document.getElementById('modal-gestion-medicos')?.classList.add('active');
 }
 
-const formEditMed = document.getElementById('form-editar-medico');
-if (formEditMed) {
-    formEditMed.onsubmit = async (e) => {
+const formEditarMedico = document.getElementById('form-editar-medico');
+if (formEditarMedico) {
+    formEditarMedico.onsubmit = async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
@@ -321,53 +322,35 @@ if (formEditMed) {
     };
 }
 
-const btnCancEdit = document.getElementById('btn-cancelar-edicion-medico');
-if (btnCancEdit) {
-    btnCancEdit.onclick = () => { document.getElementById('form-editar-medico').style.display = 'none'; };
+const btnCancelarEdicionMedico = document.getElementById('btn-cancelar-edicion-medico');
+if (btnCancelarEdicionMedico) {
+    btnCancelarEdicionMedico.onclick = () => { document.getElementById('form-editar-medico').style.display = 'none'; };
 }
 
-const btnBorrarT = document.getElementById('btn-borrar-todo');
-if (btnBorrarT) {
-    btnBorrarT.onclick = async () => {
+const btnBorrarTodo = document.getElementById('btn-borrar-todo');
+if (btnBorrarTodo) {
+    btnBorrarTodo.onclick = async () => {
         if(confirm("⚠️ ATENCIÓN: ¿Querés eliminar TODOS los registros?")) {
             const pass = prompt("Escribí BORRAR (en mayúsculas):");
             if(pass === 'BORRAR') {
                 try {
                     for (const m of listaMedicos) await deleteDoc(doc(db, "clientes", m.id));
                     alert("Base de datos limpia.");
-                    document.getElementById('modal-gestion-medicos').classList.remove('active');
+                    document.getElementById('modal-gestion-medicos')?.classList.remove('active');
                 } catch(e) { alert("Hubo un error al borrar los registros."); }
             }
         }
     };
 }
 
-const btnCal = document.getElementById('btn-calendario');
-window.dibujarCalendario = () => {
-    const g = document.getElementById('cuadricula-calendario');
-    if(!g) return;
-    g.innerHTML = ['D','L','M','X','J','V','S'].map(d => `<div style="text-align:center;font-weight:700;padding:10px;background:#f8fafc;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border-color);">${d}</div>`).join('');
-    const hoy = new Date(), mes = hoy.getMonth(), anio = hoy.getFullYear();
-    const pDia = new Date(anio, mes, 1).getDay(), dMes = new Date(anio, mes+1, 0).getDate();
-    for(let i=0; i<pDia; i++) g.innerHTML += '<div class="cal-day" style="background:#f8fafc;"></div>';
-    for(let d=1; d<=dMes; d++){
-        const fStr = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        let vts = '';
-        listaMedicos.forEach(m => (m.visitas||[]).forEach(v => {
-            if(v.fecha === fStr) vts += `<div class="cal-visit-badge" style="background:var(--testa-blue-tint);">${m.nombre}</div>`;
-            if(v.entrega === fStr && v.estado === 'pendiente') vts += `<div class="cal-visit-badge" style="background:var(--red-tint);color:var(--red-alert);"><i class="fa-solid fa-truck-fast"></i> ${m.nombre}</div>`;
-        }));
-        g.innerHTML += `<div class="cal-day"><div class="cal-date-num">${d}</div>${vts}</div>`;
-    }
-};
-
-if (btnCal) {
-    btnCal.onclick = () => { window.dibujarCalendario(); document.getElementById('modal-calendario').classList.add('active'); };
+const btnCalendario = document.getElementById('btn-calendario');
+if (btnCalendario) {
+    btnCalendario.onclick = () => { window.dibujarCalendario(); document.getElementById('modal-calendario')?.classList.add('active'); };
 }
 
-const busc = document.getElementById('buscador');
-if (busc) {
-    busc.addEventListener('input', (e) => {
+const buscador = document.getElementById('buscador');
+if (buscador) {
+    buscador.addEventListener('input', (e) => {
         const textoBuscado = e.target.value.toLowerCase().trim();
         document.querySelectorAll('.testa-table tbody tr').forEach(fila => {
             if (fila.querySelector('.row-empty')) return; 
@@ -376,3 +359,32 @@ if (busc) {
         });
     });
 }
+
+// ==========================================
+// 5. LECTURA DE FIREBASE (¡AL FINAL DE TODO!)
+// ==========================================
+onSnapshot(collection(db, "instituciones"), (snap) => {
+    listaClinicas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    const dl = document.getElementById('lista-instituciones');
+    if(dl) dl.innerHTML = listaClinicas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+    
+    const gestor = document.getElementById('lista-clinicas-gestion');
+    if(gestor) {
+        gestor.innerHTML = listaClinicas.length ? listaClinicas.map(c => `
+            <div class="modern-list-item">
+                <span><b>${c.nombre}</b><br><small style="color:var(--text-muted)">${c.direccion}</small></span>
+                <button class="btn-icon btn-delete" onclick="window.borrarClinica('${c.id}')"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
+        `).join('') : '<p style="text-align:center;color:gray;padding:10px;">No hay clínicas cargadas.</p>';
+    }
+
+    const btnMdp = document.getElementById('btn-cargar-clinicas-mdp');
+    if(btnMdp) btnMdp.style.display = listaClinicas.length >= 7 ? 'none' : 'block';
+}, (error) => console.error("Error cargando clínicas:", error));
+
+onSnapshot(collection(db, "clientes"), (snap) => {
+    listaMedicos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (typeof window.actualizarTablaClientes === 'function') window.actualizarTablaClientes();
+    if (typeof window.dibujarListaMedicosGestion === 'function') window.dibujarListaMedicosGestion(); 
+}, (error) => console.error("Error cargando médicos:", error));

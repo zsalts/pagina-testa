@@ -2,9 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/fireba
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc, query, where, deleteField } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
 
-// ==========================================
-// CONEXIÓN A FIREBASE
-// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
     authDomain: "testa-crm.firebaseapp.com",
@@ -25,14 +22,14 @@ let listaMedicos = [];
 let vistaActual = 'pendientes'; 
 
 // ==========================================
-// ANTI-CONGELAMIENTO
+// 1. ANTI-CONGELAMIENTO
 // ==========================================
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) { window.location.reload(); }
 });
 
 // ==========================================
-// FUNCIONES DE INTERFAZ, ORDEN Y DIBUJO
+// 2. FUNCIONES GLOBALES Y MODALES
 // ==========================================
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
@@ -65,17 +62,6 @@ window.obtenerAbreviatura = function(tipoDocumento) {
     if (tipo.includes("recibo")) return `REC`;
     return `DOC`; 
 };
-
-onSnapshot(collection(db, "clientes"), (snap) => {
-    listaMedicos = snap.docs.map(d => d.data().nombre);
-    const dl = document.getElementById('lista-nombres-medicos');
-    if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
-});
-
-onSnapshot(collection(db, "presupuestos"), (snap) => {
-    listaPresupuestos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if(window.dibujarTablaPresupuestos) window.dibujarTablaPresupuestos();
-});
 
 window.dibujarTablaPresupuestos = function() {
     const cuerpo = document.getElementById('cuerpo-tabla-presupuestos');
@@ -187,11 +173,15 @@ window.dibujarTablaPresupuestos = function() {
         cuerpo.innerHTML = generarFilas(completados);
     }
 
-    if(document.getElementById('stat-pendientes')) document.getElementById('stat-pendientes').innerText = stats.pen;
-    if(document.getElementById('stat-aprobados')) document.getElementById('stat-aprobados').innerText = stats.apr;
-    if(document.getElementById('stat-cerrados')) document.getElementById('stat-cerrados').innerText = stats.cer;
+    const statPen = document.getElementById('stat-pendientes');
+    if(statPen) statPen.innerText = stats.pen;
     
-    // Re-aplicar el filtro del buscador si había algo escrito
+    const statApr = document.getElementById('stat-aprobados');
+    if(statApr) statApr.innerText = stats.apr;
+
+    const statCer = document.getElementById('stat-cerrados');
+    if(statCer) statCer.innerText = stats.cer;
+    
     const buscador = document.getElementById('buscador-presupuestos');
     if(buscador && buscador.value) {
         buscador.dispatchEvent(new Event('input'));
@@ -223,8 +213,8 @@ window.abrirModalEditar = (id) => {
         htmlArchivos = '<p style="font-size: 0.85em; color: #64748b; margin: 0; text-align: center;">No hay documentos adjuntos para borrar.</p>';
     }
     
-    contenedorArchivos.innerHTML = htmlArchivos;
-    document.getElementById('modal-editar-presupuesto').classList.add('active');
+    if(contenedorArchivos) contenedorArchivos.innerHTML = htmlArchivos;
+    document.getElementById('modal-editar-presupuesto')?.classList.add('active');
 };
 
 window.borrarArchivoExtra = async (idExpediente, tipoDoc) => {
@@ -244,7 +234,7 @@ window.borrarArchivoExtra = async (idExpediente, tipoDoc) => {
 window.abrirModalDoc = (id, carpeta) => {
     document.getElementById('extra-id').value = id;
     document.getElementById('extra-carpeta').value = carpeta;
-    document.getElementById('modal-archivo-extra').classList.add('active');
+    document.getElementById('modal-archivo-extra')?.classList.add('active');
 };
 
 window.rotarEstado = async (id, actual) => {
@@ -256,14 +246,15 @@ window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente comp
 
 
 // ==========================================
-// ASIGNACIÓN SEGURA DE EVENTOS (BLINDADO)
+// 3. EVENTOS DE BOTONES
 // ==========================================
 const btnNuevoPresupuesto = document.getElementById('btn-nuevo-presupuesto');
 if (btnNuevoPresupuesto) {
     btnNuevoPresupuesto.addEventListener('click', () => {
-        document.getElementById('form-presupuesto').reset();
-        document.getElementById('pres-fecha').value = new Date().toISOString().split('T')[0];
-        document.getElementById('modal-presupuesto').classList.add('active');
+        document.getElementById('form-presupuesto')?.reset();
+        const presFecha = document.getElementById('pres-fecha');
+        if(presFecha) presFecha.value = new Date().toISOString().split('T')[0];
+        document.getElementById('modal-presupuesto')?.classList.add('active');
     });
 }
 
@@ -284,7 +275,7 @@ if (formEditarPres) {
                 fecha: nuevaFecha,
                 detalle: nuevoDetalle
             });
-            document.getElementById('modal-editar-presupuesto').classList.remove('active');
+            document.getElementById('modal-editar-presupuesto')?.classList.remove('active');
         } catch (error) {
             alert("Error al actualizar el expediente.");
         } finally {
@@ -378,7 +369,7 @@ if (formPres) {
                 body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
             }).catch(e => console.log("Drive Error:", e));
 
-            document.getElementById('modal-presupuesto').classList.remove('active');
+            document.getElementById('modal-presupuesto')?.classList.remove('active');
         } catch (e) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Presupuesto"; }
     };
 }
@@ -423,7 +414,7 @@ if (formExtra) {
                 body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
             }).catch(e => console.log("Drive Error:", e));
 
-            document.getElementById('modal-archivo-extra').classList.remove('active');
+            document.getElementById('modal-archivo-extra')?.classList.remove('active');
         } catch (e) { 
             alert("Error al adjuntar."); 
         } finally { 
@@ -444,3 +435,17 @@ if (buscadorPres) {
         });
     });
 }
+
+// ==========================================
+// 4. LECTURA DE FIREBASE (AL FINAL DE TODO)
+// ==========================================
+onSnapshot(collection(db, "clientes"), (snap) => {
+    listaMedicos = snap.docs.map(d => d.data().nombre);
+    const dl = document.getElementById('lista-nombres-medicos');
+    if (dl) dl.innerHTML = listaMedicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
+});
+
+onSnapshot(collection(db, "presupuestos"), (snap) => {
+    listaPresupuestos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if(typeof window.dibujarTablaPresupuestos === 'function') window.dibujarTablaPresupuestos();
+});
