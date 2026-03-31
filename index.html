@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,10 +14,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="./assets/css/styles.css">
 </head>
+
 <body>
 
     <div class="dashboard-container">
-        
+
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <img src="./assets/img/IMG_2317.png" alt="Testa" class="logo-img">
@@ -28,14 +30,16 @@
             <nav class="sidebar-nav">
                 <a href="index.html" class="active"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
                 <a href="./pages/presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
-                <a href="./pages/generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Creador Presupuestos</a>
+                <a href="./pages/generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i>Presupuestos</a>
+                <a href="./pages/ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="./pages/facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
             </nav>
         </aside>
 
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <div class="main-wrapper">
-            
+
             <header class="top-header">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
@@ -49,19 +53,31 @@
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fa-solid fa-user-md"></i></div>
-                            <div class="stat-data"><h3 id="contador-clientes">0</h3><p>Médicos</p></div>
+                            <div class="stat-data">
+                                <h3 id="contador-clientes">0</h3>
+                                <p>Médicos</p>
+                            </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                            <div class="stat-data"><h3 id="stat-visitas">0</h3><p>Visitas</p></div>
+                            <div class="stat-data">
+                                <h3 id="stat-visitas">0</h3>
+                                <p>Visitas</p>
+                            </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                            <div class="stat-data"><h3 id="stat-pendientes">0</h3><p>Pendientes</p></div>
+                            <div class="stat-data">
+                                <h3 id="stat-pendientes">0</h3>
+                                <p>Pendientes</p>
+                            </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
-                            <div class="stat-data"><h3 id="stat-completadas">0</h3><p>Completadas</p></div>
+                            <div class="stat-data">
+                                <h3 id="stat-completadas">0</h3>
+                                <p>Completadas</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -72,10 +88,14 @@
                         <input type="text" id="buscador" placeholder="Buscar médico, clínica, pedido o fecha...">
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-secondary" id="btn-clinicas"><i class="fa-solid fa-hospital"></i> Clínicas</button>
-                        <button class="btn btn-secondary" id="btn-gestion-medicos"><i class="fa-solid fa-users-gear"></i> Médicos</button>
-                        <button class="btn btn-secondary" id="btn-calendario"><i class="fa-solid fa-calendar-alt"></i> Calendario</button>
-                        <button class="btn btn-add" id="btn-nueva-visita-modal"><i class="fa-solid fa-plus-circle"></i> Nueva Visita</button>
+                        <button class="btn btn-secondary" id="btn-clinicas"><i class="fa-solid fa-hospital"></i>
+                            Clínicas</button>
+                        <button class="btn btn-secondary" id="btn-gestion-medicos"><i
+                                class="fa-solid fa-users-gear"></i> Médicos</button>
+                        <button class="btn btn-secondary" id="btn-calendario"><i class="fa-solid fa-calendar-alt"></i>
+                            Calendario</button>
+                        <button class="btn btn-add" id="btn-nueva-visita-modal"><i class="fa-solid fa-plus-circle"></i>
+                            Nueva Visita</button>
                     </div>
                 </section>
 
@@ -87,7 +107,12 @@
                         <table class="testa-table">
                             <thead>
                                 <tr>
-                                    <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado / Límite</th><th>Acción</th>
+                                    <th>Médico / Contacto</th>
+                                    <th>Institución</th>
+                                    <th>Fecha</th>
+                                    <th>Detalle del Pedido</th>
+                                    <th>Estado / Límite</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="cuerpo-tabla-pendientes"></tbody>
@@ -101,7 +126,12 @@
                         <table class="testa-table">
                             <thead>
                                 <tr>
-                                    <th>Médico / Contacto</th><th>Institución</th><th>Fecha</th><th>Detalle del Pedido</th><th>Estado</th><th>Acción</th>
+                                    <th>Médico / Contacto</th>
+                                    <th>Institución</th>
+                                    <th>Fecha</th>
+                                    <th>Detalle del Pedido</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="cuerpo-tabla-completadas"></tbody>
@@ -114,66 +144,94 @@
 
     <div class="modal-overlay" id="modal-nueva-visita">
         <div class="modal modern-modal">
-            <div class="modal-header"><h3>Registrar Nueva Visita</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header">
+                <h3>Registrar Nueva Visita</h3><button class="btn-close-modal"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
             <form id="form-nueva-visita" class="modern-form">
                 <div class="form-group">
                     <label>Seleccionar Médico</label>
                     <div class="input-with-action">
-                        <input list="lista-nombres-medicos" id="input-select-medico" placeholder="Escribí para buscar médico..." required>
+                        <input list="lista-nombres-medicos" id="input-select-medico"
+                            placeholder="Escribí para buscar médico..." required>
                         <datalist id="lista-nombres-medicos"></datalist>
-                        <button type="button" class="btn-input-action" id="btn-crear-medico-rapido" title="Crear Médico Nuevo"><i class="fa-solid fa-user-plus"></i></button>
+                        <button type="button" class="btn-input-action" id="btn-crear-medico-rapido"
+                            title="Crear Médico Nuevo"><i class="fa-solid fa-user-plus"></i></button>
                     </div>
                 </div>
                 <div class="form-row-3">
-                    <div class="form-group"><label>Día de Visita</label><input type="date" id="nv-fecha-visita" required></div>
+                    <div class="form-group"><label>Día de Visita</label><input type="date" id="nv-fecha-visita"
+                            required></div>
                     <div class="form-group"><label>Límite Entrega</label><input type="date" id="nv-fecha-entrega"></div>
-                    <div class="form-group"><label>Estado</label><select id="nv-estado-visita"><option value="pendiente">Pendiente</option><option value="completado">Completado</option></select></div>
+                    <div class="form-group"><label>Estado</label><select id="nv-estado-visita">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="completado">Completado</option>
+                        </select></div>
                 </div>
-                <div class="form-group"><label>Detalle del Pedido / Conversación</label><textarea id="nv-pedido-visita" placeholder="¿Qué equipamiento te pidió o de qué hablaron?" required></textarea></div>
-                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Guardar Registro de Visita</button></div>
+                <div class="form-group"><label>Detalle del Pedido / Conversación</label><textarea id="nv-pedido-visita"
+                        placeholder="¿Qué equipamiento te pidió o de qué hablaron?" required></textarea></div>
+                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Guardar Registro de
+                        Visita</button></div>
             </form>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-nuevo-cliente">
         <div class="modal modern-modal">
-            <div class="modal-header"><h3>Crear Ficha de Médico</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header">
+                <h3>Crear Ficha de Médico</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
             <form id="form-cliente" class="modern-form">
-                <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" placeholder="Ej: Dr. Juan Pérez" required></div>
-                <div class="form-group"><label>Institución Principal</label><input list="lista-instituciones" id="institucion" placeholder="Seleccioná clínica..." required><datalist id="lista-instituciones"></datalist></div>
-                <div class="form-group"><label>Teléfono / Email</label><input type="text" id="contacto" placeholder="Opcional"></div>
-                <div class="form-group"><label>Dirección Laboral</label><input type="text" id="direccion" placeholder="Se autocompleta con la clínica..."></div>
-                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Crear Médico</button></div>
+                <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre"
+                        placeholder="Ej: Dr. Juan Pérez" required></div>
+                <div class="form-group"><label>Institución Principal</label><input list="lista-instituciones"
+                        id="institucion" placeholder="Seleccioná clínica..." required><datalist
+                        id="lista-instituciones"></datalist></div>
+                <div class="form-group"><label>Teléfono / Email</label><input type="text" id="contacto"
+                        placeholder="Opcional"></div>
+                <div class="form-group"><label>Dirección Laboral</label><input type="text" id="direccion"
+                        placeholder="Se autocompleta con la clínica..."></div>
+                <div class="modal-footer"><button type="submit" class="btn btn-add width-100">Crear Médico</button>
+                </div>
             </form>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-gestion-medicos">
         <div class="modal modern-modal modal-md">
-            <div class="modal-header"><h3>Base de Datos de Médicos</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header">
+                <h3>Base de Datos de Médicos</h3><button class="btn-close-modal"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
             <div id="lista-medicos-gestion" class="modern-list-container"></div>
-            
+
             <form id="form-editar-medico" class="modern-form form-edit-container" style="display: none;">
                 <input type="hidden" id="edit-medico-id">
                 <h4>Editando Ficha del Médico</h4>
                 <div class="form-group"><input type="text" id="edit-medico-nombre" placeholder="Nombre" required></div>
-                <div class="form-group"><input type="text" id="edit-medico-institucion" list="lista-instituciones" placeholder="Institución" required></div>
-                <div class="form-group"><input type="text" id="edit-medico-contacto" placeholder="Contacto (Opcional)"></div>
+                <div class="form-group"><input type="text" id="edit-medico-institucion" list="lista-instituciones"
+                        placeholder="Institución" required></div>
+                <div class="form-group"><input type="text" id="edit-medico-contacto" placeholder="Contacto (Opcional)">
+                </div>
                 <div class="form-group"><input type="text" id="edit-medico-direccion" placeholder="Dirección"></div>
                 <div class="form-row-2">
                     <button type="button" class="btn btn-secondary" id="btn-cancelar-edicion-medico">Cancelar</button>
                     <button type="submit" class="btn btn-add">Actualizar Datos</button>
                 </div>
             </form>
-            <button id="btn-borrar-todo" class="btn btn-danger-outline width-100"><i class="fa-solid fa-trash-alt"></i> Limpiar Base de Datos</button>
+            <button id="btn-borrar-todo" class="btn btn-danger-outline width-100"><i class="fa-solid fa-trash-alt"></i>
+                Limpiar Base de Datos</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-clinicas">
         <div class="modal modern-modal modal-md">
-            <div class="modal-header"><h3>Instituciones Médicas</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header">
+                <h3>Instituciones Médicas</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
             <div id="lista-clinicas-gestion" class="modern-list-container"></div>
-            <button id="btn-cargar-clinicas-mdp" class="btn btn-secondary-tint width-100"><i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Clínicas Principales MDP</button>
+            <button id="btn-cargar-clinicas-mdp" class="btn btn-secondary-tint width-100"><i
+                    class="fa-solid fa-wand-magic-sparkles"></i> Cargar Clínicas Principales MDP</button>
             <form id="form-clinica" class="modern-form form-add-box" style="margin-top: 15px;">
                 <h4>Agregar Nueva Institución</h4>
                 <div class="form-row-2">
@@ -187,33 +245,37 @@
 
     <div class="modal-overlay" id="modal-calendario">
         <div class="modal modern-modal modal-lg">
-            <div class="modal-header"><h3>Agenda Mensual de Testa</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button></div>
+            <div class="modal-header">
+                <h3>Agenda Mensual de Testa</h3><button class="btn-close-modal"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
             <div class="calendar-container" id="cuadricula-calendario"></div>
         </div>
     </div>
 
     <script type="module" src="./assets/js/script.js"></script>
- <script>
+    <script>
         const btnMenu = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         const mainWrapper = document.querySelector('.main-wrapper'); // Sumamos el contenedor principal
 
-        function toggleMenu() { 
+        function toggleMenu() {
             // Si la pantalla es chica (Celular o Tablet)
             if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('open'); 
-                overlay.classList.toggle('active'); 
-            } 
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            }
             // Si la pantalla es grande (PC / Mac)
             else {
                 sidebar.classList.toggle('collapsed-desktop');
                 mainWrapper.classList.toggle('expanded-desktop');
             }
         }
-        
-        if(btnMenu) btnMenu.addEventListener('click', toggleMenu);
-        if(overlay) overlay.addEventListener('click', toggleMenu);
+
+        if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
     </script>
 </body>
+
 </html>

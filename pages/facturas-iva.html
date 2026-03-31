@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de IVA | Testa CRM</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#003b5c">
+    <link rel="apple-touch-icon" href="../assets/img/IMG_2317.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text"><span class="brand">TESTA</span><span class="sub-brand">CRM System</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Creador Presupuestos</a>
+                <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="facturas-iva.html" class="active"><i class="fa-solid fa-file-invoice"></i> Control IVA</a>
+            </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title">Registro y Control de IVA</h2>
+                </div>
+                <div class="user-profile-circle"><i class="fa-solid fa-calculator"></i></div>
+            </header>
+
+            <main class="dashboard-content">
+                
+                <section class="toolbar-section" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 15px; background: white; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div style="color: var(--testa-blue-dark); font-size: 1.1em; font-weight: bold;">
+                            <i class="fa-regular fa-calendar-check"></i> <span id="txt-mes-actual">Mes Actual</span>
+                        </div>
+                        <div style="background: #f8fafc; padding: 8px 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95em;">
+                            <span style="color: #64748b; margin-right: 5px;">Total Facturado:</span>
+                            <strong style="color: var(--testa-blue-dark);" id="txt-total-mes">$ 0.00</strong>
+                        </div>
+                        <div style="background: #ecfdf5; padding: 8px 15px; border-radius: 6px; border: 1px solid #d1fae5; font-size: 0.95em;">
+                            <span style="color: #059669; margin-right: 5px;">IVA Acumulado:</span>
+                            <strong style="color: #059669;" id="txt-iva-mes">$ 0.00</strong>
+                        </div>
+                    </div>
+                    <div class="action-buttons" style="margin: 0;">
+                        <button class="btn btn-add" id="btn-nueva-factura"><i class="fa-solid fa-plus-circle"></i> Cargar Comprobante</button>
+                    </div>
+                </section>
+
+                <section class="content-section" id="contenedor-iva-dinamico">
+                    </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-factura">
+        <div class="modal modern-modal modal-md" style="padding: 20px;">
+            <div class="modal-header" style="margin-bottom: 10px;">
+                <h3 style="font-size: 1.2rem;">Cargar Comprobante</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <form id="form-factura" class="modern-form">
+                
+                <div class="form-row-2" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85em;">Monto Total</label>
+                        <input type="number" step="0.01" id="fac-total" placeholder="0.00" required style="padding: 10px; height: 42px; box-sizing: border-box; width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85em;">Monto del IVA</label>
+                        <input type="number" step="0.01" id="fac-monto-iva" placeholder="0.00" required style="padding: 10px; height: 42px; box-sizing: border-box; width: 100%;">
+                    </div>
+                </div>
+                
+                <div class="form-row-3" style="margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85em;">% de IVA</label>
+                        <select id="fac-porcentaje" style="padding: 10px; height: 42px; box-sizing: border-box; width: 100%;">
+                            <option value="21">21%</option>
+                            <option value="10.5">10.5%</option>
+                            <option value="27">27%</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85em;">Mes</label>
+                        <select id="fac-mes-periodo" required style="padding: 10px; height: 42px; box-sizing: border-box; width: 100%;">
+                            <option value="01">Ene</option><option value="02">Feb</option><option value="03">Mar</option>
+                            <option value="04">Abr</option><option value="05">May</option><option value="06">Jun</option>
+                            <option value="07">Jul</option><option value="08">Ago</option><option value="09">Sep</option>
+                            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85em;">Año</label>
+                        <select id="fac-anio-periodo" required style="padding: 10px; height: 42px; box-sizing: border-box; width: 100%;">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                            <option value="2031">2031</option>
+                            <option value="2032">2032</option>
+                            <option value="2033">2033</option>
+                            <option value="2034">2034</option>
+                            <option value="2035">2035</option>
+                            <option value="2036">2036</option>
+                            <option value="2037">2037</option>
+                            <option value="2038">2038</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="color: var(--testa-blue-dark); text-align: center; display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">Adjuntar comprobante</label>
+                    <div style="display: flex; gap: 10px;">
+                        <label for="fac-archivo" class="btn btn-secondary-tint width-100" style="cursor: pointer; text-align: center; padding: 10px; margin:0;">
+                            <i class="fa-solid fa-folder-open" style="font-size: 20px; display: block; margin-bottom: 3px;"></i> Archivo
+                        </label>
+                        <input type="file" id="fac-archivo" accept=".pdf,image/*" style="display: none;">
+                        
+                        <label for="fac-camara" class="btn btn-secondary-tint width-100" style="cursor: pointer; text-align: center; padding: 10px; margin:0; background: #e0f2fe; color: #0284c7; border-color: #bae6fd;">
+                            <i class="fa-solid fa-camera" style="font-size: 20px; display: block; margin-bottom: 3px;"></i> Foto
+                        </label>
+                        <input type="file" id="fac-camara" accept="image/*" capture="environment" style="display: none;">
+                    </div>
+                    <div id="file-name-display" style="text-align: center; margin-top: 5px; font-weight: bold; font-size: 0.85em; color: var(--testa-blue);">Ningún archivo seleccionado</div>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 15px;">Guardar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainWrapper = document.querySelector('.main-wrapper');
+        function toggleMenu() { 
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open'); overlay.classList.toggle('active'); 
+            } else {
+                sidebar.classList.toggle('collapsed-desktop'); mainWrapper.classList.toggle('expanded-desktop');
+            }
+        }
+        if(btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if(overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
+    
+    <script type="module" src="../assets/js/facturas-iva.js"></script>
+</body>
+</html>

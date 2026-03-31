@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Órdenes de Compra | Testa CRM</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#003b5c">
+    <link rel="apple-touch-icon" href="../assets/img/IMG_2317.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i>Presupuestos</a>
+                <a href="ordenes-compra.html" class="active"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
+            </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+            
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title">Órdenes de Compra (Proveedores)</h2>
+                </div>
+                <div class="user-profile-circle"><i class="fa-solid fa-cart-shopping"></i></div>
+            </header>
+
+            <main class="dashboard-content">
+                <section class="toolbar-section">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="buscador-oc" placeholder="Buscar por proveedor o detalle...">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-add" id="btn-nueva-oc"><i class="fa-solid fa-plus-circle"></i> Cargar Orden de Compra</button>
+                    </div>
+                </section>
+
+                <section class="content-section">
+                    <div class="table-card">
+                        <table class="testa-table">
+                            <thead>
+                                <tr>
+                                    <th>Nro. OC / Proveedor</th><th>Fecha</th><th>Detalle</th><th>Total</th><th>Estado</th><th>PDF</th><th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpo-tabla-oc">
+                                </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-oc">
+        <div class="modal modern-modal">
+            <div class="modal-header">
+                <h3>Cargar Orden de Compra</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-oc" class="modern-form">
+                <div class="form-row-2">
+                    <div class="form-group"><label>Nro. de Orden</label><input type="text" id="oc-numero" placeholder="Ej: OC-00123" required></div>
+                    <div class="form-group"><label>Fecha</label><input type="date" id="oc-fecha" required></div>
+                </div>
+                <div class="form-group">
+                    <label>Proveedor</label>
+                    <input type="text" id="oc-proveedor" placeholder="Nombre de la empresa proveedora" required>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Moneda</label>
+                        <select id="oc-moneda"><option value="ARS">ARS $</option><option value="USD">USD U$S</option></select>
+                    </div>
+                    <div class="form-group"><label>Monto Total</label><input type="number" step="0.01" id="oc-total" required></div>
+                </div>
+                <div class="form-group"><label>Detalle / Equipos</label><textarea id="oc-detalle" placeholder="¿Qué se compró?"></textarea></div>
+                <div class="form-group">
+                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-file-pdf"></i> Adjuntar PDF de la Orden</label>
+                    <input type="file" id="oc-archivo" accept=".pdf" style="background: white; border: 2px dashed var(--border-color); padding: 15px; width: 100%; box-sizing: border-box;">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px;">Guardar Orden</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainWrapper = document.querySelector('.main-wrapper');
+
+        function toggleMenu() { 
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open'); overlay.classList.toggle('active'); 
+            } else {
+                sidebar.classList.toggle('collapsed-desktop'); mainWrapper.classList.toggle('expanded-desktop');
+            }
+        }
+        if(btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if(overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>

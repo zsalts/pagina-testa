@@ -199,3 +199,16 @@ datalist, option { background-color: #ffffff !important; color: #0369a1 !importa
         flex: 1 !important; /* Clave por si tu diseño general usa Flexbox */
     }
 }
+/* --- OCULTAR FLECHAS EN LOS INPUTS NUMÉRICOS --- */
+
+/* Para Chrome, Safari, Edge y Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Para Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
