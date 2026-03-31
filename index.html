@@ -109,7 +109,7 @@
                                     <th>Institución</th>
                                     <th>Fecha</th>
                                     <th>Detalle del Pedido</th>
-                                    <th>Estado / Docs / Límite</th>
+                                    <th>Estado / Límite</th>
                                     <th>Acción</th>
                                 </tr>
                             </thead>
@@ -127,7 +127,7 @@
                                     <th>Institución</th>
                                     <th>Fecha</th>
                                     <th>Detalle del Pedido</th>
-                                    <th>Estado / Docs</th>
+                                    <th>Estado</th>
                                     <th>Acción</th>
                                 </tr>
                             </thead>
@@ -230,38 +230,6 @@
                 <h3>Agenda Mensual de Testa</h3><button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="calendar-container" id="cuadricula-calendario"></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modal-documentacion">
-        <div class="modal modern-modal" style="max-width: 400px;">
-            <div class="modal-header">
-                <h3>Control de Documentos</h3>
-                <button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <form id="form-documentacion" class="modern-form">
-                <input type="hidden" id="doc-medico-id">
-                <input type="hidden" id="doc-visita-idx">
-                
-                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; margin-top: 10px;">
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; color: var(--testa-blue-dark); font-weight: 500;">
-                        <input type="checkbox" id="check-oc" style="width: 20px; height: 20px; cursor: pointer;"> 
-                        Orden de Compra (OC)
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; color: var(--testa-blue-dark); font-weight: 500;">
-                        <input type="checkbox" id="check-remito" style="width: 20px; height: 20px; cursor: pointer;"> 
-                        Remito de Entrega
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; color: var(--testa-blue-dark); font-weight: 500;">
-                        <input type="checkbox" id="check-factura" style="width: 20px; height: 20px; cursor: pointer;"> 
-                        Factura Emitida
-                    </label>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 15px;">Guardar Estado de Documentos</button>
-                </div>
-            </form>
         </div>
     </div>
 

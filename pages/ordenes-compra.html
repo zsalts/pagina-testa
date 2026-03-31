@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/styles.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -52,15 +51,14 @@
                         <table class="testa-table">
                             <thead>
                                 <tr>
-                                    <th>Fecha OC</th>
+                                    <th>Fecha / OC Nro</th>
                                     <th>Proveedor</th>
                                     <th>Ref. Cliente</th>
                                     <th>PDF</th>
                                     <th>Estado CRM</th>
-                                </tr>
+                                    <th>Acción</th> </tr>
                             </thead>
-                            <tbody id="tabla-oc">
-                                </tbody>
+                            <tbody id="tabla-oc"></tbody>
                         </table>
                     </div>
                 </section>
@@ -69,7 +67,7 @@
     </div>
 
     <div class="modal-overlay" id="modal-oc">
-        <div class="modal modern-modal modal-md" style="padding: 20px; border-top: 5px solid var(--testa-blue);">
+        <div class="modal modern-modal modal-lg" style="padding: 20px; border-top: 5px solid var(--testa-blue);">
             <div class="modal-header" style="margin-bottom: 10px;">
                 <h3 style="font-size: 1.2rem; color: var(--testa-blue-dark);"><i class="fa-solid fa-truck"></i> Nueva Orden de Compra</h3>
                 <button class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
@@ -77,67 +75,161 @@
             
             <form id="form-oc" class="modern-form">
                 
-                <div class="form-group" style="margin-bottom: 15px; background: #f0f9ff; padding: 15px; border-radius: 6px; border: 1px dashed var(--testa-blue);">
-                    <label style="color: var(--testa-blue-dark); font-weight: bold;">1. Seleccionar Presupuesto de Venta (Aprobado)</label>
-                    <select id="oc-presupuesto" required style="width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                        <option value="">Cargando presupuestos...</option>
-                    </select>
+                <div class="form-row-2" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: var(--testa-blue-dark); font-weight: bold;">1. Presupuesto Base (Aprobado)</label>
+                        <select id="oc-presupuesto" required style="width: 100%; padding: 10px; border: 1px solid var(--testa-blue); border-radius: 4px; background: #f0f9ff;">
+                            <option value="">Cargando presupuestos...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>OC Nro (Ej: 62/2026)</label>
+                        <input type="text" id="oc-nro" required style="width: 100%; padding: 10px;">
+                    </div>
+                </div>
+
+                <div class="form-row-2" style="margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Proveedor (Señores)</label>
+                        <input type="text" id="oc-proveedor" placeholder="Ej: Centro de Servicios Hospitalarios" required style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Atte.</label>
+                        <input type="text" id="oc-atte" placeholder="Ej: Paula Videau" required style="width: 100%; padding: 10px;">
+                    </div>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="font-weight: bold;">2. Proveedor al que le compramos</label>
-                    <input type="text" id="oc-proveedor" placeholder="Ej: Industrias Médicas S.A." required style="width: 100%; padding: 10px; box-sizing: border-box;">
+                    <label style="font-weight: bold; color: var(--testa-blue-dark);">2. Definir Costos de Compra</label>
+                    <div style="overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        <table class="testa-table" style="margin: 0; min-width: 600px;">
+                            <thead style="background: #f8fafc;">
+                                <tr>
+                                    <th>Descripción (Viene del Presupuesto)</th>
+                                    <th style="width: 60px;">Cant.</th>
+                                    <th style="width: 100px;">Costo Unit.</th>
+                                    <th style="width: 80px;">Moneda</th>
+                                    <th style="width: 80px;">IVA %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="oc-items-table-body">
+                                <tr><td colspan="5" style="text-align:center; color:#64748b;">Seleccioná un presupuesto arriba para cargar los equipos.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="font-weight: bold;">3. Equipos a Pedir (Se auto-rellena)</label>
-                    <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;" id="oc-items-preview">
-                        <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">Seleccioná un presupuesto arriba para ver los equipos</p>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                    <div class="form-row-2" style="margin-bottom: 10px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Forma de Pago</label>
+                            <input type="text" id="oc-pago" value="Contado" required style="width: 100%; padding: 10px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Cotización (Dejar vacío si no aplica)</label>
+                            <input type="number" step="0.01" id="oc-coti" placeholder="Ej: 1410" style="width: 100%; padding: 10px;">
+                        </div>
+                    </div>
+                    <div class="form-row-2" style="margin-bottom: 10px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Plazo de Entrega</label>
+                            <input type="text" id="oc-plazo" value="Inmediato" required style="width: 100%; padding: 10px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Forma de Envío</label>
+                            <input type="text" id="oc-envio" value="Baymar (A retirar en deposito)" required style="width: 100%; padding: 10px;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Descuento (Monto fijo, opcional)</label>
+                        <input type="number" step="0.01" id="oc-dto" placeholder="Ej: 50.00" style="width: 100%; padding: 10px;">
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 15px;">Generar OC y Cerrar Visita</button>
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 15px;"><i class="fa-solid fa-file-pdf"></i> Generar OC y Cerrar Operación</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div id="pdf-wrapper-oc" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -9999; opacity: 0; pointer-events: none; display: flex; justify-content: center; align-items: flex-start; background: white;">
-        <div id="pdf-content-oc" style="width: 800px; height: 1131px; background: white; font-family: 'Arial', sans-serif; color: #333; box-sizing: border-box; overflow: hidden; padding: 50px;">
+        <div id="pdf-content-oc" style="width: 800px; height: 1131px; background: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111; position: relative; box-sizing: border-box; overflow: hidden;">
             
-            <div style="display: flex; justify-content: space-between; border-bottom: 3px solid #143c5a; padding-bottom: 20px; margin-bottom: 30px;">
-                <div>
-                    <h1 style="margin: 0; font-size: 32px; color: #143c5a;">ORDEN DE COMPRA</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Testa Equipamiento Médico</p>
-                </div>
-                <div style="text-align: right; font-size: 14px; line-height: 1.6;">
-                    <strong>Fecha:</strong> <span id="pdf-oc-fecha"></span><br>
-                    <strong>OC Nro:</strong> <span id="pdf-oc-nro"></span>
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 210px;">
+                <svg viewBox="0 0 800 210" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                    <path d="M0,0 L800,0 L800,100 C500,240 200,90 0,70 Z" fill="#009edb" />
+                    <path d="M0,0 L800,0 L800,45 C400,170 100,210 0,140 Z" fill="#143c5a" />
+                </svg>
+                <div style="position: absolute; top: 55px; left: 50px; color: white;">
+                    <h1 style="font-size: 52px; margin: 0; font-weight: 400; font-family: 'Segoe UI', Arial, sans-serif; letter-spacing: 1px;">TESTA</h1>
+                    <p style="font-size: 13px; margin: 0; letter-spacing: 0.5px; margin-top: -2px;">EQUIPAMIENTO MEDICO</p>
                 </div>
             </div>
 
-            <div style="background: #f0f4f8; padding: 15px; border-radius: 6px; margin-bottom: 30px; font-size: 14px; line-height: 1.6;">
-                <strong>Señores (Proveedor):</strong> <span id="pdf-oc-prov"></span><br>
-                <strong>Referencia de Venta:</strong> <span id="pdf-oc-ref"></span>
-            </div>
+            <div style="padding: 215px 50px 30px 50px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+                
+                <div style="text-align: right; font-weight: bold; font-size: 13px; margin-bottom: 25px;">
+                    Mar del Plata <span id="pdf-oc-fecha"></span>
+                </div>
 
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 30px;">
-                <thead>
-                    <tr style="background: #143c5a; color: white;">
-                        <th style="padding: 10px; border: 1px solid #333; text-align: left;">Descripción del Equipo</th>
-                        <th style="padding: 10px; border: 1px solid #333; width: 15%; text-align: center;">Cant.</th>
-                    </tr>
-                </thead>
-                <tbody id="pdf-oc-tbody"></tbody>
-            </table>
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="font-size: 22px; color: #555; margin: 0;">ORDEN DE COMPRA NRO <span id="pdf-oc-nro-titulo"></span></h2>
+                </div>
 
-            <div style="margin-top: 50px; font-size: 13px;">
-                <p>Por favor, confirmar recepción de esta orden e informar plazos de entrega.</p>
-                <div style="margin-top: 40px;">
-                    <img src="../assets/img/firma.png" style="height: 60px;" alt="Firma">
-                    <p style="margin: 5px 0 0 0; font-weight: bold;">Álvaro Testa</p>
-                    <p style="margin: 0; color: #666;">Gerencia de Compras</p>
+                <div style="font-size: 14px; line-height: 1.4; margin-bottom: 20px;">
+                    <span id="pdf-oc-prov" style="font-weight: bold;"></span><br>
+                    Atte.: <span id="pdf-oc-atte"></span>
+                </div>
+
+                <div style="font-size: 13px; margin-bottom: 15px;">
+                    CLIENTE : <span id="pdf-oc-cliente"></span>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px; table-layout: fixed;">
+                    <thead>
+                        <tr style="background: #143c5a; color: white;">
+                            <th style="width: 8%; padding: 6px; border: 1px solid #333; font-weight: normal; text-align: center;">Renglón</th>
+                            <th style="width: 47%; padding: 6px; border: 1px solid #333; font-weight: normal; text-align: left;">Descripción</th>
+                            <th style="width: 8%; padding: 6px; border: 1px solid #333; font-weight: normal; text-align: center;">Cant.</th>
+                            <th style="width: 14%; padding: 6px; border: 1px solid #333; font-weight: normal; text-align: center;">P. Unitario</th>
+                            <th style="width: 9%; padding: 6px; border: 1px solid #333; font-weight: normal; text-align: center;">% IVA</th>
+                            <th style="width: 14%; padding: 6px; border: 1px solid #333; font-weight: normal; text-align: center;">P. Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-oc-tbody"></tbody>
+                    <tbody id="pdf-oc-totales">
+                        <tr>
+                            <td colspan="3" style="border:none;"></td>
+                            <td colspan="2" style="border:1px solid #333; padding:6px; text-align:right;">Subtotal:</td>
+                            <td style="border:1px solid #333; padding:6px; text-align:right; background:#c1d5e0;" id="pdf-oc-subtotal"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="border:none;"></td>
+                            <td colspan="2" style="border:1px solid #333; padding:6px; text-align:right;">Total:</td>
+                            <td style="border:1px solid #333; padding:6px; text-align:right; background:#abc2d4;" id="pdf-oc-total"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="border:none;"></td>
+                            <td colspan="2" style="border:1px solid #333; padding:6px; text-align:right;">Dto:</td>
+                            <td style="border:1px solid #333; padding:6px; text-align:right; background:#c1d5e0;" id="pdf-oc-dto"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="font-size: 11px; line-height: 1.4; margin-bottom: 40px; text-transform: uppercase;">
+                    FORMA DE PAGO : <span id="pdf-oc-pago" style="text-transform: none;"></span><br>
+                    <span id="caja-pdf-coti" style="display: none;"><strong>Cotizacion de la Fecha $ <span id="pdf-oc-coti"></span> Banco Nacion</strong><br></span>
+                    PLAZO DE ENTREGA: <span id="pdf-oc-plazo" style="text-transform: none;"></span><br>
+                    FORMA DE ENVIO : <span id="pdf-oc-envio" style="text-transform: none;"></span>
+                </div>
+
+                <div style="font-size: 12px; color: #111;">
+                    <p style="margin: 0;">Ate.:</p>
+                    <img src="../assets/img/firma.png" style="height: 60px; margin: 5px 0; display: block;" alt="Firma">
+                    <p style="margin: 0;">Alvaro Testa</p>
+                    <p style="margin: 0;">Dto. Ventas</p>
+                    <p style="margin: 0;">Tel.: 2236323245</p>
                 </div>
             </div>
         </div>

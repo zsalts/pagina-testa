@@ -133,8 +133,17 @@ window.dibujarTablaPresupuestos = function() {
 
             const estiloBadgeDoc = `display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; font-size: 0.85em; padding: 4px 8px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; margin-right: 5px; min-width: 35px;`;
 
+            // Documento 1: El PDF del Presupuesto que le mandaste al cliente
             let docsHTML = p.link ? `<a href="${p.link}" target="_blank" style="${estiloBadgeDoc}" title="Presupuesto Inicial">PRE</a>` : '';
             
+            // Documento 2: LA MAGIA NUEVA -> La OC generada automáticamente por el sistema
+            if (p.ordenCompraLink) {
+                let tituloOC = p.ordenCompraNro ? `Orden de Compra Nº ${p.ordenCompraNro}` : `Orden de Compra Autogenerada`;
+                // Le damos un color naranjita/amarillo para diferenciarlo
+                docsHTML += `<a href="${p.ordenCompraLink}" target="_blank" style="${estiloBadgeDoc} background:#fefce8; color:#b45309; border-color:#fde047;" title="${tituloOC}">OC</a>`;
+            }
+
+            // Documento 3+: Los archivos extra que vas subiendo a mano
             if (p.archivosExtra) {
                 let extras = Object.entries(p.archivosExtra);
                 extras.sort((a, b) => window.pesoDoc(a[0]) - window.pesoDoc(b[0]));
@@ -155,14 +164,11 @@ window.dibujarTablaPresupuestos = function() {
                 </div>
             `;
 
-            // === ACÁ ESTÁ EL FILTRO MÁGICO ===
-            // Agarra el nombre largo (ej: 26 - 03 - 26 - Dr. Casa - M181-26 - Camillas) y busca desde la "M"
             let textoLimpio = p.nombreArchivo || 'Presupuesto Inicial';
             const coincidencia = textoLimpio.match(/(M\d+-\d+\s*-\s*.*)/);
             if (coincidencia) {
-                textoLimpio = coincidencia[1]; // Se queda solo con "M181-26 - Camillas..."
+                textoLimpio = coincidencia[1]; 
             }
-            // Por las dudas, le sacamos el .pdf si quedó pegado
             textoLimpio = textoLimpio.replace('.pdf', '');
 
             htmlFilas += `<tr>
@@ -220,7 +226,7 @@ window.abrirModalEditar = (id) => {
             </div>`;
         });
     } else {
-        htmlArchivos = '<p style="font-size: 0.85em; color: #64748b; margin: 0; text-align: center;">No hay documentos adjuntos para borrar.</p>';
+        htmlArchivos = '<p style="font-size: 0.85em; color: #64748b; margin: 0; text-align: center;">No hay documentos adjuntos a mano para borrar.</p>';
     }
     
     if(contenedorArchivos) contenedorArchivos.innerHTML = htmlArchivos;

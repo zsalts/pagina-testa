@@ -71,8 +71,7 @@ window.actualizarTablaClientes = function() {
                 medicoId: m.id, medicoNombre: m.nombre, contacto: m.contacto, institucion: m.institucion,
                 fecha: v.fecha, fechaDisplay: new Date(v.fecha + 'T00:00:00').toLocaleDateString('es-AR'), 
                 pedido: v.pedido, estado: v.estado, entrega: v.entrega, idxReal: index,
-                presupuestoLink: v.presupuestoLink,
-                docOC: v.docOC, docRemito: v.docRemito, docFactura: v.docFactura
+                presupuestoLink: v.presupuestoLink
             });
         });
     });
@@ -83,33 +82,10 @@ window.actualizarTablaClientes = function() {
     let htmlCompletadas = '';
 
     todasLasVisitas.forEach(fila => {
-        let entregaHTML = fila.entrega && fila.estado === 'pendiente' ? `<span class="limite-entrega" style="display:block; margin-top:5px;"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
-        let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})" title="Tocar para cambiar" style="cursor:pointer;">${fila.estado}</span>`;
+        let entregaHTML = fila.entrega && fila.estado === 'pendiente' ? `<span class="limite-entrega"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
+        let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})" title="Tocar para cambiar">${fila.estado}</span>`;
 
         let iconoPdf = fila.presupuestoLink ? `<a href="${fila.presupuestoLink}" target="_blank" class="btn-icon" style="color: var(--red-alert); margin-left: 8px; font-size: 18px;" title="Ver Presupuesto Vinculado"><i class="fa-solid fa-file-pdf"></i></a>` : '';
-
-        // ETIQUETAS DE DOCUMENTOS (Solo se generan las que están en true)
-        let htmlOC = fila.docOC ? `<span style="background:#dcfce7; color:#16a34a; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;" title="OC Recibida"><i class="fa-solid fa-check"></i> OC</span>` : '';
-        let htmlRemito = fila.docRemito ? `<span style="background:#dcfce7; color:#16a34a; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;" title="Remito Entregado"><i class="fa-solid fa-check"></i> Rto</span>` : '';
-        let htmlFactura = fila.docFactura ? `<span style="background:#dcfce7; color:#16a34a; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;" title="Factura Emitida"><i class="fa-solid fa-check"></i> Fac</span>` : '';
-
-        let docsCargados = htmlOC + htmlRemito + htmlFactura;
-        
-        // Si no hay nada cargado, ponemos un icono de adjunto sutil para que el usuario pueda hacer click
-        if (docsCargados === '') {
-            docsCargados = `<span style="color: #94a3b8; font-size: 11px; text-decoration: underline;"><i class="fa-solid fa-paperclip"></i> Docs</span>`;
-        }
-
-        // El bloque completo de documentos que se va a ubicar a la derecha del Estado
-        let bloqueDocumentos = `
-            <div style="cursor:pointer; display:inline-flex; gap: 4px; align-items: center; margin-left: 8px; padding: 2px 4px; border: 1px dashed transparent; border-radius: 4px; transition: 0.2s;" 
-                 onmouseover="this.style.borderColor='var(--testa-blue)'" 
-                 onmouseout="this.style.borderColor='transparent'" 
-                 onclick="window.abrirModalDocs('${fila.medicoId}', ${fila.idxReal})" 
-                 title="Gestionar Documentos">
-                ${docsCargados}
-            </div>
-        `;
 
         let linkGoogleCalendar = '';
         if (fila.entrega && fila.estado === 'pendiente') {
@@ -127,12 +103,7 @@ window.actualizarTablaClientes = function() {
             <td data-label="Institución">${fila.institucion}</td>
             <td data-label="Fecha"><span class="fecha-visita">${fila.fechaDisplay}</span></td>
             <td data-label="Detalle"><div class="pedido-text">${fila.pedido}</div></td>
-            <td data-label="Estado / Docs / Límite">
-                <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                    ${estadoHTML} ${bloqueDocumentos}
-                </div>
-                ${entregaHTML}
-            </td>
+            <td data-label="Estado / Límite">${estadoHTML} ${entregaHTML}</td>
             <td data-label="Acción">
                 ${linkGoogleCalendar ? `<a href="${linkGoogleCalendar}" target="_blank" class="btn-icon" style="color:#4285F4;" title="Agendar"><i class="fa-solid fa-calendar-plus"></i></a>` : ''}
                 <button class="btn-icon btn-delete" onclick="window.borrarVisita('${fila.medicoId}', ${fila.idxReal})" title="Borrar"><i class="fa-regular fa-trash-can"></i></button>
@@ -158,53 +129,6 @@ window.actualizarTablaClientes = function() {
     const elStatCompletadas = document.getElementById('stat-completadas');
     if(elStatCompletadas) elStatCompletadas.innerText = stats.c;
 }
-
-// ==========================================
-// NUEVO: FUNCIONES DE DOCUMENTACIÓN
-// ==========================================
-window.abrirModalDocs = (idMedico, indexVisita) => {
-    const medico = listaMedicos.find(x => x.id === idMedico);
-    const visita = medico.visitas[indexVisita];
-    
-    document.getElementById('doc-medico-id').value = idMedico;
-    document.getElementById('doc-visita-idx').value = indexVisita;
-    
-    document.getElementById('check-oc').checked = visita.docOC || false;
-    document.getElementById('check-remito').checked = visita.docRemito || false;
-    document.getElementById('check-factura').checked = visita.docFactura || false;
-    
-    document.getElementById('modal-documentacion').classList.add('active');
-};
-
-const formDocs = document.getElementById('form-documentacion');
-if(formDocs) {
-    formDocs.onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.innerText = "Guardando...";
-
-        try {
-            const id = document.getElementById('doc-medico-id').value;
-            const idx = parseInt(document.getElementById('doc-visita-idx').value);
-            const m = listaMedicos.find(x => x.id === id);
-            
-            const visitasActualizadas = [...m.visitas];
-            visitasActualizadas[idx].docOC = document.getElementById('check-oc').checked;
-            visitasActualizadas[idx].docRemito = document.getElementById('check-remito').checked;
-            visitasActualizadas[idx].docFactura = document.getElementById('check-factura').checked;
-            
-            await updateDoc(doc(db, "clientes", id), { visitas: visitasActualizadas });
-            document.getElementById('modal-documentacion').classList.remove('active');
-        } catch (error) {
-            alert("Error al guardar estado de documentos.");
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Guardar Estado de Documentos";
-        }
-    };
-}
-
 
 window.borrarVisita = async (id, idx) => {
     if(confirm("¿Estás seguro de borrar esta visita?")) {
@@ -343,8 +267,7 @@ if (formNuevaVisita) {
             fecha: document.getElementById('nv-fecha-visita').value,
             entrega: nvFechaEntrega ? nvFechaEntrega.value : null,
             estado: document.getElementById('nv-estado-visita').value,
-            pedido: document.getElementById('nv-pedido-visita').value.trim(),
-            docOC: false, docRemito: false, docFactura: false
+            pedido: document.getElementById('nv-pedido-visita').value.trim()
         };
         
         try {
