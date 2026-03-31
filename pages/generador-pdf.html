@@ -30,7 +30,7 @@
             <nav class="sidebar-nav">
                 <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
                 <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
-                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i>Presupuestos</a>
+                <a href="generador-pdf.html" class="active"><i class="fa-solid fa-file-invoice-dollar"></i>Presupuestos</a>
                 <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
                 <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
             </nav>
@@ -56,17 +56,14 @@
                         <div class="pdf-datos-header">
                             <div class="form-group">
                                 <label>NRO. PRESUPUESTO</label>
-                                <div
-                                    style="display: flex; align-items: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding-left: 12px; height: 43px;">
+                                <div style="display: flex; align-items: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding-left: 12px; height: 43px;">
                                     <span style="font-weight: bold; color: var(--testa-blue-dark);">M</span>
-                                    <input type="number" id="nro-presupuesto-input" required
-                                        style="border: none; background: transparent; height: 100%; box-shadow: none; width: 100%;">
+                                    <input type="number" id="nro-presupuesto-input" required style="border: none; background: transparent; height: 100%; box-shadow: none; width: 100%;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>CLIENTE</label>
-                                <input list="lista-nombres-medicos" id="cliente-nombre"
-                                    placeholder="Buscá o escribí el médico..." required autocomplete="off">
+                                <input list="lista-nombres-medicos" id="cliente-nombre" placeholder="Buscá o escribí el médico..." required autocomplete="off">
                                 <datalist id="lista-nombres-medicos"></datalist>
                             </div>
                             <div class="form-group">
@@ -75,12 +72,9 @@
                             </div>
                         </div>
 
-                        <div class="form-group"
-                            style="margin-bottom: 25px; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px dashed var(--testa-blue);">
-                            <label style="color: var(--testa-blue-dark); font-weight: 700;"><i
-                                    class="fa-solid fa-handshake"></i> VINCULAR A UNA VISITA DEL CRM (OPCIONAL)</label>
-                            <select id="vinculo-visita"
-                                style="width: 100%; border: none; background: white; padding: 10px; border-radius: 6px; margin-top: 8px; box-shadow: var(--shadow-sm); color: var(--testa-blue-dark); font-family: 'Inter', sans-serif;">
+                        <div class="form-group" style="margin-bottom: 25px; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px dashed var(--testa-blue);">
+                            <label style="color: var(--testa-blue-dark); font-weight: 700;"><i class="fa-solid fa-handshake"></i> VINCULAR A UNA VISITA DEL CRM (OPCIONAL)</label>
+                            <select id="vinculo-visita" style="width: 100%; border: none; background: white; padding: 10px; border-radius: 6px; margin-top: 8px; box-shadow: var(--shadow-sm); color: var(--testa-blue-dark); font-family: 'Inter', sans-serif;">
                                 <option value="">-- Escribí un médico arriba para ver sus visitas --</option>
                             </select>
                         </div>
@@ -91,8 +85,7 @@
                             </button>
                         </div>
 
-                        <div class="table-card"
-                            style="box-shadow: none; border: 1px solid var(--border-color); overflow-x: auto; margin-bottom: 25px;">
+                        <div class="table-card" style="box-shadow: none; border: 1px solid var(--border-color); overflow-x: auto; margin-bottom: 25px;">
                             <table class="items-table">
                                 <thead>
                                     <tr>
@@ -110,14 +103,11 @@
                                     <tr class="item-row">
                                         <td>
                                             <div style="display: flex; gap: 5px; height: 100%;">
-                                                <input type="text" placeholder="Producto" class="item-desc"
-                                                    style="flex: 1;">
-                                                <button type="button" class="btn-search-prod"
-                                                    title="Buscar en catálogo"><i class="fas fa-search"></i></button>
+                                                <input type="text" placeholder="Producto" class="item-desc" style="flex: 1;">
+                                                <button type="button" class="btn-search-prod" title="Buscar en catálogo"><i class="fas fa-search"></i></button>
                                             </div>
                                         </td>
-                                        <td><textarea placeholder="Especificaciones..." class="item-detalles"
-                                                rows="1"></textarea></td>
+                                        <td><textarea placeholder="Especificaciones..." class="item-detalles" rows="1"></textarea></td>
                                         <td><input type="number" value="1" min="1" class="item-cant"></td>
                                         <td>
                                             <select class="item-moneda">
@@ -133,46 +123,33 @@
                                                 <option value="0">Exento</option>
                                             </select>
                                         </td>
-                                        <td class="item-subtotal-cell"><span class="simbolo-linea">$</span> <span
-                                                class="item-subtotal">0.00</span></td>
-                                        <td style="text-align: center;"><button type="button"
-                                                class="btn-icon btn-delete btn-remove-item"><i
-                                                    class="fa-regular fa-trash-can"></i></button></td>
+                                        <td class="item-subtotal-cell"><span class="simbolo-linea">$</span> <span class="item-subtotal">0.00</span></td>
+                                        <td style="text-align: center;"><button type="button" class="btn-icon btn-delete btn-remove-item"><i class="fa-regular fa-trash-can"></i></button></td>
                                     </tr>
                                 </tbody>
                                 <tfoot class="tfoot-web-totales">
                                     <tr>
-                                        <td colspan="8"
-                                            style="padding: 0; border: none; border-bottom: 1px solid var(--border-color);">
-                                            <button type="button" id="btn-add-presupuesto-item"
-                                                style="width: 100%; padding: 12px; background: #f0f9ff; border: none; color: var(--testa-blue); font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;">
+                                        <td colspan="8" style="padding: 0; border: none; border-bottom: 1px solid var(--border-color);">
+                                            <button type="button" id="btn-add-presupuesto-item" style="width: 100%; padding: 12px; background: #f0f9ff; border: none; color: var(--testa-blue); font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;">
                                                 + Agregar Ítem Extra
                                             </button>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="6" class="label-total-cell" style="background: #f8fafc;">BASE
-                                            IMPONIBLE</td>
-                                        <td colspan="2" class="value-total-cell" style="background: #f8fafc;"><span
-                                                class="simbolo-total">$</span> <span id="web-base-imponible">0.00</span>
-                                        </td>
+                                        <td colspan="6" class="label-total-cell" style="background: #f8fafc;">BASE IMPONIBLE</td>
+                                        <td colspan="2" class="value-total-cell" style="background: #f8fafc;"><span class="simbolo-total">$</span> <span id="web-base-imponible">0.00</span></td>
                                     </tr>
                                     <tr>
                                         <td colspan="6" class="label-total-cell">IVA 10,5 %</td>
-                                        <td colspan="2" class="value-total-cell"><span class="simbolo-total">$</span>
-                                            <span id="web-iva-10">0.00</span></td>
+                                        <td colspan="2" class="value-total-cell"><span class="simbolo-total">$</span> <span id="web-iva-10">0.00</span></td>
                                     </tr>
                                     <tr>
                                         <td colspan="6" class="label-total-cell">IVA 21%</td>
-                                        <td colspan="2" class="value-total-cell"><span class="simbolo-total">$</span>
-                                            <span id="web-iva-21">0.00</span></td>
+                                        <td colspan="2" class="value-total-cell"><span class="simbolo-total">$</span> <span id="web-iva-21">0.00</span></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="6" class="label-total-cell total-highlight">TOTAL CON IVA INCLUIDO
-                                        </td>
-                                        <td colspan="2" class="value-total-cell total-highlight"><span
-                                                class="simbolo-total">$</span> <span id="web-total-final">0.00</span>
-                                        </td>
+                                        <td colspan="6" class="label-total-cell total-highlight">TOTAL CON IVA INCLUIDO</td>
+                                        <td colspan="2" class="value-total-cell total-highlight"><span class="simbolo-total">$</span> <span id="web-total-final">0.00</span></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -188,13 +165,11 @@
                                 <label style="color: var(--testa-blue-dark); font-weight: 700;">
                                     <i class="fa-solid fa-paperclip"></i> ADJUNTAR FOLLETO TÉCNICO (Solo PDF - Opcional)
                                 </label>
-                                <input type="file" id="input-folleto-pdf" accept=".pdf"
-                                    style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
+                                <input type="file" id="input-folleto-pdf" accept=".pdf" style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-add width-100"
-                            style="padding: 15px; font-size: 16px; margin-top: 15px;">
+                        <button type="submit" class="btn btn-add width-100" style="padding: 15px; font-size: 16px; margin-top: 15px;">
                             <i class="fa-solid fa-file-pdf"></i> GENERAR Y DESCARGAR Presupuesto
                         </button>
                     </form>
@@ -207,8 +182,7 @@
         <div class="modal modern-modal">
             <div class="modal-header">
                 <h3>Nuevo Producto al Catálogo</h3>
-                <button type="button" class="btn-close-modal" id="btn-cerrar-modal"><i
-                        class="fa-solid fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="btn-cerrar-modal"><i class="fa-solid fa-times"></i></button>
             </div>
             <form id="form-nuevo-producto" class="modern-form">
                 <div class="form-group">
@@ -251,8 +225,7 @@
         <div class="modal modern-modal modal-md">
             <div class="modal-header">
                 <h3>Seleccionar Producto</h3>
-                <button type="button" class="btn-close-modal" id="btn-cerrar-buscador"><i
-                        class="fa-solid fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="btn-cerrar-buscador"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="modern-form">
                 <div class="form-group">
@@ -277,9 +250,7 @@
                     <label>Producto</label>
                     <div class="input-with-action">
                         <input type="text" id="mob-desc" required>
-                        <button type="button" class="btn-input-action" id="btn-buscar-mob"
-                            style="background: var(--testa-blue); color: white; border: none;"><i
-                                class="fas fa-search"></i></button>
+                        <button type="button" class="btn-input-action" id="btn-buscar-mob" style="background: var(--testa-blue); color: white; border: none;"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
                 <div class="form-group"><label>Detalles</label><textarea id="mob-detalles"></textarea></div>
@@ -294,8 +265,7 @@
                     </div>
                 </div>
                 <div class="form-row-2">
-                    <div class="form-group"><label>Precio Unit.</label><input type="number" step="0.01" id="mob-precio">
-                    </div>
+                    <div class="form-group"><label>Precio Unit.</label><input type="number" step="0.01" id="mob-precio"></div>
                     <div class="form-group">
                         <label>IVA %</label>
                         <select id="mob-iva">
@@ -306,52 +276,48 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100"
-                        style="padding: 15px; background: var(--green-success);">Confirmar Datos</button>
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px; background: var(--green-success);">Confirmar Datos</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="pdf-wrapper"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -9999; opacity: 0; pointer-events: none; display: flex; justify-content: center; align-items: flex-start; background: white;">
-        <div id="pdf-content"
-            style="width: 800px; height: 1131px; background: white; font-family: Arial, sans-serif; color: #333; position: relative; box-sizing: border-box; overflow: hidden;">
-            <div
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 160px; overflow: hidden; background: linear-gradient(135deg, #004b7c, #007bff);">
-                <svg viewBox="0 0 1440 320" style="position: absolute; bottom: 0; left: 0; width: 100%; height: auto;">
-                    <path fill="#ffffff"
-                        d="M0,224L60,208C120,192,240,160,360,165.3C480,171,600,213,720,218.7C840,224,960,192,1080,170.7C1200,149,1320,139,1380,133.3L1440,128L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z">
-                    </path>
+    <div id="pdf-wrapper" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -9999; opacity: 0; pointer-events: none; display: flex; justify-content: center; align-items: flex-start; background: white;">
+        <div id="pdf-content" style="width: 800px; height: 1131px; background: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; position: relative; box-sizing: border-box; overflow: hidden;">
+            
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 210px;">
+                <svg viewBox="0 0 800 210" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                    <path d="M0,0 L800,0 L800,100 C500,240 200,90 0,70 Z" fill="#009edb" />
+                    <path d="M0,0 L800,0 L800,45 C400,170 100,210 0,140 Z" fill="#143c5a" />
                 </svg>
-                <div style="position: absolute; top: 30px; left: 40px; color: white;">
-                    <h1 style="font-size: 42px; margin: 0; font-weight: normal; letter-spacing: 2px;">TESTA</h1>
-                    <p style="font-size: 12px; margin: 0; letter-spacing: 1px;">EQUIPAMIENTO MEDICO</p>
+                <div style="position: absolute; top: 55px; left: 50px; color: white;">
+                    <h1 style="font-size: 52px; margin: 0; font-weight: 400; font-family: 'Segoe UI', Arial, sans-serif; letter-spacing: 1px;">TESTA</h1>
+                    <p style="font-size: 13px; margin: 0; letter-spacing: 0.5px; margin-top: -2px;">EQUIPAMIENTO MEDICO</p>
                 </div>
             </div>
-            <div
-                style="padding: 170px 40px 20px 40px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-                <div style="text-align: center; margin-bottom: 5px;">
-                    <h1 style="font-size: 20px; margin: 0; font-weight: normal;">X</h1>
+
+            <div style="padding: 215px 50px 30px 50px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+                
+                <div style="text-align: center; margin-bottom: 25px; margin-top: -15px;">
+                    <h1 style="font-size: 26px; margin: 0; font-weight: normal; font-family: serif;">X</h1>
                     <p style="font-size: 10px; margin: 0; color: #666;">Doc. No válido como factura</p>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
-                    <div>Presupuesto Nro. <span id="pdf-nro-presupuesto-texto"></span></div>
-                    <div id="pdf-fecha-text"></div>
-                </div>
-                <div style="font-size: 13px; margin-bottom: 15px;">Cliente.: <span
-                        id="pdf-cliente-nombre"></span><br>Presente.</div>
 
-                <table
-                    style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 5px; table-layout: fixed;">
+                <div style="margin-bottom: 25px;">
+                    <div style="font-size: 13px; font-weight: bold; color: #555;">Presupuesto Nro. <span id="pdf-nro-presupuesto-texto"></span></div>
+                    <div id="pdf-fecha-text" style="font-size: 13px; text-align: right; margin-top: 10px; margin-bottom: 20px; color: #000;"></div>
+                    <div style="font-size: 13px; color: #000; line-height: 1.4;">Cliente.: <span id="pdf-cliente-nombre"></span><br>Presente.</div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px; table-layout: fixed;">
                     <thead>
-                        <tr style="background: #003b5c; color: white;">
-                            <th style="width: 8%; padding: 8px; border: 1px solid #003b5c;">Renglón</th>
-                            <th style="width: 47%; padding: 8px; border: 1px solid #003b5c;">Descripción</th>
-                            <th style="width: 7%; padding: 8px; border: 1px solid #003b5c;">Cant.</th>
-                            <th style="width: 13%; padding: 8px; border: 1px solid #003b5c;">P. Unitario</th>
-                            <th style="width: 10%; padding: 8px; border: 1px solid #003b5c;">% IVA</th>
-                            <th style="width: 15%; padding: 8px; border: 1px solid #003b5c;">P. Total</th>
+                        <tr style="background: #143c5a; color: white;">
+                            <th style="width: 8%; padding: 6px; border: 1px solid #333; font-weight: normal;">Renglón</th>
+                            <th style="width: 47%; padding: 6px; border: 1px solid #333; font-weight: normal;">Descripción</th>
+                            <th style="width: 7%; padding: 6px; border: 1px solid #333; font-weight: normal;">Cant.</th>
+                            <th style="width: 14%; padding: 6px; border: 1px solid #333; font-weight: normal;">P. Unitario</th>
+                            <th style="width: 9%; padding: 6px; border: 1px solid #333; font-weight: normal;">% IVA</th>
+                            <th style="width: 15%; padding: 6px; border: 1px solid #333; font-weight: normal;">P. Total</th>
                         </tr>
                     </thead>
                     <tbody id="pdf-tbody"></tbody>
@@ -359,24 +325,20 @@
                 </table>
 
                 <div>
-                    <h3
-                        style="font-size: 12px; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 3px;">
-                        Condiciones Particulares</h3>
-                    <div id="pdf-condiciones-container"
-                        style="font-size: 10px; line-height: 1.4; white-space: pre-wrap;"></div>
+                    <h3 style="font-size: 13px; margin-bottom: 12px; color: #666; font-weight: bold;">Condiciones Particulares del Siguiente Presupuesto</h3>
+                    <div id="pdf-condiciones-container" style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 10px;"></div>
                 </div>
 
-                <div style="margin-top: 15px; font-size: 11px;">
+                <div style="margin-top: 35px; font-size: 12px; color: #555;">
                     <p style="margin: 0;">Ate.:</p>
-                    <img src="../assets/img/firma.png" style="height: 65px; margin: 5px 0; display: block;"
-                        alt="Firma Álvaro Testa">
-                    <p style="margin: 0; font-weight: bold; color: #004b7c; font-size: 13px;">Álvaro Testa</p>
-                    <p style="margin: 0;">Gerente</p>
+                    <img src="../assets/img/firma.png" style="height: 60px; margin: 5px 0; display: block;" alt="Firma Álvaro">
+                    <p style="margin: 0; color: #333;">Álvaro Testa</p>
+                    <p style="margin: 0; color: #666;">Gerente</p>
                 </div>
 
-                <div style="margin-top: auto; text-align: center; font-size: 9px; color: #555;">
-                    <div style="border-top: 2px solid #007bff; margin-bottom: 5px;"></div>
-                    <p>Alsina 2161 1°A - Mar del Plata - 223 - 632 3245 - ventas@emtesta.com</p>
+                <div style="margin-top: auto; text-align: center; font-size: 11px; color: #000;">
+                    <div style="border-top: 2px solid #009edb; margin-bottom: 8px;"></div>
+                    <p style="margin: 0;">Alsina 2161 1°A - Mar del Plata - 223 - 632 3245 - ventas@emtesta.com</p>
                 </div>
             </div>
         </div>
@@ -387,16 +349,13 @@
         const btnMenu = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        const mainWrapper = document.querySelector('.main-wrapper'); // Sumamos el contenedor principal
+        const mainWrapper = document.querySelector('.main-wrapper'); 
 
         function toggleMenu() {
-            // Si la pantalla es chica (Celular o Tablet)
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('open');
                 overlay.classList.toggle('active');
-            }
-            // Si la pantalla es grande (PC / Mac)
-            else {
+            } else {
                 sidebar.classList.toggle('collapsed-desktop');
                 mainWrapper.classList.toggle('expanded-desktop');
             }
@@ -406,5 +365,4 @@
         if (overlay) overlay.addEventListener('click', toggleMenu);
     </script>
 </body>
-
 </html>

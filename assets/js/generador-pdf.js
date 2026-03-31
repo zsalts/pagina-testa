@@ -8,16 +8,8 @@ let listaMedicosCompletos = [];
 let filaEnEdicion = null;
 let destinoBuscador = 'desktop';
 
-// ==========================================
-// 1. ANTI-CONGELAMIENTO
-// ==========================================
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) { window.location.reload(); }
-});
+window.addEventListener('pageshow', (event) => { if (event.persisted) { window.location.reload(); } });
 
-// ==========================================
-// 2. FUNCIONES DE VINCULACIÓN Y TABLA
-// ==========================================
 const actualizarSelectorVisitas = (e) => {
     const selectVisita = document.getElementById('vinculo-visita');
     if (!selectVisita) return;
@@ -28,12 +20,10 @@ const actualizarSelectorVisitas = (e) => {
         selectVisita.innerHTML = '<option value="">-- El médico no existe en la base --</option>';
         return;
     }
-
     if (!medicoEncontrado.visitas || medicoEncontrado.visitas.length === 0) {
         selectVisita.innerHTML = '<option value="">No tiene visitas cargadas en el CRM</option>';
         return;
     }
-
     let opciones = '<option value="">-- Opcional: No vincular a ninguna visita --</option>';
     medicoEncontrado.visitas.forEach((v, index) => {
         let indicativo = v.presupuestoLink ? " 📌 (Ya tiene PDF)" : "";
@@ -49,9 +39,7 @@ if (clienteInput) {
 }
 
 document.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-close-modal')) {
-        e.target.closest('.modal-overlay')?.classList.remove('active');
-    }
+    if (e.target.closest('.btn-close-modal')) { e.target.closest('.modal-overlay')?.classList.remove('active'); }
 });
 
 function abrirBuscador(fila, destino = 'desktop') {
@@ -61,10 +49,7 @@ function abrirBuscador(fila, destino = 'desktop') {
     if(inputBusqueda) inputBusqueda.value = '';
     renderizarResultados('');
     const modalBuscador = document.getElementById('modal-buscador-productos');
-    if(modalBuscador) {
-        modalBuscador.classList.add('active');
-        setTimeout(() => { if(inputBusqueda) inputBusqueda.focus() }, 100);
-    }
+    if(modalBuscador) { modalBuscador.classList.add('active'); setTimeout(() => { if(inputBusqueda) inputBusqueda.focus() }, 100); }
 }
 
 function renderizarResultados(filtro) {
@@ -91,13 +76,7 @@ function renderizarResultados(filtro) {
         div.className = 'modern-list-item resultado-item-cat';
         const precioSeguro = (prod.precio || 0).toLocaleString('es-AR', {minimumFractionDigits: 2});
         
-        div.innerHTML = `
-            <div style="width:100%;">
-                <div class="cat-titulo">${prod.nombre || "Sin nombre"}</div>
-                <div class="cat-detalles">${prod.detalles || "Sin detalles"}</div>
-                <div class="cat-precio">Precio: ${prod.moneda || "ARS"} ${precioSeguro} | IVA: ${prod.iva || 0}%</div>
-            </div>
-        `;
+        div.innerHTML = `<div style="width:100%;"><div class="cat-titulo">${prod.nombre || "Sin nombre"}</div><div class="cat-detalles">${prod.detalles || "Sin detalles"}</div><div class="cat-precio">Precio: ${prod.moneda || "ARS"} ${precioSeguro} | IVA: ${prod.iva || 0}%</div></div>`;
         
         div.addEventListener('click', () => {
             if (destinoBuscador === 'mobile') {
@@ -148,21 +127,15 @@ function calcular() {
     const tFinal = document.getElementById('web-total-final'); if(tFinal) tFinal.textContent = (base + i10 + i21).toLocaleString('es-AR', {minimumFractionDigits: 2});
 }
 
-// ==========================================
-// 3. EVENTOS DE BOTONES
-// ==========================================
 const btnAbrirModalProd = document.getElementById('btn-abrir-modal-prod');
-if (btnAbrirModalProd) {
-    btnAbrirModalProd.addEventListener('click', () => document.getElementById('modal-producto')?.classList.add('active'));
-}
+if (btnAbrirModalProd) { btnAbrirModalProd.addEventListener('click', () => document.getElementById('modal-producto')?.classList.add('active')); }
 
 const formNuevoProd = document.getElementById('form-nuevo-producto');
 if (formNuevoProd) {
     formNuevoProd.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnGuardar = e.target.querySelector('button[type="submit"]');
-        btnGuardar.disabled = true;
-        btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+        btnGuardar.disabled = true; btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
         const nuevoProd = {
             nombre: document.getElementById('nuevo-prod-nombre').value.trim(),
@@ -171,30 +144,21 @@ if (formNuevoProd) {
             moneda: document.getElementById('nuevo-prod-moneda').value || 'ARS',
             iva: parseFloat(document.getElementById('nuevo-prod-iva').value) || 21
         };
-        
         try {
             await addDoc(collection(db, "productos"), nuevoProd);
             e.target.reset();
             document.getElementById('modal-producto')?.classList.remove('active');
             alert("¡Producto añadido al catálogo!");
-        } catch (error) { 
-            alert("Error al guardar en la nube."); 
-        } finally { 
-            btnGuardar.disabled = false; 
-            btnGuardar.innerText = "Guardar en Nube"; 
-        }
+        } catch (error) { alert("Error al guardar en la nube."); } 
+        finally { btnGuardar.disabled = false; btnGuardar.innerText = "Guardar en Nube"; }
     });
 }
 
 const btnBuscarMob = document.getElementById('btn-buscar-mob');
-if (btnBuscarMob) {
-    btnBuscarMob.addEventListener('click', () => { abrirBuscador(filaEnEdicion, 'mobile'); });
-}
+if (btnBuscarMob) { btnBuscarMob.addEventListener('click', () => { abrirBuscador(filaEnEdicion, 'mobile'); }); }
 
 const inputBusquedaRapida = document.getElementById('input-busqueda-rapida');
-if(inputBusquedaRapida) {
-    inputBusquedaRapida.addEventListener('input', (e) => renderizarResultados(e.target.value));
-}
+if(inputBusquedaRapida) { inputBusquedaRapida.addEventListener('input', (e) => renderizarResultados(e.target.value)); }
 
 const nroInput = document.getElementById('nro-presupuesto-input');
 const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
@@ -211,30 +175,17 @@ const tbody = document.getElementById('items-tbody-presupuesto');
 if (tbody) {
     tbody.addEventListener('input', calcular);
     tbody.addEventListener('change', calcular);
-    
     tbody.addEventListener('click', e => { 
         const fila = e.target.closest('.item-row');
         if(!fila) return;
 
         const btnBorrar = e.target.closest('.btn-remove-item');
         if (btnBorrar) { 
-            if (tbody.querySelectorAll('.item-row').length > 1) { 
-                fila.remove(); 
-            } else {
-                fila.querySelector('.item-desc').value = "";
-                fila.querySelector('.item-detalles').value = "";
-                fila.querySelector('.item-cant').value = 1;
-                fila.querySelector('.item-precio').value = 0;
-            }
-            calcular(); 
-            return;
+            if (tbody.querySelectorAll('.item-row').length > 1) { fila.remove(); } 
+            else { fila.querySelector('.item-desc').value = ""; fila.querySelector('.item-detalles').value = ""; fila.querySelector('.item-cant').value = 1; fila.querySelector('.item-precio').value = 0; }
+            calcular(); return;
         }
-
-        if (e.target.closest('.btn-search-prod')) {
-            abrirBuscador(fila, 'desktop');
-            return;
-        }
-
+        if (e.target.closest('.btn-search-prod')) { abrirBuscador(fila, 'desktop'); return; }
         if (window.innerWidth <= 768) {
             filaEnEdicion = fila;
             const md = document.getElementById('mob-desc'); if(md) md.value = fila.querySelector('.item-desc').value;
@@ -281,9 +232,7 @@ if (formEdicionMobile) {
 }
 
 const condWeb = document.getElementById('condiciones-web');
-if (condWeb) {
-    condWeb.value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`;
-}
+if (condWeb) { condWeb.value = `▪ Estos Precios NO INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios NO incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`; }
 
 const fileToBase64 = (blob) => {
     return new Promise((resolve, reject) => {
@@ -311,59 +260,77 @@ if(formPresupuesto) {
         localStorage.setItem('testa_ultimo_nro', nroBase);
         const primerProd = tbody && tbody.querySelector('.item-row') ? tbody.querySelector('.item-desc').value || "Doc" : "Doc";
         
-        // --- AQUÍ ESTÁ EL CAMBIO PARA EL NOMBRE LARG0 EXACTO ---
         const partesFecha = fechaElegida.split('-'); 
         const dia = partesFecha[2];
         const mes = partesFecha[1];
         const anio = partesFecha[0].slice(-2); 
         
         const fechaFormateada = `${dia} - ${mes} - ${anio}`; 
-
-        // Crea el nombre largo como: 26 - 03 - 26 - Compras CNYF - M181-26 - Camillas de Traslado
         const nombreDeseado = `${fechaFormateada} - ${cliente} - M${nroBase}-${anioCur} - ${primerProd}`.replace(/[#%&{}\\<>*?/$!'":@+`|=]/g, "");
-        
         const nombreCarpetaDeseado = nombreDeseado;
         const fileName = `${nombreDeseado}.pdf`;
 
         const pClienteNom = document.getElementById('pdf-cliente-nombre'); if(pClienteNom) pClienteNom.textContent = cliente;
         const pNroPres = document.getElementById('pdf-nro-presupuesto-texto'); if(pNroPres) pNroPres.textContent = `M ${nroBase}-${anioCur}`;
-        const pFechaText = document.getElementById('pdf-fecha-text'); if(pFechaText) pFechaText.textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-        const pCondContainer = document.getElementById('pdf-condiciones-container'); if(pCondContainer && condWeb) pCondContainer.textContent = condWeb.value;
+        const pFechaText = document.getElementById('pdf-fecha-text'); 
+        if(pFechaText) {
+            const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            pFechaText.textContent = "Mar del Plata, " + fechaObj.toLocaleDateString('es-AR', opcionesFecha);
+        }
 
+        const pCondContainer = document.getElementById('pdf-condiciones-container'); 
+        if(pCondContainer && condWeb) {
+            let textoCond = condWeb.value
+                .replace(/\n/g, '<br>') 
+                .replace(/NO INCLUYEN IVA/g, '<strong>NO INCLUYEN IVA</strong>') 
+                .replace(/NO incluyen los gastos de flete, seguro de transporte y acarreo/g, '<strong>NO incluyen los gastos de flete, seguro de transporte y acarreo</strong>');
+            pCondContainer.innerHTML = textoCond;
+        }
+
+        const formatoContable = (valText) => { return String(valText).replace(',00', ',-'); };
+
+        let arrayDeItemsParaDB = []; // <--- NUEVA MAGIA: Guardamos los ítems
         const pdfTbody = document.getElementById('pdf-tbody');
         if(pdfTbody && tbody) {
             pdfTbody.innerHTML = '';
             let sim = "$";
             tbody.querySelectorAll('.item-row').forEach((f, idx) => {
                 sim = f.querySelector('.simbolo-linea').textContent;
+                const desc = f.querySelector('.item-desc').value;
+                const cant = f.querySelector('.item-cant').value;
+                const pUni = formatoContable(parseFloat(f.querySelector('.item-precio').value).toLocaleString('es-AR',{minimumFractionDigits:2}));
+                const iva = f.querySelector('.item-iva').value;
+                const pTot = formatoContable(f.querySelector('.item-subtotal').textContent);
+                const det = f.querySelector('.item-detalles').value;
+                
+                // Guardamos en el array para Firestore
+                arrayDeItemsParaDB.push({ desc: desc, cant: cant, detalle: det });
+
+                const detHtml = det ? `<div style="margin-top: 3px; font-size: 10px; color: #444;">${det}</div>` : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${idx + 1}</td>
-                    <td style="border:1px solid #003b5c; padding:8px; vertical-align:top; overflow-wrap: anywhere; word-break: break-all; white-space: normal;">
-                        <strong style="display:block; margin-bottom:4px;">${f.querySelector('.item-desc').value}</strong>
-                        <div style="font-size: 9px; color: #444; white-space: pre-wrap;">${f.querySelector('.item-detalles').value}</div>
-                    </td>
-                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-cant').value}</td>
-                    <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${parseFloat(f.querySelector('.item-precio').value).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
-                    <td style="border:1px solid #003b5c; padding:8px; text-align:center; vertical-align:top;">${f.querySelector('.item-iva').value}%</td>
-                    <td style="border:1px solid #003b5c; padding:8px; text-align:right; vertical-align:top;">${sim} ${f.querySelector('.item-subtotal').textContent}</td>`;
+                    <td style="border:1px solid #333; padding:8px 5px; text-align:center; vertical-align:top; color:#000;">${idx + 1}</td>
+                    <td style="border:1px solid #333; padding:8px 5px; vertical-align:top; color:#000;"><span style="display:block;">${desc}</span>${detHtml}</td>
+                    <td style="border:1px solid #333; padding:8px 5px; text-align:center; vertical-align:top; color:#000;">${cant}</td>
+                    <td style="border:1px solid #333; padding:8px 5px; text-align:right; vertical-align:top; color:#000;">${sim} ${pUni}</td>
+                    <td style="border:1px solid #333; padding:8px 5px; text-align:center; vertical-align:top; color:#000;">${iva == 0 ? 'Exento' : iva + '%'}</td>
+                    <td style="border:1px solid #333; padding:8px 5px; text-align:right; vertical-align:top; color:#000;">${sim} ${pTot}</td>`;
                 pdfTbody.appendChild(tr);
             });
-        }
 
-        const b = document.getElementById('web-base-imponible')?.textContent || "0.00";
-        const i10 = document.getElementById('web-iva-10')?.textContent || "0.00";
-        const i21 = document.getElementById('web-iva-21')?.textContent || "0.00";
-        const t = document.getElementById('web-total-final')?.textContent || "0.00";
-        let sim = tbody?.querySelector('.simbolo-linea')?.textContent || "$";
+            const b = formatoContable(document.getElementById('web-base-imponible')?.textContent || "0.00");
+            const i10 = formatoContable(document.getElementById('web-iva-10')?.textContent || "0.00");
+            const i21 = formatoContable(document.getElementById('web-iva-21')?.textContent || "0.00");
+            const t = formatoContable(document.getElementById('web-total-final')?.textContent || "0.00");
 
-        const pTfoot = document.getElementById('pdf-tfoot');
-        if(pTfoot) {
-            pTfoot.innerHTML = `
-                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">BASE IMPONIBLE</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#d0e4f5; font-weight:bold;">${sim} ${b}</td></tr>
-                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 10,5 %</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i10}</td></tr>
-                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">IVA 21%</td><td style="border:1px solid #003b5c; padding:8px; text-align:right;">${sim} ${i21}</td></tr>
-                <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">TOTAL CON IVA INCLUIDO</td><td style="border:1px solid #003b5c; padding:8px; text-align:right; background:#b8d1e8; font-weight:bold; color:#003b5c;">${sim} ${t}</td></tr>`;
+            const pTfoot = document.getElementById('pdf-tfoot');
+            if(pTfoot) {
+                pTfoot.innerHTML = `
+                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; color:#000;">Base Imponible</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; color:#000;">${sim} ${b}</td></tr>
+                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">IVA 10,5 %</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">${sim} ${i10}</td></tr>
+                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">IVA 21%</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">${sim} ${i21}</td></tr>
+                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; background:#f0f0f0; color:#000;">TOTAL</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; background:#f0f0f0; color:#000;">${sim} ${t}</td></tr>`;
+            }
         }
 
         const wrapper = document.getElementById('pdf-wrapper');
@@ -398,17 +365,15 @@ if(formPresupuesto) {
             const peticionDrive = await fetch(urlGoogleScript, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ 
-                    pdfBase64: base64data, 
-                    fileName: fileName,
-                    carpeta: nombreCarpetaDeseado 
-                })
+                body: JSON.stringify({ pdfBase64: base64data, fileName: fileName, carpeta: nombreCarpetaDeseado })
             });
 
             const respuestaDrive = await peticionDrive.json();
             const linkDrive = respuestaDrive.url; 
 
-            // GUARDAMOS EL EXPEDIENTE EN FIREBASE CON EL NOMBRE LARGO
+            const visitaElegida = document.getElementById('vinculo-visita')?.value;
+
+            // ACA GUARDAMOS LOS ITEMS Y EL VINCULO EN LA BD
             const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
             const querySnap = await getDocs(q);
             
@@ -417,7 +382,9 @@ if(formPresupuesto) {
                     nombreArchivo: nombreDeseado, 
                     estado: 'pendiente',
                     fecha: fechaElegida,
-                    link: linkDrive 
+                    link: linkDrive,
+                    items: arrayDeItemsParaDB,
+                    vinculoVisita: visitaElegida || null 
                 });
             } else {
                 await addDoc(collection(db, "presupuestos"), { 
@@ -426,12 +393,12 @@ if(formPresupuesto) {
                     estado: 'pendiente', 
                     nombreArchivo: nombreDeseado,
                     link: linkDrive, 
-                    archivosExtra: {} 
+                    archivosExtra: {},
+                    items: arrayDeItemsParaDB,
+                    vinculoVisita: visitaElegida || null
                 });
             }
 
-            // VINCULACIÓN A LA VISITA
-            const visitaElegida = document.getElementById('vinculo-visita')?.value;
             if (visitaElegida) {
                 const [cId, vIdx] = visitaElegida.split('_');
                 const cRef = doc(db, "clientes", cId);
@@ -452,20 +419,15 @@ if(formPresupuesto) {
         } finally { 
             if(wrapper) { wrapper.style.opacity = "0"; wrapper.style.zIndex = "-9999"; }
             btnSubmit.disabled = false; 
-            btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR PDF'; 
+            btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR Y DESCARGAR Presupuesto'; 
         }
     });
 }
 
-// ==========================================
-// 4. LECTURA DE FIREBASE (AL FINAL DE TODO)
-// ==========================================
 onSnapshot(collection(db, "clientes"), (snap) => {
     listaMedicosCompletos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const dl = document.getElementById('lista-nombres-medicos');
-    if (dl) {
-        dl.innerHTML = listaMedicosCompletos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('');
-    }
+    if (dl) { dl.innerHTML = listaMedicosCompletos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join(''); }
 });
 
 onSnapshot(collection(db, "productos"), (snap) => {
