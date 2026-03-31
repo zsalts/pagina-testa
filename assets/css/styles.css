@@ -170,3 +170,32 @@ datalist, option { background-color: #ffffff !important; color: #0369a1 !importa
     @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .form-row-3, .form-row-2 { grid-template-columns: 1fr; }
 }
+/* --- MODIFICACIÓN CORREGIDA: MENÚ COLAPSABLE EN DESKTOP --- */
+
+/* 1. Botón hamburguesa siempre visible */
+#mobile-menu-btn {
+    display: block !important; 
+    cursor: pointer;
+}
+
+/* 2. Le damos transición a AMBOS para que se muevan y estiren juntos fluidamente */
+.sidebar, .main-wrapper {
+    transition: all 0.3s ease !important;
+}
+
+/* 3. Lógica para compu */
+@media (min-width: 769px) {
+    .sidebar.collapsed-desktop {
+        /* Al darle margen negativo, sacamos la barra del camino y liberamos el espacio real.
+           Asumo que tu barra mide unos 260px de ancho. Si ves que no se esconde del todo, 
+           o se esconde de más, ajustá este -260px. */
+        margin-left: -260px !important; 
+    }
+    
+    .main-wrapper.expanded-desktop {
+        /* Le decimos al contenido principal que ahora es dueño de toda la pantalla */
+        margin-left: 0 !important;
+        width: 100% !important;
+        flex: 1 !important; /* Clave por si tu diseño general usa Flexbox */
+    }
+}

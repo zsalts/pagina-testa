@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador Presupuesto | Testa CRM</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#003b5c">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css"> 
-    <link rel="stylesheet" href="generador-pdf.css">
+    <link rel="stylesheet" href="../assets/css/styles.css"> 
+    <link rel="stylesheet" href="../assets/css/generador-pdf.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
@@ -19,14 +19,14 @@
         
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <img src="IMG_2317.png" alt="Testa Equipamiento Médico" class="logo-img">
+                <img src="../assets/img/IMG_2317.png" alt="Testa Equipamiento Médico" class="logo-img">
                 <div class="logo-text">
                     <span class="brand">TESTA</span>
                     <span class="sub-brand">CRM System</span>
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <a href="index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
                 <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
                 <a href="generador-pdf.html" class="active"><i class="fa-solid fa-file-invoice-dollar"></i> Creador Presupuestos</a>
             </nav>
@@ -299,7 +299,7 @@
                 
                 <div style="margin-top: 15px; font-size: 11px;">
                     <p style="margin: 0;">Ate.:</p>
-                    <img src="firma.png" style="height: 65px; margin: 5px 0; display: block;" alt="Firma Álvaro Testa">
+                    <img src="../assets/img/firma.png" style="height: 65px; margin: 5px 0; display: block;" alt="Firma Álvaro Testa">
                     <p style="margin: 0; font-weight: bold; color: #004b7c; font-size: 13px;">Álvaro Testa</p>
                     <p style="margin: 0;">Gerente</p>
                 </div>
@@ -309,12 +309,26 @@
         </div>
     </div>
 
-    <script type="module" src="generador-pdf.js"></script>
-    <script>
+    <script type="module" src="../assets/js/generador-pdf.js"></script>
+<script>
         const btnMenu = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        function toggleMenu() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); }
+        const mainWrapper = document.querySelector('.main-wrapper'); // Sumamos el contenedor principal
+
+        function toggleMenu() { 
+            // Si la pantalla es chica (Celular o Tablet)
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open'); 
+                overlay.classList.toggle('active'); 
+            } 
+            // Si la pantalla es grande (PC / Mac)
+            else {
+                sidebar.classList.toggle('collapsed-desktop');
+                mainWrapper.classList.toggle('expanded-desktop');
+            }
+        }
+        
         if(btnMenu) btnMenu.addEventListener('click', toggleMenu);
         if(overlay) overlay.addEventListener('click', toggleMenu);
     </script>
