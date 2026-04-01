@@ -93,3 +93,70 @@ document.getElementById('btn-borrar-usuario-final')?.addEventListener('click', a
         window.cerrarModalEditar();
     }
 });
+// EVENTO PARA CREAR NUEVO USUARIO
+document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+
+    const usuario = document.getElementById('admin-user').value.trim();
+    const pass = document.getElementById('admin-pass').value.trim();
+    
+    // Capturar los checkboxes de accesos
+    let accesos = [];
+    document.querySelectorAll('.check-acceso:checked').forEach(checkbox => {
+        accesos.push(checkbox.value);
+    });
+
+    if (!usuario || !pass) {
+        alert("Por favor, completa usuario y contraseña.");
+        return;
+    }
+
+    try {
+        // Guardar en Firestore usando el Nickname como ID del documento
+        await setDoc(doc(db, "usuarios_permisos", usuario), {
+            usuario: usuario,
+            pass_aux: pass,
+            accesos: accesos,
+            fechaCreacion: new Date().toISOString()
+        });
+
+        alert(`¡Usuario ${usuario} creado con éxito!`);
+        document.getElementById('form-nuevo-usuario').reset(); // Limpiar formulario
+    } catch (error) {
+        console.error("Error al crear usuario:", error);
+        alert("Error al guardar en Firebase. Revisa la consola.");
+    }
+});
+// ESCUCHAR EL FORMULARIO DE CREACIÓN
+document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+
+    const usuario = document.getElementById('admin-user').value.trim();
+    const pass = document.getElementById('admin-pass').value.trim();
+    
+    // Capturar los checkboxes de accesos seleccionados
+    let accesos = [];
+    document.querySelectorAll('.check-acceso:checked').forEach(checkbox => {
+        accesos.push(checkbox.value);
+    });
+
+    if (!usuario || !pass) {
+        alert("Completar usuario y contraseña");
+        return;
+    }
+
+    try {
+        // Guardar en la colección 'usuarios_permisos'
+        await setDoc(doc(db, "usuarios_permisos", usuario), {
+            usuario: usuario,
+            pass_aux: pass,
+            accesos: accesos
+        });
+
+        alert(`¡Usuario ${usuario} creado con éxito!`);
+        document.getElementById('form-nuevo-usuario').reset(); 
+    } catch (error) {
+        console.error("Error al guardar en Firebase:", error);
+        alert("Error de Firebase: " + error.message);
+    }
+});
