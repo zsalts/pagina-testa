@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador | Testa CRM</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#003b5c">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text"><span class="brand">TESTA</span><span class="sub-brand">CRM System</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Presupuestos</a>
+                <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
+                </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+            <header class="top-header" style="background: #1e293b; color: white;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn" style="color:white;"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title" style="color:white;"><i class="fa-solid fa-user-shield"></i> Gestión de Usuarios y Permisos</h2>
+                </div>
+                <div class="user-profile-circle" style="background: var(--testa-blue);"><i class="fa-solid fa-user-gear"></i></div>
+            </header>
+
+            <main class="dashboard-content">
+                
+                <div class="form-row-2">
+                    <div class="table-card" style="padding: 25px; box-sizing: border-box;">
+                        <h3 style="color: var(--testa-blue-dark); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                            <i class="fa-solid fa-user-plus"></i> Crear Nuevo Usuario
+                        </h3>
+                        <form id="form-nuevo-usuario" class="modern-form">
+                            <div class="form-group">
+                                <label>Nombre de Usuario (Login)</label>
+                                <input type="text" id="admin-user" placeholder="Ej: contadora, ventas, deposito..." required style="background: #f8fafc;">
+                                <small style="color: #64748b; font-size: 11px;">El sistema le agregará @testa.com automáticamente.</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Contraseña Provisional</label>
+                                <input type="text" id="admin-pass" placeholder="Mínimo 6 caracteres" required minlength="6">
+                            </div>
+
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label style="color: var(--testa-blue-dark); font-weight: bold; margin-bottom: 10px;">Módulos Permitidos (Accesos)</label>
+                                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" class="check-acceso" value="index.html" checked> Visitas CRM (Panel Principal)
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" class="check-acceso" value="presupuesto.html"> Expedientes
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" class="check-acceso" value="generador-pdf.html"> Generador de Presupuestos
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" class="check-acceso" value="ordenes-compra.html"> Órdenes de Compra
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" class="check-acceso" value="facturas-iva.html"> Facturas IVA (Contabilidad)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn width-100" style="background: #1e293b; color: white; padding: 15px; font-size: 16px; border-radius: 8px; margin-top: 15px;">
+                                <i class="fa-solid fa-user-check"></i> Crear Cuenta y Dar Permisos
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="table-card" style="padding: 25px; box-sizing: border-box;">
+                        <h3 style="color: var(--testa-blue-dark); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                            <i class="fa-solid fa-users"></i> Equipo Testa Activo
+                        </h3>
+                        <div style="overflow-x: auto;">
+                            <table class="testa-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Módulos Habilitados</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-usuarios-activos">
+                                    <tr><td colspan="3" style="text-align: center;">Cargando equipo...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/admin-usuarios.js"></script>
+    <script type="module" src="../assets/js/auth-guard.js"></script>
+
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainWrapper = document.querySelector('.main-wrapper'); 
+        function toggleMenu() {
+            if (window.innerWidth <= 768) { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); } 
+            else { sidebar.classList.toggle('collapsed-desktop'); mainWrapper.classList.toggle('expanded-desktop'); }
+        }
+        if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>

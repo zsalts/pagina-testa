@@ -1,5 +1,5 @@
 import { app } from "./firebase-config.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
 const auth = getAuth(app);
 
@@ -11,7 +11,6 @@ document.getElementById('form-login')?.addEventListener('submit', async (e) => {
     let userStr = document.getElementById('login-user').value.trim().toLowerCase();
     const pass = document.getElementById('login-pass').value;
 
-    // LA TRAMPA NINJA: Si escribe "admin", nosotros mandamos "admin@testa.com"
     if (!userStr.includes('@')) {
         userStr = userStr + "@testa.com";
     }
@@ -21,20 +20,11 @@ document.getElementById('form-login')?.addEventListener('submit', async (e) => {
     errorMsg.style.display = 'none';
 
     try {
-        // Firebase chequea las credenciales
-        const userCredential = await signInWithEmailAndPassword(auth, userStr, pass);
-        const userEmail = userCredential.user.email;
-
-        // Guardamos en la memoria del navegador quién entró
-        if (userEmail.includes("contadora")) {
-            localStorage.setItem("testa_rol", "contadora");
-            // La mandamos derecho a su sección
-            window.location.href = "pages/facturas-iva.html"; 
-        } else {
-            localStorage.setItem("testa_rol", "admin");
-            // Vos vas al panel general
-            window.location.href = "index.html";
-        }
+        await setPersistence(auth, browserLocalPersistence);
+        await signInWithEmailAndPassword(auth, userStr, pass);
+        
+        // Mandamos a todos al Index. Si es empleado, el Guardián lo va a re-dirigir a su lugar en milisegundos.
+        window.location.href = "index.html"; 
 
     } catch (error) {
         console.error(error);
