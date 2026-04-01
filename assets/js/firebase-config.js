@@ -2,7 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/fireba
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
 
-const firebaseConfig = {
+// ACÁ ESTÁ LA MAGIA: Le agregamos "export" para que el otro archivo pueda usar estos datos
+export const firebaseConfig = {
     apiKey: "AIzaSyAJXaRh-OeWXEdK1QXZp133SCCwVLmXa98",
     authDomain: "testa-crm.firebaseapp.com",
     projectId: "testa-crm",
@@ -12,7 +13,6 @@ const firebaseConfig = {
     measurementId: "G-7Q3BQS18FH"
 };
 
-// ACÁ ESTÁ LA CLAVE QUE FALTABA SUBIR:
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
