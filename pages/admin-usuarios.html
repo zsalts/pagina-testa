@@ -163,15 +163,22 @@
                             style="font-size: 1.2rem; color: #64748b;"></i>
                     </div>
 
-                    <div id="contenedor-tabla-usuarios" class="table-card" style="padding: 20px;">
-                        <div style="overflow-x: auto;">
-                            <table class="testa-table">
+                    <div id="contenedor-tabla-usuarios" class="table-card"
+                        style="padding: 20px; width: 100%; box-sizing: border-box;">
+                        <div style="width: 100%; overflow-x: auto;">
+                            <table class="testa-table"
+                                style="width: 100% !important; border-collapse: collapse; table-layout: auto;">
                                 <thead>
-                                    <tr style="background: #f8fafc;">
-                                        <th>Usuario</th>
-                                        <th>Contraseña</th>
-                                        <th>Accesos</th>
-                                        <th style="text-align: center;">Acciones</th>
+                                    <tr style="border-bottom: 2px solid #edf2f7; background: #f8fafc;">
+                                        <th
+                                            style="text-align: left; padding: 15px; font-size: 12px; color: #1e293b; font-weight: 800; width: 20%;">
+                                            USUARIO</th>
+                                        <th
+                                            style="text-align: left; padding: 15px; font-size: 12px; color: #1e293b; font-weight: 800; width: 60%;">
+                                            ACCESOS ACTUALES</th>
+                                        <th
+                                            style="text-align: right; padding: 15px; font-size: 12px; color: #1e293b; font-weight: 800; width: 20%;">
+                                            GESTIÓN</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-usuarios-activos">
@@ -180,28 +187,58 @@
                         </div>
                     </div>
 
-                    <div id="modal-admin-auth"
-                        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+                    <div id="modal-editar-usuario"
+                        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 15px;">
                         <div
-                            style="background:white; padding:30px; border-radius:12px; width:90%; max-width:400px; text-align:center;">
-                            <i class="fa-solid fa-shield-halved"
-                                style="font-size: 3rem; color: #1e293b; margin-bottom: 15px;"></i>
-                            <h3>Confirmar Identidad</h3>
-                            <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Ingresá tu contraseña de
-                                administrador para continuar.</p>
-                            <input type="password" id="pass-admin-confirm" placeholder="Tu contraseña"
-                                style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;">
-                            <div style="display:flex; gap:10px;">
-                                <button onclick="cerrarModalAuth()"
-                                    style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:white;">Cancelar</button>
-                                <button id="btn-confirmar-auth"
-                                    style="flex:1; padding:10px; border-radius:8px; border:none; background:#1e293b; color:white;">Confirmar</button>
+                            style="background:white; padding:30px; border-radius:12px; width:100%; max-width:500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+                            <h3 id="edit-titulo-user"
+                                style="color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; font-weight: 800;">
+                                Gestionar Usuario</h3>
+
+                            <div class="form-group">
+                                <label
+                                    style="font-weight: 700; color: #1e293b; display: block; margin-bottom: 8px;">Contraseña
+                                    del Usuario</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="edit-pass-usuario"
+                                        style="flex: 1; background: #fffceb; border: 1px solid #fde68a; font-weight: bold; padding: 12px; border-radius: 8px; color: #92400e;">
+                                    <button onclick="copiarPass()" class="btn-secondary"
+                                        style="padding: 0 15px; border-radius: 8px;" title="Copiar"><i
+                                            class="fa-solid fa-copy"></i></button>
+                                    <button onclick="document.getElementById('edit-pass-usuario').value=''"
+                                        class="btn-secondary"
+                                        style="padding: 0 15px; border-radius: 8px; color: #dc2626; border-color: #fecaca;"
+                                        title="Borrar"><i class="fa-solid fa-eraser"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 25px;">
+                                <label
+                                    style="font-weight: 700; color: #1e293b; display: block; margin-bottom: 10px;">Módulos
+                                    Habilitados</label>
+                                <div id="contenedor-checks-edit"
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+                                <button id="btn-guardar-cambios" class="btn btn-add"
+                                    style="width: 100%; padding: 15px; font-weight: 700; background: #1e293b;">Guardar
+                                    Cambios Totales</button>
+                                <div style="display: flex; gap: 10px;">
+                                    <button onclick="cerrarModalEditar()"
+                                        style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-weight: 600; cursor: pointer;">Cancelar</button>
+                                    <button id="btn-borrar-usuario-final"
+                                        style="flex: 1; padding: 12px; border-radius: 8px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-weight: 700; cursor: pointer;">Eliminar
+                                        Cuenta</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+    </div>
+    </main>
     </div>
 
     <script type="module" src="../assets/js/firebase-config.js"></script>

@@ -241,11 +241,23 @@ input[type="number"] {
     flex-direction: column;
 }
 
-/* Contenedor con scroll para la tabla de usuarios */
+/* ELIMINAMOS EL DISPLAY: BLOCK DEL TBODY PORQUE ROMPE LAS COLUMNAS */
 #tabla-usuarios-activos {
-    display: block;
-    max-height: 400px; /* Altura máxima antes de poner scroll */
-    overflow-y: auto;
+    /* Dejamos que se comporte como un table-row-group normal */
+}
+
+/* Forzamos que la tabla respete el table-layout: fixed */
+.testa-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed !important;
+}
+
+/* Estilo para los tildes (Checkboxes) para que no se amontonen */
+.check-acceso {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
 }
 
 /* Aseguramos que la tabla ocupe el 100% */

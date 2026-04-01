@@ -1,93 +1,95 @@
 import { app, db } from "./firebase-config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 import { collection, doc, setDoc, onSnapshot, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-const authOficial = getAuth(app);
-const appSecundaria = initializeApp(app.options, "Secundaria");
-const authSecundario = getAuth(appSecundaria);
+// Mapeo de nombres de archivos a nombres del Sidecar
+const nombresModulos = {
+    "index.html": "Visitas CRM",
+    "presupuesto.html": "Expedientes",
+    "generador-pdf.html": "Presupuestos",
+    "ordenes-compra.html": "Órdenes de Compra",
+    "facturas-iva.html": "Facturas IVA"
+};
 
-let usuarioAccion = null;
-let tipoAccion = null;
+let userActual = null;
 
-// 1. CREAR USUARIO
-document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button');
-    const userLimpio = document.getElementById('admin-user').value.trim().toLowerCase();
-    const pass = document.getElementById('admin-pass').value;
-    let accesos = [];
-    document.querySelectorAll('.check-acceso:checked').forEach(chk => accesos.push(chk.value));
-
-    if(accesos.length === 0) return alert("Seleccioná al menos un permiso.");
-
-    btn.disabled = true;
-    try {
-        await createUserWithEmailAndPassword(authSecundario, userLimpio + "@testa.com", pass);
-        await signOut(authSecundario);
-        // Guardamos pass en Firestore para que VOS la puedas ver (encriptada para otros, no para el admin)
-        await setDoc(doc(db, "usuarios_permisos", userLimpio), {
-            usuario: userLimpio,
-            pass_aux: pass, 
-            accesos: accesos,
-            creadoEn: new Date().toISOString()
-        });
-        alert("Usuario creado con éxito.");
-        e.target.reset();
-    } catch (error) { alert("Error: " + error.message); }
-    finally { btn.disabled = false; }
-});
-
-// 2. LISTAR USUARIOS
+// RENDERIZAR TABLA CON ANCHO COMPLETO Y NOMBRES FORMATEADOS
 onSnapshot(collection(db, "usuarios_permisos"), (snap) => {
     const tabla = document.getElementById('tabla-usuarios-activos');
     if(!tabla) return;
     tabla.innerHTML = '';
+    
     snap.forEach(docSnap => {
         const u = docSnap.data();
-        tabla.innerHTML += `
-            <tr>
-                <td><strong>${u.usuario}</strong></td>
-                <td><span id="txt-pass-${u.usuario}">******</span></td>
-                <td><small>${u.accesos.join(', ')}</small></td>
-                <td style="text-align:center;">
-                    <button class="btn-icon" onclick="verificarAdmin('${u.usuario}', 'ver')"><i class="fa-solid fa-eye"></i></button>
-                    <button class="btn-icon btn-delete" onclick="verificarAdmin('${u.usuario}', 'borrar')"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            </tr>`;
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = "1px solid #f1f5f9";
+        
+        // Traducir los nombres de los archivos a los nombres del Sidecar
+        const accesosLegibles = u.accesos ? u.accesos.map(file => nombresModulos[file] || file).join(', ') : 'Sin accesos';
+
+        // ANCHOS FORZADOS AQUÍ (20%, 60%, 20%) para coincidir con el thead
+        tr.innerHTML = `
+            <td style="padding: 15px 10px; color: #1e293b; width: 20%; word-break: break-word;"><strong>${u.usuario}</strong></td>
+            <td style="padding: 15px 10px; color: #475569; font-size: 13px; width: 60%; word-break: break-word;">${accesosLegibles}</td>
+            <td style="padding: 15px 10px; text-align: right; width: 20%;">
+                <button style="background:none; border:none; color:#1e293b; font-weight:600; cursor:pointer; font-size:14px;" onclick="window.abrirModalGestion('${u.usuario}')">
+                    <i class="fa-solid fa-user-pen"></i> Editar / Ver
+                </button>
+            </td>`;
+        tabla.appendChild(tr);
     });
 });
 
-// 3. SEGURIDAD: VERIFICAR QUE SOS VOS (MATEO)
-window.verificarAdmin = (id, accion) => {
-    usuarioAccion = id;
-    tipoAccion = accion;
-    document.getElementById('modal-admin-auth').style.display = 'flex';
-};
-
-window.cerrarModalAuth = () => {
-    document.getElementById('modal-admin-auth').style.display = 'none';
-    document.getElementById('pass-admin-confirm').value = '';
-};
-
-document.getElementById('btn-confirmar-auth')?.addEventListener('click', async () => {
-    const passAdmin = document.getElementById('pass-admin-confirm').value;
-    const btn = document.getElementById('btn-confirmar-auth');
+window.abrirModalGestion = async (id) => {
+    userActual = id;
+    const docSnap = await getDoc(doc(db, "usuarios_permisos", id));
+    if(!docSnap.exists()) return;
     
-    btn.disabled = true;
-    try {
-        // Re-autenticamos para estar seguros de que sos Mateo
-        await signInWithEmailAndPassword(authOficial, "mateotesta@testa.com", passAdmin);
-        
-        if(tipoAccion === 'ver') {
-            const d = await getDoc(doc(db, "usuarios_permisos", usuarioAccion));
-            document.getElementById(`txt-pass-${usuarioAccion}`).innerText = d.data().pass_aux;
-        } else if(tipoAccion === 'borrar') {
-            if(confirm(`¿Borrar a ${usuarioAccion}?`)) {
-                await deleteDoc(doc(db, "usuarios_permisos", usuarioAccion));
-            }
-        }
-        cerrarModalAuth();
-    } catch (e) { alert("Contraseña de administrador incorrecta."); }
-    finally { btn.disabled = false; }
+    const data = docSnap.data();
+    document.getElementById('edit-titulo-user').innerText = `Gestionar: ${id}`;
+    document.getElementById('edit-pass-usuario').value = data.pass_aux || "";
+    
+    const contenedor = document.getElementById('contenedor-checks-edit');
+    contenedor.innerHTML = '';
+    
+    Object.keys(nombresModulos).forEach(file => {
+        const checked = (data.accesos || []).includes(file) ? 'checked' : '';
+        contenedor.innerHTML += `
+            <label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;">
+                <input type="checkbox" class="check-edit-permiso" value="${file}" ${checked}> ${nombresModulos[file]}
+            </label>`;
+    });
+    
+    document.getElementById('modal-editar-usuario').style.display = 'flex';
+};
+
+window.cerrarModalEditar = () => {
+    document.getElementById('modal-editar-usuario').style.display = 'none';
+};
+
+window.copiarPass = () => {
+    const input = document.getElementById('edit-pass-usuario');
+    input.select();
+    document.execCommand('copy');
+    alert("Copiado!");
+};
+
+document.getElementById('btn-guardar-cambios')?.addEventListener('click', async () => {
+    const nuevaPass = document.getElementById('edit-pass-usuario').value;
+    let nuevosAccesos = [];
+    document.querySelectorAll('.check-edit-permiso:checked').forEach(c => nuevosAccesos.push(c.value));
+    
+    await setDoc(doc(db, "usuarios_permisos", userActual), {
+        pass_aux: nuevaPass,
+        accesos: nuevosAccesos
+    }, { merge: true });
+    
+    alert("¡Usuario actualizado!");
+    window.cerrarModalEditar();
+});
+
+document.getElementById('btn-borrar-usuario-final')?.addEventListener('click', async () => {
+    if(confirm(`¿Eliminar definitivamente a ${userActual}?`)) {
+        await deleteDoc(doc(db, "usuarios_permisos", userActual));
+        window.cerrarModalEditar();
+    }
 });
