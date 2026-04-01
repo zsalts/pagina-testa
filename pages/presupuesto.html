@@ -227,19 +227,19 @@
     </div>
 
     <script type="module" src="../assets/js/presupuesto.js"></script>
+    <script type="module" src="../assets/js/auth-guard.js"></script>
+
     <script>
         const btnMenu = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        const mainWrapper = document.querySelector('.main-wrapper'); // Sumamos el contenedor principal
+        const mainWrapper = document.querySelector('.main-wrapper'); 
 
         function toggleMenu() {
-            // Si la pantalla es chica (Celular o Tablet)
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('open');
                 overlay.classList.toggle('active');
             }
-            // Si la pantalla es grande (PC / Mac)
             else {
                 sidebar.classList.toggle('collapsed-desktop');
                 mainWrapper.classList.toggle('expanded-desktop');
@@ -249,9 +249,5 @@
         if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
         if (overlay) overlay.addEventListener('click', toggleMenu);
     </script>
-    <script type="module" src="assets/js/index.js"></script> 
-    
-    <script type="module" src="assets/js/auth-guard.js"></script>
 </body>
-
 </html>
