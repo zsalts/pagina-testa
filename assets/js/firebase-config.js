@@ -12,7 +12,7 @@ const firebaseConfig = {
     measurementId: "G-7Q3BQS18FH"
 };
 
-// ACÁ ESTÁ LA CLAVE: Le pusimos "export" a la app para que el Guardián la pueda usar
+// ACÁ ESTÁ LA CLAVE QUE FALTABA SUBIR:
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
