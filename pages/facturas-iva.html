@@ -167,6 +167,14 @@
             </div>
             <form id="form-venta" class="modern-form">
                 
+                <div class="form-group" style="margin-bottom: 15px; width: 100%;">
+                    <label style="font-size: 0.85em; color: #be123c; font-weight:bold;">Vincular a Expediente / Presupuesto</label>
+                    <select id="vent-presupuesto-id" style="padding: 10px; height: 42px; box-sizing: border-box; width: 100%; border: 1px solid #fda4af; border-radius: 6px; background: white; color: var(--testa-blue-dark);">
+                        <option value="">-- No vincular (Factura general) --</option>
+                    </select>
+                    <small style="color: #e11d48; font-size: 11px; margin-top: 4px; display: block;">Si elegís uno, el PDF viajará a la carpeta de ese presupuesto en Drive.</small>
+                </div>
+
                 <div style="display: flex; gap: 10px; margin-bottom: 10px; width: 100%;">
                     <div class="form-group" style="margin-bottom: 0; flex: 1;">
                         <label style="font-size: 0.85em; color: var(--testa-blue-dark); font-weight:bold;">Tipo Factura</label>
@@ -242,7 +250,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn width-100" style="background: #e11d48; color: white; padding: 12px; font-size: 15px; border-radius:8px;">Guardar Venta</button>
+                    <button type="submit" class="btn width-100" style="background: #e11d48; color: white; padding: 12px; font-size: 15px; border-radius:8px;">Guardar Venta y Organizar</button>
                 </div>
             </form>
         </div>

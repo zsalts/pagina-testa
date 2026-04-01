@@ -1,12 +1,16 @@
 import { db, storage } from "./firebase-config.js";
-import { collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
+
+// Tu URL de Google Apps Script para subir al Drive
+const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y_6sQ85s04v5lg0xEF6oZsf3uulXazmDQyg61kDzXblrRF2UOtl8Q/exec";
 
 let listaCompras = [];
 let listaVentas = [];
 let archivoCompra = null;
 let archivoVenta = null;
 let tabActiva = "compra"; 
+let presupuestosCargados = []; 
 
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
@@ -64,9 +68,7 @@ btnNuevaFactura.addEventListener('click', () => {
         document.getElementById('comp-mes').value = mesStr;
         document.getElementById('comp-anio').value = anioStr;
         
-        // Resetear visibilidad del segundo IVA
         document.getElementById('box-iva2-compra').style.display = 'none'; 
-        
         document.getElementById('modal-factura-compra').classList.add('active');
     } else {
         document.getElementById('form-venta').reset();
@@ -75,7 +77,6 @@ btnNuevaFactura.addEventListener('click', () => {
         document.getElementById('vent-mes').value = mesStr;
         document.getElementById('vent-anio').value = anioStr;
         
-        // Resetear visibilidad general y del segundo IVA
         document.getElementById('contenedor-ivas-venta').style.display = 'block';
         document.getElementById('vent-monto-iva').required = true;
         document.getElementById('box-iva2-venta').style.display = 'none';
@@ -84,7 +85,6 @@ btnNuevaFactura.addEventListener('click', () => {
     }
 });
 
-// Botones para mostrar el segundo IVA
 document.getElementById('btn-add-iva-compra')?.addEventListener('click', () => {
     document.getElementById('box-iva2-compra').style.display = 'flex';
 });
@@ -93,7 +93,6 @@ document.getElementById('btn-add-iva-venta')?.addEventListener('click', () => {
     document.getElementById('box-iva2-venta').style.display = 'flex';
 });
 
-// MAGIA: Mostrar/Ocultar IVA si es Factura C
 document.getElementById('vent-tipo')?.addEventListener('change', (e) => {
     const tipo = e.target.value;
     const contIvas = document.getElementById('contenedor-ivas-venta');
@@ -124,7 +123,7 @@ document.getElementById('comp-camara')?.addEventListener('change', e => { if(e.t
 document.getElementById('vent-archivo')?.addEventListener('change', e => { if(e.target.files.length>0){ archivoVenta = e.target.files[0]; document.getElementById('vent-name-display').innerText = archivoVenta.name; } });
 
 // ==========================================
-// 4. GUARDAR COMPRA (Sumando IVA 1 y 2)
+// 4. GUARDAR COMPRA
 // ==========================================
 document.getElementById('form-compra')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -136,20 +135,18 @@ document.getElementById('form-compra')?.addEventListener('submit', async (e) => 
         const anio = document.getElementById('comp-anio').value;
         const mes = document.getElementById('comp-mes').value;
         
-        // Leemos IVA 1 y 2
         const iva1 = parseFloat(document.getElementById('comp-monto-iva').value) || 0;
         const porc1 = document.getElementById('comp-porcentaje').value;
         
         let iva2 = 0;
         let porc2 = null;
-        // Si el contenedor 2 está visible (se usó la opción)
         if(document.getElementById('box-iva2-compra').style.display === 'flex') {
             iva2 = parseFloat(document.getElementById('comp-monto-iva2').value) || 0;
             if(iva2 > 0) porc2 = document.getElementById('comp-porcentaje2').value;
         }
 
         const montoIvaTotal = iva1 + iva2;
-        const porcentajeFinal = porc2 ? `${porc1}% + ${porc2}%` : `${porc1}%`; // Texto para la tabla
+        const porcentajeFinal = porc2 ? `${porc1}% + ${porc2}%` : `${porc1}%`; 
 
         if (archivoCompra) {
             const ext = archivoCompra.name.split('.').pop();
@@ -169,18 +166,37 @@ document.getElementById('form-compra')?.addEventListener('submit', async (e) => 
 });
 
 // ==========================================
-// 5. GUARDAR VENTA (Sumando IVA 1 y 2)
+// NUEVO: CARGAR PRESUPUESTOS EN EL SELECTOR DE VENTA
+// ==========================================
+onSnapshot(collection(db, "presupuestos"), (snap) => {
+    presupuestosCargados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const selectPres = document.getElementById('vent-presupuesto-id');
+    
+    if (selectPres) {
+        const valorActual = selectPres.value;
+        selectPres.innerHTML = '<option value="">-- No vincular (Factura suelta) --</option>';
+        
+        presupuestosCargados.sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(p => {
+            selectPres.innerHTML += `<option value="${p.id}">${p.medico} - ${p.nombreArchivo || 'Expediente'}</option>`;
+        });
+        selectPres.value = valorActual;
+    }
+});
+
+// ==========================================
+// 5. GUARDAR VENTA (CON MAGIA PARA DRIVE)
 // ==========================================
 document.getElementById('form-venta')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
-    btn.disabled = true; btn.innerText = 'Guardando...';
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
     try {
         let url = "";
         const anio = document.getElementById('vent-anio').value;
         const mes = document.getElementById('vent-mes').value;
         const tipo = document.getElementById('vent-tipo').value;
+        const idPresupuesto = document.getElementById('vent-presupuesto-id').value; 
         
         let montoIvaTotal = 0;
         let porcentajeFinal = "-";
@@ -191,7 +207,6 @@ document.getElementById('form-venta')?.addEventListener('submit', async (e) => {
             
             let iva2 = 0;
             let porc2 = null;
-            // Si el contenedor 2 está visible
             if(document.getElementById('box-iva2-venta').style.display === 'flex') {
                 iva2 = parseFloat(document.getElementById('vent-monto-iva2').value) || 0;
                 if(iva2 > 0) porc2 = document.getElementById('vent-porcentaje2').value;
@@ -200,21 +215,80 @@ document.getElementById('form-venta')?.addEventListener('submit', async (e) => {
             porcentajeFinal = porc2 ? `${porc1}% + ${porc2}%` : `${porc1}%`;
         }
 
+        let carpetaDestino = null;
+        let pElegido = null;
+
+        // --- BLINDAJE EXACTO COMO EN LA ORDEN DE COMPRA ---
+        if (idPresupuesto) {
+            pElegido = presupuestosCargados.find(p => p.id === idPresupuesto);
+            if (pElegido) {
+                carpetaDestino = pElegido.carpetaUnica; 
+                
+                // Si el presupuesto es viejo y no tiene "carpetaUnica", reconstruimos el nombre
+                if (!carpetaDestino) {
+                    let nombreDoc = pElegido.nombreArchivo || "Presupuesto";
+                    // Si ya arranca con fecha (Ej: 31 - 03 - 26)
+                    if (nombreDoc.match(/^\d{2} - \d{2} - \d{2}/)) {
+                        carpetaDestino = nombreDoc;
+                    } else {
+                        const partes = pElegido.fecha.split('-');
+                        const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
+                        const medicoLimpio = pElegido.medico.replace(/[^a-zA-Z0-9 ]/g, '');
+                        carpetaDestino = `${fechaFormateada} - ${medicoLimpio} - ${nombreDoc}`;
+                    }
+                }
+            }
+        }
+
+        // Subida del archivo a Firebase Storage
         if (archivoVenta) {
             const ext = archivoVenta.name.split('.').pop();
-            const sRef = ref(storage, `facturas_ventas/${anio}/${mes}/venta_${Date.now()}.${ext}`);
+            // Si hay expediente va a su carpeta en Firebase, si no, a la general de IVA
+            let pathFirebase = idPresupuesto && carpetaDestino 
+                ? `expedientes/${carpetaDestino}/Factura_${Date.now()}.${ext}` 
+                : `facturas_ventas/${anio}/${mes}/venta_${Date.now()}.${ext}`;
+
+            const sRef = ref(storage, pathFirebase);
             await uploadBytes(sRef, archivoVenta);
             url = await getDownloadURL(sRef);
         }
 
+        // Guardar el registro de IVA Venta 
         await addDoc(collection(db, "facturas_ventas"), {
             tipoFactura: tipo,
             total: parseFloat(document.getElementById('vent-total').value),
             montoIva: montoIvaTotal,
             porcentajeIva: porcentajeFinal,
-            mes: mes, anio: anio, archivoUrl: url, creadoEn: new Date().toISOString()
+            mes: mes, anio: anio, archivoUrl: url, 
+            presupuestoId: idPresupuesto || null, 
+            creadoEn: new Date().toISOString()
         });
+
+        // ===============================================
+        // ¡INTEGRACIÓN CON EL EXPEDIENTE Y GOOGLE DRIVE!
+        // ===============================================
+        if (idPresupuesto && url && archivoVenta) {
+            // 1. Añadir al Expediente para que se vea en el CRM
+            const pRef = doc(db, "presupuestos", idPresupuesto);
+            await updateDoc(pRef, {
+                [`archivosExtra.Factura_${Date.now()}`]: url
+            });
+
+            // 2. Disparar a Google Drive con el mismo formato que OC
+            fetch(urlGoogleScript, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({
+                    carpeta: carpetaDestino, // Ahora sí envía el nombre completo blindado
+                    archivo: `FACTURA_${archivoVenta.name}`, 
+                    link: url
+                })
+            }).then(() => console.log("Factura enviada al Drive")).catch(e => console.error("Error Drive:", e));
+        }
+
         document.getElementById('modal-factura-venta').classList.remove('active');
+        alert("¡Factura cargada! Si la vinculaste, ya está en la carpeta de Drive.");
     } catch (err) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Venta"; }
 });
 
@@ -289,9 +363,12 @@ function generarHTMLAcordeones(idContenedor, agrupar, tipo, anioActual, mesActua
                 
                 let strPorcentaje = String(f.porcentajeIva).includes('%') || f.porcentajeIva === '-' ? f.porcentajeIva : f.porcentajeIva + '%';
                 let badgeTipo = (tipo === 'venta' && f.tipoFactura) ? `<span style="background: #ffe4e6; color: #be123c; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8em; margin-right: 5px;">${f.tipoFactura}</span>` : '';
+                
+                // Muestra el clip de "Vinculado al CRM"
+                let vinculoIcon = f.presupuestoId ? `<i class="fa-solid fa-link" style="color:#10b981; margin-left:5px;" title="Vinculada al Expediente"></i>` : '';
 
                 return `<tr>
-                    <td>${badgeTipo}${f.creadoEn.split('T')[0].split('-').reverse().join('/')}</td>
+                    <td>${badgeTipo}${f.creadoEn.split('T')[0].split('-').reverse().join('/')} ${vinculoIcon}</td>
                     ${detalleMonto}
                     <td style="font-size: 0.9em; color: #64748b;">${strPorcentaje}</td>
                     <td style="text-align:center;">${iconHtml}</td>
