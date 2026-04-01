@@ -8,14 +8,9 @@ document.getElementById('form-login')?.addEventListener('submit', async (e) => {
     const btn = e.target.querySelector('button');
     const errorMsg = document.getElementById('login-error');
     
-    // Tomamos lo que el usuario escribió (ej: "contadora" o "mateotesta")
-    let userStr = document.getElementById('login-user').value.trim().toLowerCase();
+    // Ahora tomamos el correo completo directamente
+    const email = document.getElementById('login-user').value.trim().toLowerCase();
     const pass = document.getElementById('login-pass').value;
-
-    // LA MAGIA: Si no escribió un @, le pegamos el dominio de Testa automáticamente
-    if (!userStr.includes('@')) {
-        userStr = userStr + "@testa.com";
-    }
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
@@ -25,10 +20,10 @@ document.getElementById('form-login')?.addEventListener('submit', async (e) => {
         // Configuramos para que la sesión no se cierre sola
         await setPersistence(auth, browserLocalPersistence);
         
-        // Iniciamos sesión en Firebase con el mail "armado" por nosotros
-        await signInWithEmailAndPassword(auth, userStr, pass);
+        // Iniciamos sesión en Firebase con el email real
+        await signInWithEmailAndPassword(auth, email, pass);
         
-        // Si todo sale bien, al Index (el Guardián se encarga del resto)
+        // Si todo sale bien, al Index (el Guardián se encarga de leer los permisos)
         window.location.href = "index.html"; 
 
     } catch (error) {
