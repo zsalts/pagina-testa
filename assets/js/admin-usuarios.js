@@ -1,91 +1,93 @@
 import { app, db } from "./firebase-config.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-import { collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import { collection, doc, setDoc, onSnapshot, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-// El Truco Ninja: Creamos una app secundaria para no desloguear al admin
+const authOficial = getAuth(app);
 const appSecundaria = initializeApp(app.options, "Secundaria");
 const authSecundario = getAuth(appSecundaria);
 
-// 1. CREAR USUARIO Y GUARDAR PERMISOS
+let usuarioAccion = null;
+let tipoAccion = null;
+
+// 1. CREAR USUARIO
 document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button');
-    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creando...';
-
     const userLimpio = document.getElementById('admin-user').value.trim().toLowerCase();
-    const emailFalso = userLimpio + "@testa.com";
     const pass = document.getElementById('admin-pass').value;
+    let accesos = [];
+    document.querySelectorAll('.check-acceso:checked').forEach(chk => accesos.push(chk.value));
 
-    // Juntamos todos los checkbox que el admin marcó
-    let modulosPermitidos = [];
-    document.querySelectorAll('.check-acceso:checked').forEach(chk => {
-        modulosPermitidos.push(chk.value);
-    });
+    if(accesos.length === 0) return alert("Seleccioná al menos un permiso.");
 
-    if(modulosPermitidos.length === 0) {
-        alert("Dale al menos 1 permiso de acceso para que pueda hacer algo.");
-        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-check"></i> Crear Cuenta y Dar Permisos';
-        return;
-    }
-
+    btn.disabled = true;
     try {
-        // A) Creamos el usuario en la App Secundaria
-        await createUserWithEmailAndPassword(authSecundario, emailFalso, pass);
-        await signOut(authSecundario); // Cerramos esa sesión fantasma
-
-        // B) Guardamos sus permisos en la base de datos oficial
+        await createUserWithEmailAndPassword(authSecundario, userLimpio + "@testa.com", pass);
+        await signOut(authSecundario);
+        // Guardamos pass en Firestore para que VOS la puedas ver (encriptada para otros, no para el admin)
         await setDoc(doc(db, "usuarios_permisos", userLimpio), {
             usuario: userLimpio,
-            email: emailFalso,
-            accesos: modulosPermitidos,
+            pass_aux: pass, 
+            accesos: accesos,
             creadoEn: new Date().toISOString()
         });
-
-        alert("¡Usuario creado y permisos asignados con éxito!");
+        alert("Usuario creado con éxito.");
         e.target.reset();
-
-    } catch (error) {
-        console.error(error);
-        if(error.code === 'auth/email-already-in-use') alert("Ese nombre de usuario ya existe.");
-        else alert("Error al crear usuario: " + error.message);
-    } finally {
-        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-check"></i> Crear Cuenta y Dar Permisos';
-    }
+    } catch (error) { alert("Error: " + error.message); }
+    finally { btn.disabled = false; }
 });
 
-// 2. LEER USUARIOS CREADOS
+// 2. LISTAR USUARIOS
 onSnapshot(collection(db, "usuarios_permisos"), (snap) => {
     const tabla = document.getElementById('tabla-usuarios-activos');
     if(!tabla) return;
     tabla.innerHTML = '';
-
-    const usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    if(usuarios.length === 0) {
-        tabla.innerHTML = '<tr><td colspan="3" style="text-align: center;">Solo estás vos como administrador.</td></tr>';
-        return;
-    }
-
-    usuarios.forEach(u => {
-        // Hacemos que los nombres de los HTML se vean lindos
-        let badges = u.accesos.map(acc => {
-            let nombreLindo = acc.replace('.html', '').replace('index', 'Visitas').toUpperCase();
-            return `<span style="background: #e2e8f0; color: #475569; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 5px; display: inline-block; margin-bottom: 4px;">${nombreLindo}</span>`;
-        }).join('');
-
+    snap.forEach(docSnap => {
+        const u = docSnap.data();
         tabla.innerHTML += `
             <tr>
-                <td style="font-weight: bold; color: var(--testa-blue-dark);"><i class="fa-solid fa-user" style="color: #cbd5e1; margin-right: 5px;"></i> ${u.usuario}</td>
-                <td>${badges}</td>
-                <td><button class="btn-icon btn-delete" onclick="window.borrarPermiso('${u.id}')" title="Revocar Acceso"><i class="fa-regular fa-trash-can"></i></button></td>
-            </tr>
-        `;
+                <td><strong>${u.usuario}</strong></td>
+                <td><span id="txt-pass-${u.usuario}">******</span></td>
+                <td><small>${u.accesos.join(', ')}</small></td>
+                <td style="text-align:center;">
+                    <button class="btn-icon" onclick="verificarAdmin('${u.usuario}', 'ver')"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn-icon btn-delete" onclick="verificarAdmin('${u.usuario}', 'borrar')"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>`;
     });
 });
 
-window.borrarPermiso = async (id) => {
-    if(confirm("Si borrás este registro, el usuario no podrá acceder a NADA. ¿Confirmás? (Para borrarlo del todo tenés que ir a Firebase Auth)")) {
-        await deleteDoc(doc(db, "usuarios_permisos", id));
-    }
+// 3. SEGURIDAD: VERIFICAR QUE SOS VOS (MATEO)
+window.verificarAdmin = (id, accion) => {
+    usuarioAccion = id;
+    tipoAccion = accion;
+    document.getElementById('modal-admin-auth').style.display = 'flex';
 };
+
+window.cerrarModalAuth = () => {
+    document.getElementById('modal-admin-auth').style.display = 'none';
+    document.getElementById('pass-admin-confirm').value = '';
+};
+
+document.getElementById('btn-confirmar-auth')?.addEventListener('click', async () => {
+    const passAdmin = document.getElementById('pass-admin-confirm').value;
+    const btn = document.getElementById('btn-confirmar-auth');
+    
+    btn.disabled = true;
+    try {
+        // Re-autenticamos para estar seguros de que sos Mateo
+        await signInWithEmailAndPassword(authOficial, "mateotesta@testa.com", passAdmin);
+        
+        if(tipoAccion === 'ver') {
+            const d = await getDoc(doc(db, "usuarios_permisos", usuarioAccion));
+            document.getElementById(`txt-pass-${usuarioAccion}`).innerText = d.data().pass_aux;
+        } else if(tipoAccion === 'borrar') {
+            if(confirm(`¿Borrar a ${usuarioAccion}?`)) {
+                await deleteDoc(doc(db, "usuarios_permisos", usuarioAccion));
+            }
+        }
+        cerrarModalAuth();
+    } catch (e) { alert("Contraseña de administrador incorrecta."); }
+    finally { btn.disabled = false; }
+});

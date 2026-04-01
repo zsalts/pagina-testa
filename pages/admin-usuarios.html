@@ -66,7 +66,8 @@
         }
 
         #contenedor-tabla-usuarios {
-            display: none; /* Cerrado por defecto */
+            display: none;
+            /* Cerrado por defecto */
             margin-top: 10px;
         }
     </style>
@@ -99,16 +100,19 @@
             <header class="top-header" style="background: #1e293b; color: white;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <button id="mobile-menu-btn" style="color:white;"><i class="fa-solid fa-bars"></i></button>
-                    <h2 class="top-header-title" style="color:white;"><i class="fa-solid fa-user-shield"></i> Administración Mateo</h2>
+                    <h2 class="top-header-title" style="color:white;"><i class="fa-solid fa-user-shield"></i>
+                        Administración Mateo</h2>
                 </div>
-                <div class="user-profile-circle" style="background: var(--testa-blue);"><i class="fa-solid fa-user-gear"></i></div>
+                <div class="user-profile-circle" style="background: var(--testa-blue);"><i
+                        class="fa-solid fa-user-gear"></i></div>
             </header>
 
             <div class="dashboard-content">
                 <div class="admin-stack">
 
                     <div class="table-card" style="padding: 30px;">
-                        <h3 style="color: var(--testa-blue-dark); margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
+                        <h3
+                            style="color: var(--testa-blue-dark); margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
                             <i class="fa-solid fa-user-plus"></i> Crear Nuevo Acceso
                         </h3>
                         <form id="form-nuevo-usuario" class="modern-form">
@@ -119,22 +123,31 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Contraseña Provisional</label>
-                                    <input type="text" id="admin-pass" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                    <input type="text" id="admin-pass" placeholder="Mínimo 6 caracteres" required
+                                        minlength="6">
                                 </div>
                             </div>
 
                             <div class="form-group" style="margin-top: 10px;">
-                                <label style="font-weight: bold; margin-bottom: 15px; display: block;">Módulos Habilitados:</label>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="index.html"> Visitas CRM</label>
-                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="presupuesto.html"> Expedientes</label>
-                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="generador-pdf.html"> Generador PDF</label>
-                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="ordenes-compra.html"> Órdenes de Compra</label>
-                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="facturas-iva.html"> Facturas IVA</label>
+                                <label style="font-weight: bold; margin-bottom: 15px; display: block;">Módulos
+                                    Habilitados:</label>
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                                    <label class="check-label"><input type="checkbox" class="check-acceso"
+                                            value="index.html"> Visitas CRM</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso"
+                                            value="presupuesto.html"> Expedientes</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso"
+                                            value="generador-pdf.html"> Generador PDF</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso"
+                                            value="ordenes-compra.html"> Órdenes de Compra</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso"
+                                            value="facturas-iva.html"> Facturas IVA</label>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-add width-100" style="background: #1e293b; padding: 15px; margin-top: 10px;">
+                            <button type="submit" class="btn btn-add width-100"
+                                style="background: #1e293b; padding: 15px; margin-top: 10px;">
                                 <i class="fa-solid fa-save"></i> Guardar Nuevo Usuario
                             </button>
                         </form>
@@ -143,9 +156,11 @@
                     <div class="solapa-admin" onclick="toggleTablaAdmin()">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <i class="fa-solid fa-users-gear" style="font-size: 1.5rem; color: var(--testa-blue);"></i>
-                            <strong style="font-size: 1.1rem; color: var(--testa-blue-dark);">Ver Lista de Usuarios y Permisos</strong>
+                            <strong style="font-size: 1.1rem; color: var(--testa-blue-dark);">Ver Lista de Usuarios y
+                                Permisos</strong>
                         </div>
-                        <i id="flecha-solapa" class="fa-solid fa-chevron-down solapa-icon" style="font-size: 1.2rem; color: #64748b;"></i>
+                        <i id="flecha-solapa" class="fa-solid fa-chevron-down solapa-icon"
+                            style="font-size: 1.2rem; color: #64748b;"></i>
                     </div>
 
                     <div id="contenedor-tabla-usuarios" class="table-card" style="padding: 20px;">
@@ -153,16 +168,37 @@
                             <table class="testa-table">
                                 <thead>
                                     <tr style="background: #f8fafc;">
-                                        <th>Usuarios</th>
+                                        <th>Usuario</th>
+                                        <th>Contraseña</th>
+                                        <th>Accesos</th>
+                                        <th style="text-align: center;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-usuarios-activos">
-                                    <tr><td colspan="3" style="text-align: center; padding: 30px;">Cargando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
+                    <div id="modal-admin-auth"
+                        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+                        <div
+                            style="background:white; padding:30px; border-radius:12px; width:90%; max-width:400px; text-align:center;">
+                            <i class="fa-solid fa-shield-halved"
+                                style="font-size: 3rem; color: #1e293b; margin-bottom: 15px;"></i>
+                            <h3>Confirmar Identidad</h3>
+                            <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Ingresá tu contraseña de
+                                administrador para continuar.</p>
+                            <input type="password" id="pass-admin-confirm" placeholder="Tu contraseña"
+                                style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;">
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="cerrarModalAuth()"
+                                    style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:white;">Cancelar</button>
+                                <button id="btn-confirmar-auth"
+                                    style="flex:1; padding:10px; border-radius:8px; border:none; background:#1e293b; color:white;">Confirmar</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -177,7 +213,7 @@
         function toggleTablaAdmin() {
             const tabla = document.getElementById('contenedor-tabla-usuarios');
             const flecha = document.getElementById('flecha-solapa');
-            
+
             if (tabla.style.display === "none" || tabla.style.display === "") {
                 tabla.style.display = "block";
                 flecha.classList.add('open');
@@ -204,4 +240,5 @@
     </script>
 
 </body>
+
 </html>
