@@ -1,22 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administrador | Testa CRM</title>
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#003b5c">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="apple-touch-icon" href="../assets/img/IMG_2317.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        .dashboard-content {
+            padding: 20px !important;
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        /* Contenedor vertical */
+        .admin-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        /* Estilo de la Solapa (Acordeón) */
+        .solapa-admin {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .solapa-admin:hover {
+            background: #f1f5f9;
+        }
+
+        .solapa-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .solapa-icon.open {
+            transform: rotate(180deg);
+        }
+
+        #contenedor-tabla-usuarios {
+            display: none; /* Cerrado por defecto */
+            margin-top: 10px;
+        }
+    </style>
 </head>
+
 <body>
 
     <div class="dashboard-container">
+
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img">
-                <div class="logo-text"><span class="brand">TESTA</span><span class="sub-brand">CRM System</span></div>
+                <img src="../assets/img/IMG_2317.png" alt="Testa Logo">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
+                </div>
             </div>
             <nav class="sidebar-nav">
                 <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
@@ -24,88 +90,82 @@
                 <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Presupuestos</a>
                 <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
                 <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
-                </nav>
+            </nav>
         </aside>
 
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <div class="main-wrapper">
+        <main class="main-wrapper" id="main-wrapper">
             <header class="top-header" style="background: #1e293b; color: white;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <button id="mobile-menu-btn" style="color:white;"><i class="fa-solid fa-bars"></i></button>
-                    <h2 class="top-header-title" style="color:white;"><i class="fa-solid fa-user-shield"></i> Gestión de Usuarios y Permisos</h2>
+                    <h2 class="top-header-title" style="color:white;"><i class="fa-solid fa-user-shield"></i> Administración Mateo</h2>
                 </div>
                 <div class="user-profile-circle" style="background: var(--testa-blue);"><i class="fa-solid fa-user-gear"></i></div>
             </header>
 
-            <main class="dashboard-content">
-                
-                <div class="form-row-2">
-                    <div class="table-card" style="padding: 25px; box-sizing: border-box;">
-                        <h3 style="color: var(--testa-blue-dark); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                            <i class="fa-solid fa-user-plus"></i> Crear Nuevo Usuario
+            <div class="dashboard-content">
+                <div class="admin-stack">
+
+                    <div class="table-card" style="padding: 30px;">
+                        <h3 style="color: var(--testa-blue-dark); margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
+                            <i class="fa-solid fa-user-plus"></i> Crear Nuevo Acceso
                         </h3>
                         <form id="form-nuevo-usuario" class="modern-form">
-                            <div class="form-group">
-                                <label>Nombre de Usuario (Login)</label>
-                                <input type="text" id="admin-user" placeholder="Ej: contadora, ventas, deposito..." required style="background: #f8fafc;">
-                                <small style="color: #64748b; font-size: 11px;">El sistema le agregará @testa.com automáticamente.</small>
-                            </div>
-                            <div class="form-group">
-                                <label>Contraseña Provisional</label>
-                                <input type="text" id="admin-pass" placeholder="Mínimo 6 caracteres" required minlength="6">
-                            </div>
-
-                            <div class="form-group" style="margin-top: 20px;">
-                                <label style="color: var(--testa-blue-dark); font-weight: bold; margin-bottom: 10px;">Módulos Permitidos (Accesos)</label>
-                                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" class="check-acceso" value="index.html" checked> Visitas CRM (Panel Principal)
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" class="check-acceso" value="presupuesto.html"> Expedientes
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" class="check-acceso" value="generador-pdf.html"> Generador de Presupuestos
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" class="check-acceso" value="ordenes-compra.html"> Órdenes de Compra
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" class="check-acceso" value="facturas-iva.html"> Facturas IVA (Contabilidad)
-                                    </label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="form-group">
+                                    <label>Usuario (Nickname)</label>
+                                    <input type="text" id="admin-user" placeholder="Ej: contadora" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contraseña Provisional</label>
+                                    <input type="text" id="admin-pass" placeholder="Mínimo 6 caracteres" required minlength="6">
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn width-100" style="background: #1e293b; color: white; padding: 15px; font-size: 16px; border-radius: 8px; margin-top: 15px;">
-                                <i class="fa-solid fa-user-check"></i> Crear Cuenta y Dar Permisos
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label style="font-weight: bold; margin-bottom: 15px; display: block;">Módulos Habilitados:</label>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="index.html"> Visitas CRM</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="presupuesto.html"> Expedientes</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="generador-pdf.html"> Generador PDF</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="ordenes-compra.html"> Órdenes de Compra</label>
+                                    <label class="check-label"><input type="checkbox" class="check-acceso" value="facturas-iva.html"> Facturas IVA</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-add width-100" style="background: #1e293b; padding: 15px; margin-top: 10px;">
+                                <i class="fa-solid fa-save"></i> Guardar Nuevo Usuario
                             </button>
                         </form>
                     </div>
 
-                    <div class="table-card" style="padding: 25px; box-sizing: border-box;">
-                        <h3 style="color: var(--testa-blue-dark); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                            <i class="fa-solid fa-users"></i> Equipo Testa Activo
-                        </h3>
+                    <div class="solapa-admin" onclick="toggleTablaAdmin()">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <i class="fa-solid fa-users-gear" style="font-size: 1.5rem; color: var(--testa-blue);"></i>
+                            <strong style="font-size: 1.1rem; color: var(--testa-blue-dark);">Ver Lista de Usuarios y Permisos</strong>
+                        </div>
+                        <i id="flecha-solapa" class="fa-solid fa-chevron-down solapa-icon" style="font-size: 1.2rem; color: #64748b;"></i>
+                    </div>
+
+                    <div id="contenedor-tabla-usuarios" class="table-card" style="padding: 20px;">
                         <div style="overflow-x: auto;">
                             <table class="testa-table">
                                 <thead>
-                                    <tr>
-                                        <th>Usuario</th>
-                                        <th>Módulos Habilitados</th>
-                                        <th>Acción</th>
+                                    <tr style="background: #f8fafc;">
+                                        <th>Usuarios</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-usuarios-activos">
-                                    <tr><td colspan="3" style="text-align: center;">Cargando equipo...</td></tr>
+                                    <tr><td colspan="3" style="text-align: center; padding: 30px;">Cargando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
 
-            </main>
-        </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script type="module" src="../assets/js/firebase-config.js"></script>
@@ -113,16 +173,35 @@
     <script type="module" src="../assets/js/auth-guard.js"></script>
 
     <script>
+        // Función para abrir/cerrar la solapa
+        function toggleTablaAdmin() {
+            const tabla = document.getElementById('contenedor-tabla-usuarios');
+            const flecha = document.getElementById('flecha-solapa');
+            
+            if (tabla.style.display === "none" || tabla.style.display === "") {
+                tabla.style.display = "block";
+                flecha.classList.add('open');
+            } else {
+                tabla.style.display = "none";
+                flecha.classList.remove('open');
+            }
+        }
+
         const btnMenu = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        const mainWrapper = document.querySelector('.main-wrapper'); 
         function toggleMenu() {
-            if (window.innerWidth <= 768) { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); } 
-            else { sidebar.classList.toggle('collapsed-desktop'); mainWrapper.classList.toggle('expanded-desktop'); }
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed-desktop');
+                document.querySelector('.main-wrapper').classList.toggle('expanded-desktop');
+            }
         }
         if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
         if (overlay) overlay.addEventListener('click', toggleMenu);
     </script>
+
 </body>
 </html>

@@ -228,3 +228,35 @@ input[type="number"] {
     -moz-appearance: textfield;
     appearance: none;
 }
+
+/* Ajuste para que las tablas de Admin no rompan el diseño */
+.dashboard-content .form-row-2 {
+    align-items: flex-start; /* Evita que una crezca igual que la otra si no hace falta */
+    gap: 20px;
+}
+
+.table-card {
+    max-height: 85vh; /* Que no ocupe más que el alto de la pantalla */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Contenedor con scroll para la tabla de usuarios */
+#tabla-usuarios-activos {
+    display: block;
+    max-height: 400px; /* Altura máxima antes de poner scroll */
+    overflow-y: auto;
+}
+
+/* Aseguramos que la tabla ocupe el 100% */
+.testa-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Estilo para los tildes (Checkboxes) para que no se amontonen */
+.check-acceso {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}

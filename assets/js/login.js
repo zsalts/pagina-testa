@@ -8,9 +8,11 @@ document.getElementById('form-login')?.addEventListener('submit', async (e) => {
     const btn = e.target.querySelector('button');
     const errorMsg = document.getElementById('login-error');
     
+    // Tomamos lo que el usuario escribió (ej: "contadora" o "mateotesta")
     let userStr = document.getElementById('login-user').value.trim().toLowerCase();
     const pass = document.getElementById('login-pass').value;
 
+    // LA MAGIA: Si no escribió un @, le pegamos el dominio de Testa automáticamente
     if (!userStr.includes('@')) {
         userStr = userStr + "@testa.com";
     }
@@ -20,14 +22,17 @@ document.getElementById('form-login')?.addEventListener('submit', async (e) => {
     errorMsg.style.display = 'none';
 
     try {
+        // Configuramos para que la sesión no se cierre sola
         await setPersistence(auth, browserLocalPersistence);
+        
+        // Iniciamos sesión en Firebase con el mail "armado" por nosotros
         await signInWithEmailAndPassword(auth, userStr, pass);
         
-        // Mandamos a todos al Index. Si es empleado, el Guardián lo va a re-dirigir a su lugar en milisegundos.
+        // Si todo sale bien, al Index (el Guardián se encarga del resto)
         window.location.href = "index.html"; 
 
     } catch (error) {
-        console.error(error);
+        console.error("Error de login:", error);
         errorMsg.style.display = 'block';
         btn.disabled = false;
         btn.innerHTML = 'Ingresar al Sistema';
