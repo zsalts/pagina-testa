@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Testa CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        body { background: #f1f5f9; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
+        .login-logo { width: 80px; margin-bottom: 20px; }
+        .login-title { color: var(--testa-blue-dark); font-size: 24px; margin-bottom: 5px; }
+        .login-subtitle { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="assets/img/IMG_2317.png" alt="Testa Logo" class="login-logo">
+        <h1 class="login-title">TESTA CRM</h1>
+        <p class="login-subtitle">Ingresá tus credenciales para continuar</p>
+
+        <form id="form-login" class="modern-form" style="text-align: left;">
+            <div class="form-group">
+                <label>Usuario</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-user" style="position: absolute; left: 15px; top: 14px; color: #94a3b8;"></i>
+                    <input type="text" id="login-user" placeholder="Ej: admin o contadora" required style="padding-left: 40px; height: 45px;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Contraseña</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock" style="position: absolute; left: 15px; top: 14px; color: #94a3b8;"></i>
+                    <input type="password" id="login-pass" placeholder="••••••••" required style="padding-left: 40px; height: 45px;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 16px; margin-top: 10px;">
+                Ingresar al Sistema
+            </button>
+            <p id="login-error" style="color: #e11d48; font-size: 13px; text-align: center; margin-top: 15px; display: none;">Usuario o contraseña incorrectos.</p>
+        </form>
+    </div>
+
+    <script type="module" src="assets/js/login.js"></script>
+
+</body>
+</html>
