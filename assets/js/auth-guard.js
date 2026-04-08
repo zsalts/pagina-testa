@@ -25,8 +25,8 @@ onAuthStateChanged(auth, async (user) => {
         } 
         // LOS MORTALES (Tus empleados)
         else {
-            // Buscamos qué permisos le diste en Firestore
-            const docPermisos = await getDoc(doc(db, "usuarios_permisos", nombreUsuarioLimpio));
+            // Buscamos qué permisos le diste en Firestore usando el correo completo para que coincida
+            const docPermisos = await getDoc(doc(db, "usuarios_permisos", emailActivo));
             
             if (docPermisos.exists()) {
                 const accesosPermitidos = docPermisos.data().accesos;
