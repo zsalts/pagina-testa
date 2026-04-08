@@ -25,26 +25,42 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 2.5 PESTAÑAS (TABS) PARA LAS TABLAS
+// 2.5 PESTAÑAS (TABS) PARA LAS TABLAS MODIFICADO (3 ESTADOS)
 // ==========================================
 const tabPendientes = document.getElementById('tab-pendientes');
 const tabCompletadas = document.getElementById('tab-completadas');
+const tabRechazadas = document.getElementById('tab-rechazadas');
+
 const contPendientes = document.getElementById('contenedor-pendientes');
 const contCompletadas = document.getElementById('contenedor-completadas');
+const contRechazadas = document.getElementById('contenedor-rechazadas');
 
-if(tabPendientes && tabCompletadas) {
+function resetTabs() {
+    if(tabPendientes) tabPendientes.className = 'btn btn-secondary';
+    if(tabCompletadas) tabCompletadas.className = 'btn btn-secondary';
+    if(tabRechazadas) tabRechazadas.className = 'btn btn-secondary';
+    if(contPendientes) contPendientes.style.display = 'none';
+    if(contCompletadas) contCompletadas.style.display = 'none';
+    if(contRechazadas) contRechazadas.style.display = 'none';
+}
+
+if(tabPendientes && tabCompletadas && tabRechazadas) {
     tabPendientes.addEventListener('click', () => {
+        resetTabs();
         tabPendientes.className = 'btn btn-add';
-        tabCompletadas.className = 'btn btn-secondary';
         contPendientes.style.display = 'block';
-        contCompletadas.style.display = 'none';
     });
 
     tabCompletadas.addEventListener('click', () => {
+        resetTabs();
         tabCompletadas.className = 'btn btn-add';
-        tabPendientes.className = 'btn btn-secondary';
         contCompletadas.style.display = 'block';
-        contPendientes.style.display = 'none';
+    });
+
+    tabRechazadas.addEventListener('click', () => {
+        resetTabs();
+        tabRechazadas.className = 'btn btn-add';
+        contRechazadas.style.display = 'block';
     });
 }
 
@@ -54,9 +70,11 @@ if(tabPendientes && tabCompletadas) {
 window.actualizarTablaClientes = function() {
     const cuerpoPendientes = document.getElementById('cuerpo-tabla-pendientes');
     const cuerpoCompletadas = document.getElementById('cuerpo-tabla-completadas');
-    if(!cuerpoPendientes || !cuerpoCompletadas) return;
+    const cuerpoRechazadas = document.getElementById('cuerpo-tabla-rechazadas');
     
-    let stats = { v: 0, p: 0, c: 0 };
+    if(!cuerpoPendientes || !cuerpoCompletadas || !cuerpoRechazadas) return;
+    
+    let stats = { v: 0, p: 0, c: 0, r: 0 };
     let todasLasVisitas = []; 
 
     const dlMedicos = document.getElementById('lista-nombres-medicos');
@@ -66,12 +84,16 @@ window.actualizarTablaClientes = function() {
         const visitas = m.visitas || [];
         visitas.forEach((v, index) => {
             stats.v++;
-            if(v.estado === 'pendiente') stats.p++; else stats.c++;
+            if(v.estado === 'pendiente') stats.p++; 
+            else if(v.estado === 'completado') stats.c++;
+            else stats.r++; 
+
             todasLasVisitas.push({
                 medicoId: m.id, medicoNombre: m.nombre, contacto: m.contacto, institucion: m.institucion,
                 fecha: v.fecha, fechaDisplay: new Date(v.fecha + 'T00:00:00').toLocaleDateString('es-AR'), 
                 pedido: v.pedido, estado: v.estado, entrega: v.entrega, idxReal: index,
-                presupuestoLink: v.presupuestoLink
+                presupuestoLink: v.presupuestoLink,
+                motivoRechazo: v.motivoRechazo 
             });
         });
     });
@@ -80,10 +102,20 @@ window.actualizarTablaClientes = function() {
 
     let htmlPendientes = '';
     let htmlCompletadas = '';
+    let htmlRechazadas = '';
 
     todasLasVisitas.forEach(fila => {
         let entregaHTML = fila.entrega && fila.estado === 'pendiente' ? `<span class="limite-entrega"><i class="fa-solid fa-truck-fast"></i> Límite: ${new Date(fila.entrega+'T00:00:00').toLocaleDateString('es-AR')}</span>` : '';
-        let estadoHTML = `<span class="badge ${fila.estado==='pendiente'?'badge-pendiente':'badge-completado'}" onclick="window.cambiarEstadoVisita('${fila.medicoId}', ${fila.idxReal})" title="Tocar para cambiar">${fila.estado}</span>`;
+        
+        let selectEstadoHTML = `
+            <select class="select-estado-inline estado-${fila.estado}" onchange="window.manejarCambioEstado('${fila.medicoId}', ${fila.idxReal}, this.value)">
+                <option value="pendiente" ${fila.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                <option value="completado" ${fila.estado === 'completado' ? 'selected' : ''}>Completado</option>
+                <option value="rechazado" ${fila.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+            </select>
+        `;
+
+        let motivoHTML = fila.estado === 'rechazado' && fila.motivoRechazo ? `<div class="motivo-rechazo-text"><i class="fa-solid fa-circle-exclamation"></i> Motivo: ${fila.motivoRechazo}</div>` : '';
 
         let iconoPdf = fila.presupuestoLink ? `<a href="${fila.presupuestoLink}" target="_blank" class="btn-icon" style="color: var(--red-alert); margin-left: 8px; font-size: 18px;" title="Ver Presupuesto Vinculado"><i class="fa-solid fa-file-pdf"></i></a>` : '';
 
@@ -102,8 +134,8 @@ window.actualizarTablaClientes = function() {
             <td data-label="Médico"><span class="medico-name">${fila.medicoNombre} ${iconoPdf}</span><br><span class="contacto-sub">${fila.contacto}</span></td>
             <td data-label="Institución">${fila.institucion}</td>
             <td data-label="Fecha"><span class="fecha-visita">${fila.fechaDisplay}</span></td>
-            <td data-label="Detalle"><div class="pedido-text">${fila.pedido}</div></td>
-            <td data-label="Estado / Límite">${estadoHTML} ${entregaHTML}</td>
+            <td data-label="Detalle"><div class="pedido-text">${fila.pedido}</div>${motivoHTML}</td>
+            <td data-label="Estado / Límite">${selectEstadoHTML} ${entregaHTML}</td>
             <td data-label="Acción">
                 ${linkGoogleCalendar ? `<a href="${linkGoogleCalendar}" target="_blank" class="btn-icon" style="color:#4285F4;" title="Agendar"><i class="fa-solid fa-calendar-plus"></i></a>` : ''}
                 <button class="btn-icon btn-delete" onclick="window.borrarVisita('${fila.medicoId}', ${fila.idxReal})" title="Borrar"><i class="fa-regular fa-trash-can"></i></button>
@@ -111,11 +143,13 @@ window.actualizarTablaClientes = function() {
         </tr>`;
 
         if (fila.estado === 'pendiente') htmlPendientes += filaHTML;
-        else htmlCompletadas += filaHTML;
+        else if (fila.estado === 'completado') htmlCompletadas += filaHTML;
+        else htmlRechazadas += filaHTML;
     });
 
     cuerpoPendientes.innerHTML = htmlPendientes !== '' ? htmlPendientes : `<tr><td colspan="6" class="row-empty"><i class="fa-solid fa-check"></i> ¡Excelente! No tenés visitas pendientes.</td></tr>`;
     cuerpoCompletadas.innerHTML = htmlCompletadas !== '' ? htmlCompletadas : `<tr><td colspan="6" class="row-empty">Aún no hay visitas completadas.</td></tr>`;
+    cuerpoRechazadas.innerHTML = htmlRechazadas !== '' ? htmlRechazadas : `<tr><td colspan="6" class="row-empty">No hay visitas rechazadas registradas.</td></tr>`;
 
     const elContadorClientes = document.getElementById('contador-clientes');
     if(elContadorClientes) elContadorClientes.innerText = listaMedicos.length;
@@ -140,11 +174,27 @@ window.borrarVisita = async (id, idx) => {
     }
 };
 
-window.cambiarEstadoVisita = async (id, idx) => {
+window.manejarCambioEstado = async (id, idx, nuevoEstado) => {
+    let motivo = "";
+    if (nuevoEstado === "rechazado") {
+        motivo = prompt("¿Por qué fue rechazada esta visita? (Escribí el motivo para guardarlo)");
+        if (motivo === null) {
+            window.actualizarTablaClientes(); 
+            return;
+        }
+    }
+    
     try {
         const m = listaMedicos.find(x => x.id === id);
         const vis = [...m.visitas];
-        vis[idx].estado = vis[idx].estado === 'pendiente' ? 'completado' : 'pendiente';
+        vis[idx].estado = nuevoEstado;
+        
+        if (nuevoEstado === "rechazado") {
+            vis[idx].motivoRechazo = motivo;
+        } else {
+            delete vis[idx].motivoRechazo;
+        }
+        
         await updateDoc(doc(db, "clientes", id), { visitas: vis });
     } catch (error) { alert("Error al cambiar estado."); }
 };
@@ -206,6 +256,13 @@ window.dibujarCalendario = () => {
 // ==========================================
 // 4. EVENTOS DE BOTONES
 // ==========================================
+
+// ¡ACÁ ESTÁ LA SOLUCIÓN AL BOTÓN DE CLÍNICAS!
+const btnClinicas = document.getElementById('btn-clinicas');
+if (btnClinicas) {
+    btnClinicas.onclick = () => document.getElementById('modal-clinicas')?.classList.add('active');
+}
+
 const btnCargarClinicas = document.getElementById('btn-cargar-clinicas-mdp');
 if (btnCargarClinicas) {
     btnCargarClinicas.onclick = async () => {

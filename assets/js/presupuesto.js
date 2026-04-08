@@ -19,7 +19,6 @@ const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y
 
 let listaPresupuestos = [];
 let listaMedicos = [];
-let vistaActual = 'pendientes'; 
 
 // ==========================================
 // 1. ANTI-CONGELAMIENTO
@@ -29,7 +28,7 @@ window.addEventListener('pageshow', (event) => {
 });
 
 // ==========================================
-// 2. FUNCIONES GLOBALES Y MODALES
+// 2. CERRAR VENTANAS Y TABS
 // ==========================================
 document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-close-modal') || e.target.classList.contains('modal-overlay')) {
@@ -39,6 +38,57 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// LOGICA DE PESTAÑAS (TABS)
+const tabPendientes = document.getElementById('tab-pendientes');
+const tabAprobados = document.getElementById('tab-aprobados');
+const tabCerrados = document.getElementById('tab-cerrados');
+const tabRechazados = document.getElementById('tab-rechazados');
+
+const contPendientes = document.getElementById('contenedor-pendientes');
+const contAprobados = document.getElementById('contenedor-aprobados');
+const contCerrados = document.getElementById('contenedor-cerrados');
+const contRechazados = document.getElementById('contenedor-rechazadas');
+
+function resetTabs() {
+    if(tabPendientes) tabPendientes.className = 'btn btn-secondary';
+    if(tabAprobados) tabAprobados.className = 'btn btn-secondary';
+    if(tabCerrados) tabCerrados.className = 'btn btn-secondary';
+    if(tabRechazados) tabRechazados.className = 'btn btn-secondary';
+    if(contPendientes) contPendientes.style.display = 'none';
+    if(contAprobados) contAprobados.style.display = 'none';
+    if(contCerrados) contCerrados.style.display = 'none';
+    if(contRechazados) contRechazados.style.display = 'none';
+}
+
+if(tabPendientes && tabAprobados && tabCerrados && tabRechazados) {
+    tabPendientes.addEventListener('click', () => {
+        resetTabs();
+        tabPendientes.className = 'btn btn-add';
+        contPendientes.style.display = 'block';
+    });
+
+    tabAprobados.addEventListener('click', () => {
+        resetTabs();
+        tabAprobados.className = 'btn btn-add';
+        contAprobados.style.display = 'block';
+    });
+
+    tabCerrados.addEventListener('click', () => {
+        resetTabs();
+        tabCerrados.className = 'btn btn-add';
+        contCerrados.style.display = 'block';
+    });
+
+    tabRechazados.addEventListener('click', () => {
+        resetTabs();
+        tabRechazados.className = 'btn btn-add';
+        contRechazados.style.display = 'block';
+    });
+}
+
+// ==========================================
+// 3. FUNCIONES GLOBALES
+// ==========================================
 window.pesoDoc = function(tipoDocumento) {
     let t = tipoDocumento.toLowerCase();
     if (t.includes("presupuesto")) return 1;
@@ -64,130 +114,93 @@ window.obtenerAbreviatura = function(tipoDocumento) {
 };
 
 window.dibujarTablaPresupuestos = function() {
-    const cuerpo = document.getElementById('cuerpo-tabla-presupuestos');
-    if (!cuerpo) return;
-
-    let tableContainer = document.querySelector('.table-card'); 
+    const cuerpoPendientes = document.getElementById('cuerpo-tabla-pendientes');
+    const cuerpoAprobados = document.getElementById('cuerpo-tabla-aprobados');
+    const cuerpoCerrados = document.getElementById('cuerpo-tabla-cerrados');
+    const cuerpoRechazadas = document.getElementById('cuerpo-tabla-rechazadas');
     
-    if (tableContainer && !document.getElementById('tabs-expedientes')) {
-        let tabsHTML = `
-        <div id="tabs-expedientes" style="display: flex; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 8px 8px 0 0; overflow: hidden;">
-            <button id="tab-pendientes" style="flex:1; padding: 15px; font-weight: bold; border:none; background: white; color: #0284c7; border-bottom: 3px solid #0284c7; cursor:pointer; font-size: 15px; transition: 0.3s;">
-                <i class="fa-solid fa-clock-rotate-left"></i> Pendientes
-            </button>
-            <button id="tab-completados" style="flex:1; padding: 15px; font-weight: bold; border:none; background: transparent; color: #64748b; border-bottom: 3px solid transparent; cursor:pointer; font-size: 15px; transition: 0.3s;">
-                <i class="fa-solid fa-folder-closed"></i> Historial (Aprob. / Cerrados)
-            </button>
-        </div>
-        `;
-        tableContainer.insertAdjacentHTML('afterbegin', tabsHTML);
+    if (!cuerpoPendientes || !cuerpoAprobados || !cuerpoCerrados || !cuerpoRechazadas) return;
 
-        document.getElementById('tab-pendientes').onclick = () => {
-            vistaActual = 'pendientes';
-            document.getElementById('tab-pendientes').style.background = 'white';
-            document.getElementById('tab-pendientes').style.color = '#0284c7';
-            document.getElementById('tab-pendientes').style.borderBottom = '3px solid #0284c7';
-            document.getElementById('tab-completados').style.background = 'transparent';
-            document.getElementById('tab-completados').style.color = '#64748b';
-            document.getElementById('tab-completados').style.borderBottom = '3px solid transparent';
-            window.dibujarTablaPresupuestos(); 
-        };
-
-        document.getElementById('tab-completados').onclick = () => {
-            vistaActual = 'completados';
-            document.getElementById('tab-completados').style.background = 'white';
-            document.getElementById('tab-completados').style.color = '#475569';
-            document.getElementById('tab-completados').style.borderBottom = '3px solid #475569';
-            document.getElementById('tab-pendientes').style.background = 'transparent';
-            document.getElementById('tab-pendientes').style.color = '#64748b';
-            document.getElementById('tab-pendientes').style.borderBottom = '3px solid transparent';
-            window.dibujarTablaPresupuestos(); 
-        };
-    }
+    let stats = { pen: 0, apr: 0, cer: 0, rec: 0 };
     
-    let stats = { pen: 0, apr: 0, cer: 0 };
-    let pendientes = [];
-    let completados = [];
+    let htmlPendientes = '';
+    let htmlAprobados = '';
+    let htmlCerrados = '';
+    let htmlRechazados = '';
 
     listaPresupuestos.sort((a, b) => b.fecha.localeCompare(a.fecha));
 
     listaPresupuestos.forEach(p => {
-        if (p.estado === 'pendiente') {
-            stats.pen++;
-            pendientes.push(p);
-        } else {
-            if (p.estado === 'aprobado') stats.apr++;
-            if (p.estado === 'cerrado') stats.cer++;
-            completados.push(p);
+        if (p.estado === 'pendiente') stats.pen++;
+        else if (p.estado === 'aprobado') stats.apr++;
+        else if (p.estado === 'cerrado') stats.cer++;
+        else if (p.estado === 'rechazado') stats.rec++;
+
+        const estiloBadgeDoc = `display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; font-size: 0.85em; padding: 4px 8px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; margin-right: 5px; min-width: 35px;`;
+
+        let docsHTML = p.link ? `<a href="${p.link}" target="_blank" style="${estiloBadgeDoc}" title="Presupuesto Inicial">PRE</a>` : '';
+        
+        if (p.ordenCompraLink) {
+            let tituloOC = p.ordenCompraNro ? `Orden de Compra Nº ${p.ordenCompraNro}` : `Orden de Compra Autogenerada`;
+            docsHTML += `<a href="${p.ordenCompraLink}" target="_blank" style="${estiloBadgeDoc} background:#fefce8; color:#b45309; border-color:#fde047;" title="${tituloOC}">OC</a>`;
         }
+
+        if (p.archivosExtra) {
+            let extras = Object.entries(p.archivosExtra);
+            extras.sort((a, b) => window.pesoDoc(a[0]) - window.pesoDoc(b[0]));
+            extras.forEach(([tipo, url]) => {
+                let abreviatura = window.obtenerAbreviatura(tipo);
+                docsHTML += `<a href="${url}" target="_blank" style="${estiloBadgeDoc}" title="${tipo}">${abreviatura}</a>`;
+            });
+        }
+
+        let carpetaDestino = p.carpetaUnica || p.medico;
+        let btnAddDoc = (p.estado === 'aprobado' || p.estado === 'pendiente') ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:5px; font-size: 1.2em;" title="Adjuntar Documentación"><i class="fa-solid fa-circle-plus"></i></button>` : '';
+
+        let botonesAccion = `
+            <div style="display:flex; gap: 8px; justify-content: center;">
+                <button class="btn-icon" onclick="window.abrirModalEditar('${p.id}')" style="color: #0ea5e9;" title="Editar Expediente"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')" title="Borrar Todo"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
+        `;
+
+        let textoLimpio = p.nombreArchivo || 'Presupuesto Inicial';
+        const coincidencia = textoLimpio.match(/(M\d+-\d+\s*-\s*.*)/);
+        if (coincidencia) {
+            textoLimpio = coincidencia[1]; 
+        }
+        textoLimpio = textoLimpio.replace('.pdf', '');
+
+        let selectEstadoHTML = `
+            <select class="select-estado-inline estado-${p.estado}" onchange="window.manejarCambioEstadoExpediente('${p.id}', this.value)">
+                <option value="pendiente" ${p.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                <option value="aprobado" ${p.estado === 'aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="cerrado" ${p.estado === 'cerrado' ? 'selected' : ''}>Cerrado</option>
+                <option value="rechazado" ${p.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+            </select>
+        `;
+        let motivoHTML = p.estado === 'rechazado' && p.motivoRechazo ? `<div class="motivo-rechazo-text"><i class="fa-solid fa-circle-exclamation"></i> Motivo: ${p.motivoRechazo}</div>` : '';
+
+        const filaHTML = `<tr>
+            <td><strong>${p.medico}</strong></td>
+            <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+            <td data-label="Nombre del Presupuesto"><div class="pedido-text">${textoLimpio}</div>${motivoHTML}</td>
+            <td>${selectEstadoHTML}</td>
+            <td><div style="display:flex; flex-wrap: wrap; gap:5px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
+            <td>${botonesAccion}</td>
+        </tr>`;
+
+        if (p.estado === 'pendiente') htmlPendientes += filaHTML;
+        else if (p.estado === 'aprobado') htmlAprobados += filaHTML;
+        else if (p.estado === 'cerrado') htmlCerrados += filaHTML;
+        else if (p.estado === 'rechazado') htmlRechazados += filaHTML;
+        else htmlPendientes += filaHTML;
     });
 
-    const generarFilas = (lista) => {
-        if (lista.length === 0) return `<tr><td colspan="6" class="row-empty" style="text-align:center; padding: 30px; color: #64748b;">No hay expedientes en esta lista.</td></tr>`;
-        
-        let htmlFilas = '';
-        lista.forEach(p => {
-            let colorBadge = p.estado === 'pendiente' ? 'badge-pendiente' : (p.estado === 'aprobado' ? 'badge-completado' : 'badge');
-            let colorFondoBadge = p.estado === 'cerrado' ? '#475569' : ''; 
-            let colorTextoBadge = p.estado === 'cerrado' ? 'white' : '';
-
-            const estiloBadgeDoc = `display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; font-size: 0.85em; padding: 4px 8px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; margin-right: 5px; min-width: 35px;`;
-
-            // Documento 1: El PDF del Presupuesto que le mandaste al cliente
-            let docsHTML = p.link ? `<a href="${p.link}" target="_blank" style="${estiloBadgeDoc}" title="Presupuesto Inicial">PRE</a>` : '';
-            
-            // Documento 2: LA MAGIA NUEVA -> La OC generada automáticamente por el sistema
-            if (p.ordenCompraLink) {
-                let tituloOC = p.ordenCompraNro ? `Orden de Compra Nº ${p.ordenCompraNro}` : `Orden de Compra Autogenerada`;
-                // Le damos un color naranjita/amarillo para diferenciarlo
-                docsHTML += `<a href="${p.ordenCompraLink}" target="_blank" style="${estiloBadgeDoc} background:#fefce8; color:#b45309; border-color:#fde047;" title="${tituloOC}">OC</a>`;
-            }
-
-            // Documento 3+: Los archivos extra que vas subiendo a mano
-            if (p.archivosExtra) {
-                let extras = Object.entries(p.archivosExtra);
-                extras.sort((a, b) => window.pesoDoc(a[0]) - window.pesoDoc(b[0]));
-                
-                extras.forEach(([tipo, url]) => {
-                    let abreviatura = window.obtenerAbreviatura(tipo);
-                    docsHTML += `<a href="${url}" target="_blank" style="${estiloBadgeDoc}" title="${tipo}">${abreviatura}</a>`;
-                });
-            }
-
-            let carpetaDestino = p.carpetaUnica || p.medico;
-            let btnAddDoc = (p.estado === 'aprobado' || p.estado === 'pendiente') ? `<button class="btn-icon" onclick="window.abrirModalDoc('${p.id}', '${carpetaDestino}')" style="color: var(--green-success); margin-left:5px; font-size: 1.2em;" title="Adjuntar Documentación"><i class="fa-solid fa-circle-plus"></i></button>` : '';
-
-            let botonesAccion = `
-                <div style="display:flex; gap: 8px; justify-content: center;">
-                    <button class="btn-icon" onclick="window.abrirModalEditar('${p.id}')" style="color: #0ea5e9;" title="Editar Expediente"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon btn-delete" onclick="window.borrarPresupuesto('${p.id}')" title="Borrar Todo"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
-            `;
-
-            let textoLimpio = p.nombreArchivo || 'Presupuesto Inicial';
-            const coincidencia = textoLimpio.match(/(M\d+-\d+\s*-\s*.*)/);
-            if (coincidencia) {
-                textoLimpio = coincidencia[1]; 
-            }
-            textoLimpio = textoLimpio.replace('.pdf', '');
-
-            htmlFilas += `<tr>
-                <td><strong>${p.medico}</strong></td>
-                <td>${new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                <td data-label="Nombre del Presupuesto"><div class="pedido-text">${textoLimpio}</div></td>
-                <td><span class="badge ${colorBadge}" onclick="window.rotarEstado('${p.id}', '${p.estado}')" style="cursor:pointer; background:${colorFondoBadge}; color:${colorTextoBadge}" title="Hacé clic para cambiar estado">${p.estado.toUpperCase()} <i class="${p.estado === 'cerrado' ? 'fa-solid fa-lock' : ''}"></i></span></td>
-                <td><div style="display:flex; flex-wrap: wrap; gap:5px; align-items:center;">${docsHTML}${btnAddDoc}</div></td>
-                <td>${botonesAccion}</td>
-            </tr>`;
-        });
-        return htmlFilas;
-    };
-
-    if (vistaActual === 'pendientes') {
-        cuerpo.innerHTML = generarFilas(pendientes);
-    } else {
-        cuerpo.innerHTML = generarFilas(completados);
-    }
+    cuerpoPendientes.innerHTML = htmlPendientes !== '' ? htmlPendientes : `<tr><td colspan=\"6\" class=\"row-empty\">No hay expedientes pendientes.</td></tr>`;
+    cuerpoAprobados.innerHTML = htmlAprobados !== '' ? htmlAprobados : `<tr><td colspan=\"6\" class=\"row-empty\">No hay expedientes aprobados.</td></tr>`;
+    cuerpoCerrados.innerHTML = htmlCerrados !== '' ? htmlCerrados : `<tr><td colspan=\"6\" class=\"row-empty\">No hay expedientes cerrados.</td></tr>`;
+    cuerpoRechazadas.innerHTML = htmlRechazados !== '' ? htmlRechazados : `<tr><td colspan=\"6\" class=\"row-empty\">No hay expedientes rechazados.</td></tr>`;
 
     const statPen = document.getElementById('stat-pendientes');
     if(statPen) statPen.innerText = stats.pen;
@@ -197,6 +210,9 @@ window.dibujarTablaPresupuestos = function() {
 
     const statCer = document.getElementById('stat-cerrados');
     if(statCer) statCer.innerText = stats.cer;
+
+    const statRec = document.getElementById('stat-rechazados');
+    if(statRec) statRec.innerText = stats.rec;
     
     const buscador = document.getElementById('buscador-presupuestos');
     if(buscador && buscador.value) {
@@ -253,16 +269,34 @@ window.abrirModalDoc = (id, carpeta) => {
     document.getElementById('modal-archivo-extra')?.classList.add('active');
 };
 
-window.rotarEstado = async (id, actual) => {
-    let sig = actual === 'pendiente' ? 'aprobado' : (actual === 'aprobado' ? 'cerrado' : 'pendiente');
-    if (confirm(`¿Pasar a ${sig.toUpperCase()}?`)) await updateDoc(doc(db, "presupuestos", id), { estado: sig });
+window.manejarCambioEstadoExpediente = async (id, nuevoEstado) => {
+    let motivo = "";
+    if (nuevoEstado === "rechazado") {
+        motivo = prompt("¿Por qué fue rechazado este expediente? (Escribí el motivo para guardarlo)");
+        if (motivo === null) {
+            window.dibujarTablaPresupuestos(); 
+            return;
+        }
+    }
+    
+    try {
+        const updateData = { estado: nuevoEstado };
+        if (nuevoEstado === "rechazado") {
+            updateData.motivoRechazo = motivo;
+        } else {
+            updateData.motivoRechazo = deleteField();
+        }
+        await updateDoc(doc(db, "presupuestos", id), updateData);
+    } catch (error) { 
+        alert("Error al cambiar estado."); 
+    }
 };
 
 window.borrarPresupuesto = async (id) => { if (confirm("¿Borrar expediente completo?")) await deleteDoc(doc(db, "presupuestos", id)); };
 
 
 // ==========================================
-// 3. EVENTOS DE BOTONES
+// 4. EVENTOS DE BOTONES
 // ==========================================
 const btnNuevoPresupuesto = document.getElementById('btn-nuevo-presupuesto');
 if (btnNuevoPresupuesto) {
@@ -350,7 +384,8 @@ if (formPres) {
             const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
             const medicoLimpio = medico.replace(/[^a-zA-Z0-9 ]/g, '');
             
-            const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt}`;
+            const codigoUnico = Date.now().toString().slice(-4);
+            const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt} - ${codigoUnico}`;
             const nombreArchivoFinal = nombreOriginalConExt;
 
             const refArch = ref(storage, `expedientes/${nombreCarpeta}/${nombreArchivoFinal}`);
@@ -453,7 +488,7 @@ if (buscadorPres) {
 }
 
 // ==========================================
-// 4. LECTURA DE FIREBASE (AL FINAL DE TODO)
+// 5. LECTURA DE FIREBASE (AL FINAL DE TODO)
 // ==========================================
 onSnapshot(collection(db, "clientes"), (snap) => {
     listaMedicos = snap.docs.map(d => d.data().nombre);
