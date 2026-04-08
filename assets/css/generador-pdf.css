@@ -1,0 +1,114 @@
+/* ============================================================
+   HEADER DEL PRESUPUESTO WEB (BLANCO Y CON LOGO)
+   ============================================================ */
+.pdf-main-header {
+    background-color: #ffffff;
+    padding: 0 0 25px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pdf-logo {
+    max-width: 180px;
+    height: auto;
+    object-fit: contain;
+}
+
+.pdf-header-title {
+    color: var(--testa-blue-dark);
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* ============================================================
+   ESTILOS EXCLUSIVOS PARA EL GENERADOR PDF
+   ============================================================ */
+.pdf-datos-header {
+    display: grid;
+    grid-template-columns: 0.8fr 1.5fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.pdf-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.items-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
+.items-table th { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: left;}
+.items-table td { border: 1px solid var(--border-color); padding: 0 10px; height: 48px; overflow: hidden; }
+
+.items-table td input, 
+.items-table td select, 
+.items-table td textarea {
+    width: 100%; border: none !important; background: transparent !important;
+    outline: none !important; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--testa-blue-dark);
+    padding: 10px 0; margin: 0; box-sizing: border-box; border-radius: 0 !important; font-weight: 500;
+}
+
+.item-detalles { resize: none; vertical-align: middle; padding: 12px 0 !important; font-size: 12px !important; color: var(--text-muted) !important;}
+
+.label-total-cell { text-align: right; font-weight: 700; font-size: 12px; padding: 12px !important; border: 1px solid var(--border-color); color: var(--testa-blue-dark); text-transform: uppercase;}
+.value-total-cell { font-weight: 700; font-size: 13px; padding: 12px !important; border: 1px solid var(--border-color); color: var(--testa-blue-dark); }
+.total-highlight { background: var(--testa-blue-tint) !important; color: var(--testa-blue-dark) !important; font-size: 14px; }
+
+.btn-search-prod { 
+    background: var(--testa-blue); color: white; border: none; width: 32px; height: 32px; border-radius: 6px; 
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; 
+    align-self: center; margin: 0; flex-shrink: 0; 
+}
+.btn-search-prod:hover { background: var(--testa-blue-dark); }
+
+.resultado-item-cat { cursor: pointer; transition: 0.2s; border: 1px solid transparent;}
+.resultado-item-cat:hover { background: #fbfdff; border: 1px solid var(--testa-blue-tint); }
+.cat-titulo { font-weight: 700; color: var(--testa-blue-dark); font-size: 14px; margin-bottom: 2px;}
+.cat-detalles { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+.cat-precio { font-size: 12px; color: var(--testa-blue); font-weight: 600; }
+
+/* ============================================================
+   FORZADO ABSOLUTO PARA CELULARES (LA MAGIA DE LA TABLA)
+   ============================================================ */
+@media screen and (max-width: 768px) {
+    /* Ajustes del header para móvil */
+    .pdf-main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .pdf-logo {
+        max-width: 130px;
+    }
+
+    main .table-card { padding: 12px !important; }
+    .pdf-datos-header { grid-template-columns: 1fr !important; gap: 12px !important; margin-bottom: 15px !important; }
+    .pdf-modal-grid { grid-template-columns: 1fr !important; }
+    .pdf-datos-header .form-group { width: 100% !important; }
+    .table-section-title h3 { font-size: 15px; }
+
+    /* Destruimos las columnas del medio en celular */
+    .items-table thead th:nth-child(2), .items-table tbody td:nth-child(2),
+    .items-table thead th:nth-child(3), .items-table tbody td:nth-child(3),
+    .items-table thead th:nth-child(4), .items-table tbody td:nth-child(4),
+    .items-table thead th:nth-child(5), .items-table tbody td:nth-child(5),
+    .items-table thead th:nth-child(6), .items-table tbody td:nth-child(6) {
+        display: none !important;
+    }
+
+    .items-table { min-width: 100% !important; display: table !important; }
+    .items-table th:nth-child(1) { width: 55% !important; } 
+    .items-table th:nth-child(7) { width: 30% !important; } 
+    .items-table th:nth-child(8) { width: 15% !important; } 
+
+    .items-table .btn-search-prod { display: none !important; }
+    .item-row { cursor: pointer; }
+    
+    .item-desc { pointer-events: none; background: transparent !important; }
+    .item-subtotal-cell { pointer-events: none; }
+}

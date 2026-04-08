@@ -1,0 +1,274 @@
+:root {
+    /* ==========================================
+       PALETA NUEVA TESTA (COOLORS)
+       ========================================== */
+    --testa-blue: #0d3968;       /* Azul Principal: Botones, íconos, botones activos */
+    --testa-blue-dark: #1f3954;  /* Azul Noche: Sidebar, textos fuertes, cabeceras de tabla */
+    --testa-blue-tint: #eaf5f9;  /* Hielo: Fondos resaltados, hover de filas, tarjetas claras */
+    --text-muted: #2a4769;       /* Azul Desaturado: Textos secundarios, etiquetas, subtítulos */
+    --border-color: #c0d0d9;     /* Gris Azulado: Líneas divisorias, bordes de tablas e inputs */
+
+    /* ==========================================
+       FONDOS GENERALES
+       ========================================== */
+    --bg-color: #f4f8fb;         
+    --sidebar-bg: #0d3968;       /* <--- TU NUEVO COLOR PARA LA BARRA LATERAL UNIFICADA */
+    --sidebar-hover: #1f3954;    /* <--- Azul más oscuro para cuando pasas el mouse */
+
+    /* ==========================================
+       COLORES DE ESTADO (SEMÁFORO)
+       Mantenemos los estándares de UX (Rojo, Verde, Amarillo)
+       ========================================== */
+    --red-alert: #e11d48;
+    --red-tint: #ffe4e6;
+    --green-success: #16a34a;
+    --green-tint: #dcfce7;
+    --yellow-pending: #d97706;
+    --yellow-tint: #fef3c7;
+
+    /* ==========================================
+       SOMBRAS
+       ========================================== */
+    --shadow-sm: 0 1px 3px rgba(31, 57, 84, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(31, 57, 84, 0.1);
+}
+
+/* --- RESET GENERAL --- */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+html { color-scheme: light; }
+body { background-color: var(--bg-color); color: var(--testa-blue); line-height: 1.6; font-size: 14px; overflow: hidden; height: 100vh; width: 100vw; margin: 0; }
+
+/* ============================================================
+   ESTRUCTURA DASHBOARD GLOBAL (SIDEBAR + MAIN)
+   ============================================================ */
+.dashboard-container { display: flex; height: 100vh; width: 100vw; }
+
+/* Menú Lateral */
+.sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); flex-shrink: 0; }
+
+/* LOGO AGRANDADO, CENTRADO Y SIN TEXTO */
+.sidebar-logo { 
+    padding: 30px 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background: var(--sidebar-bg); 
+}
+.sidebar-logo img { 
+    width: 230px; /* <--- PASAMOS DE 90px a 160px */
+    max-width: 100%; /* Para que nunca se salga de la barra por accidente */
+    background: transparent; 
+    padding: 0; 
+}
+.logo-text { 
+    display: none; 
+}
+
+.sidebar-nav { display: flex; flex-direction: column; padding: 20px 0; gap: 5px; }
+.sidebar-nav a { padding: 14px 25px; color: #a1b0cb; text-decoration: none; display: flex; align-items: center; gap: 15px; font-weight: 500; font-size: 15px; transition: 0.2s; border-left: 4px solid transparent; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.05); color: white; }
+.sidebar-nav a.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #0ea5e9; font-weight: 600; }
+.sidebar-nav i { font-size: 18px; width: 20px; text-align: center; }
+
+/* Contenido Principal */
+.main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-color); }
+.top-header { background: white; height: 70px; padding: 0 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); z-index: 10; flex-shrink: 0;}
+.top-header-title { font-size: 18px; color: var(--testa-blue-dark); margin: 0; font-weight: 700; }
+#mobile-menu-btn { display: none; background: none; border: none; font-size: 22px; color: var(--testa-blue-dark); cursor: pointer; padding: 0; }
+.user-profile-circle { width: 36px; height: 36px; border-radius: 50%; background-color: var(--testa-blue-tint); color: var(--testa-blue); display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid var(--border-color); }
+
+.dashboard-content { flex: 1; padding: 25px; overflow-y: auto; overflow-x: hidden; }
+.sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
+
+/* --- SECCIÓN ESTADÍSTICAS --- */
+.stats-section { margin-bottom: 20px; width: 100%; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+.stat-card { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm); transition: 0.2s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--testa-blue-tint); color: var(--testa-blue); flex-shrink: 0;}
+.stat-data h3 { font-size: 24px; font-weight: 800; color: var(--testa-blue); line-height: 1.1; margin:0;}
+.stat-data p { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin:0;}
+
+/* --- BARRA DE HERRAMIENTAS --- */
+.toolbar-section { display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+.search-bar { flex: 1; min-width: 250px; position: relative; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+.search-bar input { width: 100%; padding: 12px 12px 12px 38px; border: none; background: transparent; outline: none; font-size: 14px; color: var(--testa-blue); }
+.action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* --- BOTONES --- */
+.btn { padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: 0.2s; white-space: nowrap; }
+.btn-secondary { background: white; border: 1px solid var(--border-color); color: var(--testa-blue); }
+.btn-secondary-tint { background: var(--testa-blue-tint); color: var(--testa-blue-dark); border: 1px solid var(--testa-blue-tint); }
+.btn-danger-outline { background: white; border: 1px solid #fecaca; color: var(--red-alert); }
+.btn-add { background: var(--testa-blue); color: white; box-shadow: 0 2px 4px rgba(13, 57, 104, 0.3); }
+
+/* --- TABLAS --- */
+.table-card { background: white; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); overflow-x: auto; width: 100%; }
+.testa-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+.testa-table thead th { background: #f8fafc; padding: 12px 15px; text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid var(--border-color); }
+.testa-table tbody tr { transition: 0.1s; border-bottom: 1px solid #f1f5f9; }
+.testa-table tbody tr:hover { background-color: #fbfdff; }
+.testa-table tbody td { padding: 14px 15px; vertical-align: middle; color: var(--testa-blue); font-size: 13px; }
+.medico-name { font-weight: 700; color: var(--testa-blue-dark); font-size: 14px; }
+.contacto-sub { color: var(--text-muted); font-size: 11px; }
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: inline-block;}
+.badge-pendiente { background: var(--yellow-tint); color: #854d0e; border: 1px solid #fde68a; }
+.badge-completado { background: var(--green-tint); color: #166534; border: 1px solid #a7f3d0; }
+.limite-entrega { color: var(--red-alert); font-weight: 600; font-size: 11px; margin-top: 4px; display: block; }
+.btn-icon { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 6px; border-radius: 4px; transition: 0.2s; }
+.btn-icon:hover { background: #f1f5f9; color: var(--testa-blue); }
+
+.table-section-title { margin-bottom: 12px; padding-left: 5px; }
+.table-section-title h3 { font-size: 15px; font-weight: 700; color: var(--testa-blue-dark); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; margin:0;}
+.row-empty { text-align: center !important; color: var(--text-muted) !important; padding: 30px !important; font-weight: 500; }
+
+/* --- MODALES --- */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(31, 57, 84, 0.75); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+.modal-overlay.active { display: flex; }
+.modern-modal { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: modalAppear 0.3s ease-out; }
+@keyframes modalAppear { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.modal-md { max-width: 650px; }
+.modal-lg { max-width: 950px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.modal-header h3 { font-size: 18px; font-weight: 700; color: var(--testa-blue); margin:0;}
+.btn-close-modal { background: #f1f5f9; border: none; color: var(--text-muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* Formularios */
+.modern-form .form-group { margin-bottom: 18px; }
+.modern-form label { display: block; font-size: 12px; font-weight: 600; color: var(--testa-blue); margin-bottom: 6px; text-transform: uppercase; }
+.modern-form input, .modern-form select, .modern-form textarea { width: 100%; padding: 10px 12px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; color: var(--testa-blue); }
+.modern-form textarea { height: 100px; resize: none; }
+.input-with-action { display: flex; gap: 8px; align-items: center; }
+.btn-input-action { background: white; border: 1px solid var(--border-color); color: var(--testa-blue); width: 42px; height: 42px; border-radius: 8px; cursor: pointer; }
+.form-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.form-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+.width-100 { width: 100%; }
+.modern-list-container { max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px; background: #f8fafc; padding: 5px; }
+.modern-list-item { display:flex; justify-content:space-between; padding:10px 15px; border-bottom:1px solid var(--border-color); align-items:center; background: white; margin-bottom: 4px; border-radius: 6px; }
+
+/* Calendario */
+.calendar-container { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; margin: 0 auto; max-width: 100%; }
+.cal-day { background: white; min-height: 80px; padding: 5px; display: flex; flex-direction: column; }
+.cal-date-num { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: right; margin-bottom: 5px; }
+.cal-visit-badge { font-size: 9px; padding: 3px 5px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+
+datalist, option { background-color: #ffffff !important; color: #0369a1 !important; }
+
+/* ==========================================
+   CELULARES (ADAPTACIÓN PERFECTA DASHBOARD)
+   ========================================== */
+@media screen and (max-width: 768px) {
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.active { display: block; opacity: 1; }
+    #mobile-menu-btn { display: block; }
+    .top-header { padding: 0 15px; }
+    .dashboard-content { padding: 15px; }
+
+    /* STATS */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-card { padding: 10px; gap: 10px; flex-direction: column; text-align: center;}
+    
+    /* TOOLBAR */
+    .toolbar-section { flex-direction: column; align-items: stretch; padding: 12px; gap: 10px; }
+    .action-buttons { grid-template-columns: 1fr 1fr; display: grid; width: 100%; gap: 6px; }
+    .btn { width: 100%; font-size: 12px; padding: 10px; }
+    
+    /* TABLA CELULAR */
+    .table-card { border: none; background: transparent; box-shadow: none; overflow-x: hidden !important;}
+    .testa-table { width: 100% !important; min-width: 0 !important; display: block; }
+    .testa-table thead { display: none; } 
+    .testa-table tbody { display: block; width: 100%; }
+    .testa-table tbody tr { display: block; width: 100%; background: white; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); padding: 0; overflow: hidden; }
+    .testa-table tbody td { display: flex; align-items: center; width: 100%; border: none; padding: 12px 15px; border-bottom: 1px solid #f1f5f9; text-align: right; gap: 8px; flex-wrap: wrap; word-break: break-word; }
+    .testa-table tbody td:last-child { border-bottom: none; background: #f8fafc; }
+    .testa-table tbody td::before { content: attr(data-label); font-weight: 700; color: var(--text-muted); font-size: 11px; text-transform: uppercase; flex-shrink: 0; text-align: left; margin-right: auto; }
+    .testa-table tbody td:first-child { display: block; text-align: left; background: var(--testa-blue-tint); padding: 15px; }
+    .testa-table tbody td:first-child::before { content: "MÉDICO / CONTACTO"; display: block; font-size: 10px; color: var(--testa-blue-dark); opacity: 0.6; margin-bottom: 4px;}
+
+    /* Modales */
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modern-modal { max-width: 100vw; border-radius: 20px 20px 0 0; padding: 25px 20px; animation: modalSlideUp 0.3s ease-out; }
+    @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .form-row-3, .form-row-2 { grid-template-columns: 1fr; }
+}
+
+/* --- MODIFICACIÓN CORREGIDA: MENÚ COLAPSABLE EN DESKTOP --- */
+#mobile-menu-btn {
+    display: block !important; 
+    cursor: pointer;
+}
+
+.sidebar, .main-wrapper {
+    transition: all 0.3s ease !important;
+}
+
+@media (min-width: 769px) {
+    .sidebar.collapsed-desktop {
+        margin-left: -260px !important; 
+    }
+    
+    .main-wrapper.expanded-desktop {
+        margin-left: 0 !important;
+        width: 100% !important;
+        flex: 1 !important;
+    }
+}
+
+/* --- OCULTAR FLECHAS EN LOS INPUTS NUMÉRICOS --- */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    appearance: none;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: none;
+}
+
+/* Ajuste para que las tablas de Admin no rompan el diseño */
+.dashboard-content .form-row-2 {
+    align-items: flex-start; /* Evita que una crezca igual que la otra si no hace falta */
+    gap: 20px;
+}
+
+.table-card {
+    max-height: 85vh; /* Que no ocupe más que el alto de la pantalla */
+    display: flex;
+    flex-direction: column;
+}
+
+/* ELIMINAMOS EL DISPLAY: BLOCK DEL TBODY PORQUE ROMPE LAS COLUMNAS */
+#tabla-usuarios-activos {
+    /* Dejamos que se comporte como un table-row-group normal */
+}
+
+/* Forzamos que la tabla respete el table-layout: fixed */
+.testa-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed !important;
+}
+
+/* Estilo para los tildes (Checkboxes) para que no se amontonen */
+.check-acceso {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Aseguramos que la tabla ocupe el 100% */
+.testa-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Estilo para los tildes (Checkboxes) para que no se amontonen */
+.check-acceso {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
