@@ -1,4 +1,5 @@
 /* ============================================================
+<<<<<<< HEAD
    HEADER DEL PRESUPUESTO WEB (BLANCO Y CON LOGO)
    ============================================================ */
 .pdf-main-header {
@@ -28,6 +29,11 @@
 /* ============================================================
    ESTILOS EXCLUSIVOS PARA EL GENERADOR PDF
    ============================================================ */
+=======
+   ESTILOS EXCLUSIVOS PARA EL GENERADOR PDF
+   ============================================================ */
+
+>>>>>>> 540dca7f751afdffcdf74fea7fc7a72b153ebde3
 .pdf-datos-header {
     display: grid;
     grid-template-columns: 0.8fr 1.5fr 1fr;
@@ -76,6 +82,7 @@
    FORZADO ABSOLUTO PARA CELULARES (LA MAGIA DE LA TABLA)
    ============================================================ */
 @media screen and (max-width: 768px) {
+<<<<<<< HEAD
     /* Ajustes del header para móvil */
     .pdf-main-header {
         flex-direction: column;
@@ -86,12 +93,15 @@
         max-width: 130px;
     }
 
+=======
+>>>>>>> 540dca7f751afdffcdf74fea7fc7a72b153ebde3
     main .table-card { padding: 12px !important; }
     .pdf-datos-header { grid-template-columns: 1fr !important; gap: 12px !important; margin-bottom: 15px !important; }
     .pdf-modal-grid { grid-template-columns: 1fr !important; }
     .pdf-datos-header .form-group { width: 100% !important; }
     .table-section-title h3 { font-size: 15px; }
 
+<<<<<<< HEAD
     /* Destruimos las columnas del medio en celular */
     .items-table thead th:nth-child(2), .items-table tbody td:nth-child(2),
     .items-table thead th:nth-child(3), .items-table tbody td:nth-child(3),
@@ -109,6 +119,30 @@
     .items-table .btn-search-prod { display: none !important; }
     .item-row { cursor: pointer; }
     
+=======
+    /* 1. Destruimos las columnas del medio en celular (solo cuerpo y encabezado, no en los totales) */
+    .items-table thead th:nth-child(2), .items-table tbody td:nth-child(2), /* Detalles */
+    .items-table thead th:nth-child(3), .items-table tbody td:nth-child(3), /* Cantidad */
+    .items-table thead th:nth-child(4), .items-table tbody td:nth-child(4), /* Moneda */
+    .items-table thead th:nth-child(5), .items-table tbody td:nth-child(5), /* P.Unitario */
+    .items-table thead th:nth-child(6), .items-table tbody td:nth-child(6)  /* IVA */ {
+        display: none !important;
+    }
+
+    /* 2. Ajustamos los anchos de las que quedan */
+    .items-table { min-width: 100% !important; display: table !important; }
+    .items-table th:nth-child(1) { width: 55% !important; } /* Nombre */
+    .items-table th:nth-child(7) { width: 30% !important; } /* Total */
+    .items-table th:nth-child(8) { width: 15% !important; } /* Tachito */
+
+    /* 3. Ocultamos la lupa de la tabla (porque en celular va a estar adentro del modal) */
+    .items-table .btn-search-prod { display: none !important; }
+
+    /* 4. Hacemos que la fila parezca tocable */
+    .item-row { cursor: pointer; }
+    
+    /* Bloqueamos la edición directa en la celda para que al tocar se abra el modal */
+>>>>>>> 540dca7f751afdffcdf74fea7fc7a72b153ebde3
     .item-desc { pointer-events: none; background: transparent !important; }
     .item-subtotal-cell { pointer-events: none; }
 }
