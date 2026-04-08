@@ -171,7 +171,10 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
             }
         }
 
-        document.getElementById('pdf-oc-fecha').textContent = new Date().toLocaleDateString('es-AR', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        // Fecha formato largo: "Mar del Plata, miércoles, 8 de abril de 2026"
+        const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('pdf-oc-fecha').textContent = 'Mar del Plata, ' + new Date().toLocaleDateString('es-AR', opcionesFecha);
+        
         const nroOC = document.getElementById('oc-nro').value;
         document.getElementById('pdf-oc-nro-titulo').textContent = nroOC;
         document.getElementById('pdf-oc-prov').textContent = document.getElementById('oc-proveedor').value;
@@ -185,7 +188,7 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
         const coti = document.getElementById('oc-coti').value;
         const cajaCoti = document.getElementById('caja-pdf-coti');
         if(coti && coti > 0) {
-            cajaCoti.style.display = 'inline';
+            cajaCoti.style.display = 'list-item'; // Mostrar como viñeta
             document.getElementById('pdf-oc-coti').textContent = fContable(parseFloat(coti));
         } else {
             cajaCoti.style.display = 'none';
@@ -201,9 +204,8 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
 
         const filas = document.querySelectorAll('.oc-item-row');
         filas.forEach((fila, index) => {
-            // MAGIA CATÁLOGO: Si seleccionó un producto del catálogo, usamos ESE nombre para la Orden de Compra.
             const selectCat = fila.querySelector('.oc-item-catalogo');
-            let descFinal = fila.getAttribute('data-desc'); // Fallback a la descripción del presupuesto
+            let descFinal = fila.getAttribute('data-desc'); 
             if (selectCat && selectCat.selectedIndex > 0) {
                 descFinal = selectCat.options[selectCat.selectedIndex].getAttribute('data-nombre');
             }
@@ -223,35 +225,36 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
 
             tbodyPDF.innerHTML += `
                 <tr>
-                    <td style="padding: 6px; border: 1px solid #333; text-align: center;">${index + 1}</td>
-                    <td style="padding: 6px; border: 1px solid #333;">${descFinal}</td>
-                    <td style="padding: 6px; border: 1px solid #333; text-align: center;">${cant}</td>
-                    <td style="padding: 6px; border: 1px solid #333; text-align: right;">${moneda} ${fContable(costo)}</td>
-                    <td style="padding: 6px; border: 1px solid #333; text-align: center;">${ivaPorc === 0 ? 'Exento' : ivaPorc + '%'}</td>
-                    <td style="padding: 6px; border: 1px solid #333; text-align: right;">${moneda} ${fContable(sub)}</td>
+                    <td style="padding: 6px; border-right: 1px solid #000; border-bottom: 1px solid #ccc; text-align: center;">${index + 1}</td>
+                    <td style="padding: 6px; border-right: 1px solid #000; border-bottom: 1px solid #ccc;">${descFinal}</td>
+                    <td style="padding: 6px; border-right: 1px solid #000; border-bottom: 1px solid #ccc; text-align: center;">${cant}</td>
+                    <td style="padding: 6px; border-right: 1px solid #000; border-bottom: 1px solid #ccc; text-align: right;">${moneda} ${fContable(costo)}</td>
+                    <td style="padding: 6px; border-right: 1px solid #000; border-bottom: 1px solid #ccc; text-align: center;">${ivaPorc === 0 ? 'Exento' : ivaPorc + '%'}</td>
+                    <td style="padding: 6px; border-bottom: 1px solid #ccc; text-align: right;">${moneda} ${fContable(sub)}</td>
                 </tr>
             `;
         });
 
         document.getElementById('pdf-oc-subtotal').textContent = `${simboloGlobal} ${fContable(subtotalTotal)}`;
 
-        const trIVA1 = document.createElement('tr');
-        const trIVA2 = document.createElement('tr');
-        const tablaTotales = document.getElementById('pdf-oc-totales');
+        // Gestión del cuadro de totales (Base, IVAs, Total)
+        const tbodyTotales = document.getElementById('pdf-oc-totales-tbody');
+        const totalRow = document.getElementById('pdf-oc-total-row');
         
-        Array.from(tablaTotales.children).forEach(tr => {
-            if(tr.id === 'fila-iva-extra') tr.remove();
-        });
+        // Limpiamos los IVAs previos por si el usuario genera varias OC sin recargar
+        Array.from(tbodyTotales.querySelectorAll('.fila-iva-extra')).forEach(tr => tr.remove());
 
-        if (iva21Total > 0) {
-            trIVA1.id = 'fila-iva-extra';
-            trIVA1.innerHTML = `<td colspan="3" style="border:none;"></td><td colspan="2" style="border:1px solid #333; padding:6px; text-align:right;">IVA 21%:</td><td style="border:1px solid #333; padding:6px; text-align:right; background:#c1d5e0;">${simboloGlobal} ${fContable(iva21Total)}</td>`;
-            tablaTotales.insertBefore(trIVA1, tablaTotales.children[1]); 
-        }
         if (iva10Total > 0) {
-            trIVA2.id = 'fila-iva-extra';
-            trIVA2.innerHTML = `<td colspan="3" style="border:none;"></td><td colspan="2" style="border:1px solid #333; padding:6px; text-align:right;">IVA 10,5%:</td><td style="border:1px solid #333; padding:6px; text-align:right; background:#c1d5e0;">${simboloGlobal} ${fContable(iva10Total)}</td>`;
-            tablaTotales.insertBefore(trIVA2, tablaTotales.children[1]); 
+            const trIVA2 = document.createElement('tr');
+            trIVA2.className = 'fila-iva-extra';
+            trIVA2.innerHTML = `<td style="padding: 6px; font-weight: bold; border-right: 1px solid #000; border-bottom: 1px solid #000;">IVA 10,5 %</td><td style="padding: 6px; text-align: right; border-bottom: 1px solid #000;">${simboloGlobal} ${fContable(iva10Total)}</td>`;
+            tbodyTotales.insertBefore(trIVA2, totalRow); 
+        }
+        if (iva21Total > 0) {
+            const trIVA1 = document.createElement('tr');
+            trIVA1.className = 'fila-iva-extra';
+            trIVA1.innerHTML = `<td style="padding: 6px; font-weight: bold; border-right: 1px solid #000; border-bottom: 1px solid #000;">IVA 21%</td><td style="padding: 6px; text-align: right; border-bottom: 1px solid #000;">${simboloGlobal} ${fContable(iva21Total)}</td>`;
+            tbodyTotales.insertBefore(trIVA1, totalRow); 
         }
 
         const totalFinal = subtotalTotal + iva21Total + iva10Total;

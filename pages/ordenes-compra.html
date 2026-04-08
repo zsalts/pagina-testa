@@ -175,43 +175,41 @@
 </div>
 
 <div id="pdf-wrapper-oc" style="opacity: 0; position: absolute; top: 0; left: 0; z-index: -9999; background: white; pointer-events: none; width: 800px;">
-    <div id="pdf-content-oc" style="width: 800px; padding: 40px; background: white; color: #333; font-family: 'Inter', sans-serif; box-sizing: border-box;">
+    <div id="pdf-content-oc" style="width: 800px; padding: 40px; background: white; color: #000; font-family: Arial, sans-serif; box-sizing: border-box; font-size: 13px;">
         
-        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #003b5c; padding-bottom: 20px; margin-bottom: 20px;">
-            <div style="width: 50%;">
-                <img src="../assets/img/IMG_2317.png" alt="Testa" style="height: 60px; margin-bottom: 10px;">
-                <h2 style="margin: 0; color: #003b5c; font-size: 24px;">ORDEN DE COMPRA</h2>
+        <div style="display: flex; border: 1px solid #000; margin-bottom: 20px; position: relative; box-sizing: border-box;">
+            <div style="width: 50%; padding: 15px; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+                <img src="../assets/img/logo.jpeg" alt="Testa" style="max-height: 80px; max-width: 90%;">
             </div>
-            <div style="width: 45%; text-align: right; font-size: 12px; line-height: 1.6;">
-                <strong style="font-size: 16px; color: #e11d48;">Nº <span id="pdf-oc-nro-titulo"></span></strong><br>
-                <strong>Fecha:</strong> <span id="pdf-oc-fecha"></span><br>
-                Testa CRM<br>
-                Mar del Plata, Buenos Aires
+
+            <div style="position: absolute; left: 50%; top: 0; margin-left: -22px; width: 44px; height: 44px; border-left: 1px solid #000; border-right: 1px solid #000; border-bottom: 1px solid #000; background: white; text-align: center; line-height: 44px; font-size: 24px; font-weight: bold; box-sizing: border-box;">
+                X
+            </div>
+
+            <div style="width: 50%; padding: 15px; padding-left: 40px; box-sizing: border-box;">
+                <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">ORDEN DE COMPRA</div>
+                <div style="margin-bottom: 5px;"><strong>Nro. <span id="pdf-oc-nro-titulo"></span></strong></div>
+                <div><span id="pdf-oc-fecha"></span></div>
+                <div style="font-size: 11px; margin-top: 10px; color: #555;">Doc. No válido como factura</div>
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 13px;">
-            <div style="width: 48%; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <h4 style="margin-top: 0; margin-bottom: 10px; color: #003b5c; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px;">DATOS DEL PROVEEDOR</h4>
-                <strong>Señores:</strong> <span id="pdf-oc-prov"></span><br>
-                <strong>Atención:</strong> <span id="pdf-oc-atte"></span>
-            </div>
-            <div style="width: 48%; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <h4 style="margin-top: 0; margin-bottom: 10px; color: #003b5c; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px;">REFERENCIA DE LA OPERACIÓN</h4>
-                <strong>Cliente Final:</strong> <span id="pdf-oc-cliente"></span><br>
-                <strong>Lugar de Entrega:</strong> <span id="pdf-oc-envio"></span>
-            </div>
+        <div style="margin-bottom: 20px; line-height: 1.6;">
+            <div><strong>Señores.:</strong> <span id="pdf-oc-prov"></span></div>
+            <div><strong>Atención.:</strong> <span id="pdf-oc-atte"></span></div>
+            <div><strong>Cliente Ref.:</strong> <span id="pdf-oc-cliente"></span></div>
+            <div><strong>Presente.</strong></div>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #000; font-size: 12px;">
             <thead>
-                <tr style="background: #003b5c; color: white;">
-                    <th style="padding: 8px; border: 1px solid #003b5c;">Ítem</th>
-                    <th style="padding: 8px; border: 1px solid #003b5c; text-align: left;">Descripción de los Bienes</th>
-                    <th style="padding: 8px; border: 1px solid #003b5c;">Cant.</th>
-                    <th style="padding: 8px; border: 1px solid #003b5c; text-align: right;">Precio Unit.</th>
-                    <th style="padding: 8px; border: 1px solid #003b5c;">IVA</th>
-                    <th style="padding: 8px; border: 1px solid #003b5c; text-align: right;">Subtotal</th>
+                <tr style="border-bottom: 1px solid #000;">
+                    <th style="padding: 8px; border-right: 1px solid #000; width: 50px;">Renglón</th>
+                    <th style="padding: 8px; border-right: 1px solid #000; text-align: left;">Descripción</th>
+                    <th style="padding: 8px; border-right: 1px solid #000; width: 50px;">Cant.</th>
+                    <th style="padding: 8px; border-right: 1px solid #000; text-align: right;">P. Unitario</th>
+                    <th style="padding: 8px; border-right: 1px solid #000; width: 60px;">% IVA</th>
+                    <th style="padding: 8px; text-align: right;">P. Total</th>
                 </tr>
             </thead>
             <tbody id="pdf-oc-tbody">
@@ -220,33 +218,39 @@
 
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             
-            <div style="width: 55%; font-size: 12px; line-height: 1.8;">
-                <h4 style="margin-top: 0; color: #003b5c; margin-bottom: 5px;">CONDICIONES COMERCIALES</h4>
-                <strong>Condición de Pago:</strong> <span id="pdf-oc-pago"></span><br>
-                <strong>Plazo de Entrega:</strong> <span id="pdf-oc-plazo"></span><br>
-                <span id="caja-pdf-coti" style="display: none;"><strong>Cotización USD:</strong> $ <span id="pdf-oc-coti"></span></span>
+            <div style="width: 60%; font-size: 11px; line-height: 1.6;">
+                <strong style="text-decoration: underline; font-size: 12px;">Condiciones Particulares de la Orden de Compra</strong>
+                <ul style="padding-left: 20px; margin-top: 5px; list-style-type: disc;">
+                    <li><strong>Forma de Pago.:</strong> <span id="pdf-oc-pago"></span></li>
+                    <li><strong>Plazo de Entrega.:</strong> <span id="pdf-oc-plazo"></span></li>
+                    <li><strong>Lugar de Entrega.:</strong> <span id="pdf-oc-envio"></span></li>
+                    <li id="caja-pdf-coti" style="display:none;">Valor cotizado es a cotización Dólar: $ <span id="pdf-oc-coti"></span></li>
+                </ul>
+                <div style="margin-top: 40px;">
+                    <div style="font-weight: bold;">Ate.:</div>
+                    <div>Testa CRM / Compras</div>
+                    <div>Alsina 2161 1°A - Mar del Plata - ventas@emtesta.com</div>
+                </div>
             </div>
 
-            <div style="width: 40%;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px;" id="pdf-oc-totales">
-                    <tr>
-                        <td style="padding: 6px; text-align: right; font-weight: bold;">Subtotal:</td>
-                        <td style="padding: 6px; text-align: right; border: 1px solid #333; width: 120px;" id="pdf-oc-subtotal"></td>
-                    </tr>
-                    <tr style="background: #e2e8f0;">
-                        <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 15px; color: #003b5c;">TOTAL GENERAL:</td>
-                        <td style="padding: 8px; text-align: right; border: 2px solid #003b5c; font-weight: bold; font-size: 15px; color: #003b5c;" id="pdf-oc-total"></td>
-                    </tr>
+            <div style="width: 35%;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #000;">
+                    <tbody id="pdf-oc-totales-tbody">
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold; border-right: 1px solid #000; border-bottom: 1px solid #000;">Base Imponible</td>
+                            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #000;" id="pdf-oc-subtotal"></td>
+                        </tr>
+                        <tr id="pdf-oc-total-row" style="font-weight: bold;">
+                            <td style="padding: 8px; border-right: 1px solid #000;">TOTAL</td>
+                            <td style="padding: 8px; text-align: right;" id="pdf-oc-total"></td>
+                        </tr>
+                    </tbody>
                 </table>
                 <div style="text-align: right; font-size: 11px; margin-top: 5px; color: #e11d48;">
                     <span id="pdf-oc-dto-texto" style="display:none;">Descuento aplicado: <span id="pdf-oc-dto"></span></span>
                 </div>
             </div>
 
-        </div>
-
-        <div style="margin-top: 60px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; font-size: 10px; color: #666;">
-            Documento generado automáticamente por Testa CRM. Esta Orden de Compra está sujeta a aprobación crediticia y disponibilidad de stock.
         </div>
     </div>
 </div>
