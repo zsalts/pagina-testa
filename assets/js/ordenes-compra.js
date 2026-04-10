@@ -6,11 +6,10 @@ const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y
 
 let presupuestosDisponibles = [];
 let proveedoresDisponibles = [];
-let catalogoDisponible = [];
 let ultimoNroOC = 0; 
 
 // ==========================================
-// 1. CARGA DE DATOS (Proveedores, Catálogo y Presupuestos)
+// 1. CARGA DE DATOS (Proveedores y Presupuestos)
 // ==========================================
 onSnapshot(collection(db, "proveedores"), (snap) => {
     proveedoresDisponibles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -25,10 +24,6 @@ onSnapshot(collection(db, "proveedores"), (snap) => {
     }
 });
 
-onSnapshot(collection(db, "catalogo"), (snap) => {
-    catalogoDisponible = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-});
-
 onSnapshot(collection(db, "presupuestos"), (snap) => {
     presupuestosDisponibles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const select = document.getElementById('oc-presupuesto');
@@ -36,11 +31,13 @@ onSnapshot(collection(db, "presupuestos"), (snap) => {
     
     const valorPrevio = select.value;
     select.innerHTML = '<option value="">-- Seleccionar Presupuesto Base --</option>';
-    presupuestosDisponibles.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(p => {
-        if (p.items && p.items.length > 0) {
-            select.innerHTML += `<option value="${p.id}">${p.nombreArchivo || 'Presupuesto'} (Cliente: ${p.medico})</option>`;
-        }
+    
+    presupuestosDisponibles.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0)).forEach(p => {
+        const nombreMostrar = p.nombreArchivo || p.id || 'Presupuesto sin nombre';
+        const clienteMostrar = p.medico || 'Cliente sin registrar';
+        select.innerHTML += `<option value="${p.id}">${nombreMostrar} (Cliente: ${clienteMostrar})</option>`;
     });
+    
     select.value = valorPrevio;
 });
 
@@ -67,6 +64,9 @@ document.getElementById('btn-nueva-oc')?.addEventListener('click', () => {
     document.getElementById('form-oc').reset();
     document.getElementById('oc-items-table-body').innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Seleccioná un presupuesto arriba para cargar los equipos.</td></tr>';
     
+    let btnContainer = document.getElementById('contenedor-btn-add-row');
+    if(btnContainer) btnContainer.innerHTML = ''; 
+
     const anio = new Date().getFullYear();
     document.getElementById('oc-nro').value = `${ultimoNroOC + 1}/${anio}`; 
     document.getElementById('modal-oc').classList.add('active');
@@ -79,63 +79,85 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 4. ARMAR TABLA DE ÍTEMS CON CATÁLOGO
+// 4. ARMAR TABLA DE ÍTEMS (SIN CATÁLOGO)
 // ==========================================
+function crearFilaHTML(desc, cant) {
+    // La descripción ahora es un input editable para que muestre el nombre completo y puedas retocarlo
+    let descInput = `<input type="text" class="oc-item-desc" value="${desc || ''}" placeholder="Descripción del equipo..." required style="width:100%; padding:8px; border:1px solid var(--testa-blue); border-radius:4px; font-weight: 500; color: var(--testa-blue-dark);">`;
+    
+    let cantInput = `<input type="number" class="oc-item-cant" value="${cant}" style="width:100%; padding:8px; border:1px solid var(--testa-blue); border-radius:4px;" min="1" required>`;
+
+    let btnBorrar = `<button type="button" class="btn-icon btn-delete" onclick="this.closest('tr').remove()" style="margin-top:5px; color: #e11d48;" title="Borrar fila"><i class="fa-regular fa-trash-can"></i></button>`;
+
+    return `
+    <tr class="oc-item-row">
+        <td style="white-space:normal;">
+            ${descInput}
+        </td>
+        <td>${cantInput}</td>
+        <td><input type="number" step="0.01" class="oc-item-costo" placeholder="0.00" required style="width:100%; padding:8px; border:1px solid var(--testa-blue); border-radius:4px;"></td>
+        <td>
+            <select class="oc-item-moneda" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                <option value="USD">U$S</option>
+                <option value="ARS">$</option>
+            </select>
+        </td>
+        <td>
+            <select class="oc-item-iva" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background:#f8fafc;">
+                <option value="21">21%</option>
+                <option value="10.5">10.5%</option>
+                <option value="0">0%</option>
+            </select>
+            <div style="text-align: right;">${btnBorrar}</div>
+        </td>
+    </tr>`;
+}
+
 document.getElementById('oc-presupuesto')?.addEventListener('change', (e) => {
     const tbody = document.getElementById('oc-items-table-body');
     const pElegido = presupuestosDisponibles.find(p => p.id === e.target.value);
     
-    if (!pElegido || !pElegido.items) {
+    let btnContainer = document.getElementById('contenedor-btn-add-row');
+    if(!btnContainer) {
+        const tableDiv = tbody.closest('table').parentNode;
+        btnContainer = document.createElement('div');
+        btnContainer.id = 'contenedor-btn-add-row';
+        btnContainer.style = 'margin-top: 10px; text-align: left;';
+        tableDiv.parentNode.insertBefore(btnContainer, tableDiv.nextSibling);
+    }
+
+    if (!pElegido) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Seleccioná un presupuesto arriba para cargar los equipos.</td></tr>';
+        btnContainer.innerHTML = '';
         return;
     }
 
-    // Armamos las opciones del catálogo
-    let opcionesCat = '<option value="">-- Vincular al Catálogo (Opcional) --</option>';
-    catalogoDisponible.sort((a,b) => (a.nombre || '').localeCompare(b.nombre || '')).forEach(c => {
-        let ivaCat = c.iva || 21; // Por defecto 21 si el producto no tiene IVA seteado
-        opcionesCat += `<option value="${ivaCat}" data-nombre="${c.nombre}">${c.nombre} (IVA ${ivaCat}%)</option>`;
-    });
-
     let html = ``;
-    pElegido.items.forEach((it, idx) => {
-        html += `
-        <tr class="oc-item-row" data-desc="${it.desc}">
-            <td style="white-space:normal;">
-                <div style="font-size:11px; color:#64748b; margin-bottom:4px;">Ref: ${it.desc}</div>
-                <select class="oc-item-catalogo" style="width:100%; padding:5px; border:1px solid var(--testa-blue); border-radius:4px; font-weight:bold; color:var(--testa-blue-dark); background:#f0f9ff;">
-                    ${opcionesCat}
-                </select>
-            </td>
-            <td><input type="number" class="oc-item-cant" value="${it.cant}" style="width:100%; padding:5px; border:1px solid #ccc; border-radius:4px;" readonly></td>
-            <td><input type="number" step="0.01" class="oc-item-costo" placeholder="0.00" required style="width:100%; padding:5px; border:1px solid var(--testa-blue); border-radius:4px;"></td>
-            <td>
-                <select class="oc-item-moneda" style="width:100%; padding:5px; border:1px solid #ccc; border-radius:4px;">
-                    <option value="USD">U$S</option>
-                    <option value="ARS">$</option>
-                </select>
-            </td>
-            <td>
-                <select class="oc-item-iva" style="width:100%; padding:5px; border:1px solid #ccc; border-radius:4px; background:#f8fafc;">
-                    <option value="21">21%</option>
-                    <option value="10.5">10.5%</option>
-                    <option value="0">0%</option>
-                </select>
-            </td>
-        </tr>`;
-    });
+    
+    // Buscador inteligente de los equipos
+    let listaEquipos = pElegido.items || pElegido.productos || pElegido.equipos || pElegido.articulos || pElegido.detalle_items || null;
+
+    if (listaEquipos && listaEquipos.length > 0) {
+        listaEquipos.forEach((it) => {
+            let descFinal = it.desc || it.descripcion || it.nombre || it.producto || '';
+            let cantFinal = it.cant || it.cantidad || 1;
+            html += crearFilaHTML(descFinal, cantFinal);
+        });
+    } 
+    else if (pElegido.detalle && pElegido.detalle.trim() !== '') {
+        html += crearFilaHTML(pElegido.detalle, 1);
+    } 
+    else {
+        html = `<tr><td colspan="5" style="text-align:center; color:#64748b;">Este expediente no tiene equipos guardados en sistema. Añadí el detalle a mano usando el botón de abajo.</td></tr>`;
+    }
+    
     tbody.innerHTML = html;
 
-    // MAGIA: Cuando elegís del catálogo, cambia el IVA automáticamente en esa fila
-    document.querySelectorAll('.oc-item-catalogo').forEach(selectCat => {
-        selectCat.addEventListener('change', function() {
-            const ivaElegido = this.value; 
-            if (ivaElegido !== "") {
-                const fila = this.closest('tr');
-                const ivaSelect = fila.querySelector('.oc-item-iva');
-                if (ivaSelect) ivaSelect.value = ivaElegido;
-            }
-        });
+    btnContainer.innerHTML = `<button type="button" id="btn-add-fila" class="btn btn-secondary" style="padding: 8px 12px; font-size: 13px;"><i class="fa-solid fa-plus"></i> Añadir Ítem Manual</button>`;
+    
+    document.getElementById('btn-add-fila').addEventListener('click', () => {
+        if(tbody.querySelector('td[colspan="5"]')) tbody.innerHTML = '';
+        tbody.insertAdjacentHTML('beforeend', crearFilaHTML('', 1));
     });
 });
 
@@ -148,6 +170,12 @@ const fContable = (num) => {
 // ==========================================
 document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const tbodyCarga = document.getElementById('oc-items-table-body');
+    if(tbodyCarga.querySelector('td[colspan="5"]')) {
+        alert("Por favor, añadí al menos un ítem manual a la Orden de Compra antes de generarla.");
+        return;
+    }
+
     const btn = e.target.querySelector('button[type="submit"]');
     btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando OC...';
 
@@ -157,21 +185,20 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
         const idPresupuesto = document.getElementById('oc-presupuesto').value;
         const pElegido = presupuestosDisponibles.find(p => p.id === idPresupuesto);
         
-        // --- BLINDAJE DE CARPETA DRIVE (Para presupuestos viejos y nuevos) ---
         let carpetaDestino = pElegido.carpetaUnica; 
         if (!carpetaDestino) {
             let nombreDoc = pElegido.nombreArchivo || "Presupuesto";
             if (nombreDoc.match(/^\d{2} - \d{2} - \d{2}/)) {
                 carpetaDestino = nombreDoc;
             } else {
-                const partes = pElegido.fecha.split('-');
+                const fechaBase = pElegido.fecha || new Date().toISOString().split('T')[0];
+                const partes = fechaBase.split('-');
                 const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
                 const medicoLimpio = pElegido.medico.replace(/[^a-zA-Z0-9 ]/g, '');
                 carpetaDestino = `${fechaFormateada} - ${medicoLimpio} - ${nombreDoc}`;
             }
         }
 
-        // Fecha formato largo: "Mar del Plata, miércoles, 8 de abril de 2026"
         const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('pdf-oc-fecha').textContent = 'Mar del Plata, ' + new Date().toLocaleDateString('es-AR', opcionesFecha);
         
@@ -188,7 +215,7 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
         const coti = document.getElementById('oc-coti').value;
         const cajaCoti = document.getElementById('caja-pdf-coti');
         if(coti && coti > 0) {
-            cajaCoti.style.display = 'list-item'; // Mostrar como viñeta
+            cajaCoti.style.display = 'list-item'; 
             document.getElementById('pdf-oc-coti').textContent = fContable(parseFloat(coti));
         } else {
             cajaCoti.style.display = 'none';
@@ -204,12 +231,8 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
 
         const filas = document.querySelectorAll('.oc-item-row');
         filas.forEach((fila, index) => {
-            const selectCat = fila.querySelector('.oc-item-catalogo');
-            let descFinal = fila.getAttribute('data-desc'); 
-            if (selectCat && selectCat.selectedIndex > 0) {
-                descFinal = selectCat.options[selectCat.selectedIndex].getAttribute('data-nombre');
-            }
-
+            // Toma el valor del input directo, sin pasar por el catálogo
+            const descFinal = fila.querySelector('.oc-item-desc').value || 'Sin descripción';
             const cant = parseFloat(fila.querySelector('.oc-item-cant').value);
             const costo = parseFloat(fila.querySelector('.oc-item-costo').value);
             const moneda = fila.querySelector('.oc-item-moneda').value === 'USD' ? 'U$S' : '$';
@@ -237,11 +260,9 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
 
         document.getElementById('pdf-oc-subtotal').textContent = `${simboloGlobal} ${fContable(subtotalTotal)}`;
 
-        // Gestión del cuadro de totales (Base, IVAs, Total)
         const tbodyTotales = document.getElementById('pdf-oc-totales-tbody');
         const totalRow = document.getElementById('pdf-oc-total-row');
         
-        // Limpiamos los IVAs previos por si el usuario genera varias OC sin recargar
         Array.from(tbodyTotales.querySelectorAll('.fila-iva-extra')).forEach(tr => tr.remove());
 
         if (iva10Total > 0) {
@@ -269,7 +290,6 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
             textoDto.style.display = 'none';
         }
 
-        // --- Generación del PDF vía html2pdf ---
         wrapper.style.opacity = "1"; wrapper.style.zIndex = "9999";
         const element = document.getElementById('pdf-content-oc');
         const opt = { margin: 0, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } };
@@ -283,7 +303,6 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
         linkDescarga.click();
         wrapper.style.opacity = "0"; wrapper.style.zIndex = "-9999";
 
-        // --- Subida a Firebase Storage ---
         const pdfPuro = pdfBase64.split(',')[1];
         const storageRef = ref(storage, `expedientes/${carpetaDestino}/${nombreArchivoPdf}`);
         await uploadString(storageRef, pdfPuro, 'base64', { contentType: 'application/pdf' });
@@ -299,7 +318,6 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
             carpetaDrive: carpetaDestino 
         });
 
-        // --- SUBIDA AL DRIVE MANTENIENDO EL ESTÁNDAR ---
         fetch(urlGoogleScript, {
             method: 'POST', 
             mode: 'no-cors',
@@ -310,7 +328,6 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
             })
         }).then(() => console.log("OC enviada al Drive")).catch(e => console.error("Error Drive:", e));
 
-        // --- Actualizar Expediente y Visitas ---
         await updateDoc(doc(db, "presupuestos", pElegido.id), {
             estado: 'aprobado',
             ordenCompraLink: pdfUrl,
