@@ -4,15 +4,21 @@ import { collection, addDoc, onSnapshot, query, where, getDocs, updateDoc, doc, 
 const urlGoogleScript = "https://script.google.com/macros/s/AKfycbxvfL1IEuVfRviOSouA_x3upBd60eldf6K64EuuBMcRi-zW8AwzdR_TZm_86y3PmbyQ/exec";
 
 let PRODUCTOS_DB = [];
+let FOLLETOS_DB = []; 
 let listaMedicosCompletos = []; 
 let filaEnEdicion = null;
 let destinoBuscador = 'desktop';
 
-window.addEventListener('pageshow', (event) => { if (event.persisted) { window.location.reload(); } });
+window.addEventListener('pageshow', (event) => { 
+    if (event.persisted) { 
+        window.location.reload(); 
+    } 
+});
 
 const actualizarSelectorVisitas = (e) => {
     const selectVisita = document.getElementById('vinculo-visita');
     if (!selectVisita) return;
+    
     const medicoElegido = String(e.target.value).trim().toLowerCase();
     const medicoEncontrado = listaMedicosCompletos.find(m => String(m.nombre || '').trim().toLowerCase() === medicoElegido);
     
@@ -20,15 +26,18 @@ const actualizarSelectorVisitas = (e) => {
         selectVisita.innerHTML = '<option value="">-- El médico no existe en la base --</option>';
         return;
     }
+    
     if (!medicoEncontrado.visitas || medicoEncontrado.visitas.length === 0) {
         selectVisita.innerHTML = '<option value="">No tiene visitas cargadas en el CRM</option>';
         return;
     }
+    
     let opciones = '<option value="">-- Opcional: No vincular a ninguna visita --</option>';
     medicoEncontrado.visitas.forEach((v, index) => {
         let indicativo = v.presupuestoLink ? " 📌 (Ya tiene PDF)" : "";
         opciones += `<option value="${medicoEncontrado.id}_${index}">${new Date(v.fecha+'T00:00:00').toLocaleDateString('es-AR')} | ${String(v.pedido).substring(0, 40)}... ${indicativo}</option>`;
     });
+    
     selectVisita.innerHTML = opciones;
 };
 
@@ -39,22 +48,30 @@ if (clienteInput) {
 }
 
 document.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-close-modal')) { e.target.closest('.modal-overlay')?.classList.remove('active'); }
+    if (e.target.closest('.btn-close-modal')) { 
+        e.target.closest('.modal-overlay')?.classList.remove('active'); 
+    }
 });
 
 function abrirBuscador(fila, destino = 'desktop') {
     filaEnEdicion = fila;
     destinoBuscador = destino;
     const inputBusqueda = document.getElementById('input-busqueda-rapida');
+    
     if(inputBusqueda) inputBusqueda.value = '';
     renderizarResultados('');
+    
     const modalBuscador = document.getElementById('modal-buscador-productos');
-    if(modalBuscador) { modalBuscador.classList.add('active'); setTimeout(() => { if(inputBusqueda) inputBusqueda.focus() }, 100); }
+    if(modalBuscador) { 
+        modalBuscador.classList.add('active'); 
+        setTimeout(() => { if(inputBusqueda) inputBusqueda.focus() }, 100); 
+    }
 }
 
 function renderizarResultados(filtro) {
     const contenedorResultados = document.getElementById('lista-resultados-busqueda');
     if(!contenedorResultados) return;
+    
     contenedorResultados.innerHTML = '';
     const term = String(filtro).toLowerCase().trim();
     
@@ -76,7 +93,12 @@ function renderizarResultados(filtro) {
         div.className = 'modern-list-item resultado-item-cat';
         const precioSeguro = (prod.precio || 0).toLocaleString('es-AR', {minimumFractionDigits: 2});
         
-        div.innerHTML = `<div style="width:100%;"><div class="cat-titulo">${prod.nombre || "Sin nombre"}</div><div class="cat-detalles">${prod.detalles || "Sin detalles"}</div><div class="cat-precio">Precio: ${prod.moneda || "ARS"} ${precioSeguro} | IVA: ${prod.iva || 0}%</div></div>`;
+        div.innerHTML = `
+            <div style="width:100%;">
+                <div class="cat-titulo">${prod.nombre || "Sin nombre"}</div>
+                <div class="cat-detalles">${prod.detalles || "Sin detalles"}</div>
+                <div class="cat-precio">Precio: ${prod.moneda || "ARS"} ${precioSeguro} | IVA: ${prod.iva || 0}%</div>
+            </div>`;
         
         div.addEventListener('click', () => {
             if (destinoBuscador === 'mobile') {
@@ -102,7 +124,9 @@ function renderizarResultados(filtro) {
 function calcular() {
     const tbody = document.getElementById('items-tbody-presupuesto');
     if (!tbody) return;
+    
     let base = 0, i10 = 0, i21 = 0, sim = "$";
+    
     tbody.querySelectorAll('.item-row').forEach(f => {
         const c = parseFloat(f.querySelector('.item-cant').value) || 0;
         const p = parseFloat(f.querySelector('.item-precio').value) || 0;
@@ -121,21 +145,32 @@ function calcular() {
     });
     
     document.querySelectorAll('.simbolo-total').forEach(s => s.textContent = sim);
-    const bImp = document.getElementById('web-base-imponible'); if(bImp) bImp.textContent = base.toLocaleString('es-AR', {minimumFractionDigits: 2});
-    const iva10 = document.getElementById('web-iva-10'); if(iva10) iva10.textContent = i10.toLocaleString('es-AR', {minimumFractionDigits: 2});
-    const iva21 = document.getElementById('web-iva-21'); if(iva21) iva21.textContent = i21.toLocaleString('es-AR', {minimumFractionDigits: 2});
-    const tFinal = document.getElementById('web-total-final'); if(tFinal) tFinal.textContent = (base + i10 + i21).toLocaleString('es-AR', {minimumFractionDigits: 2});
+    
+    const bImp = document.getElementById('web-base-imponible'); 
+    if(bImp) bImp.textContent = base.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    
+    const iva10 = document.getElementById('web-iva-10'); 
+    if(iva10) iva10.textContent = i10.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    
+    const iva21 = document.getElementById('web-iva-21'); 
+    if(iva21) iva21.textContent = i21.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    
+    const tFinal = document.getElementById('web-total-final'); 
+    if(tFinal) tFinal.textContent = (base + i10 + i21).toLocaleString('es-AR', {minimumFractionDigits: 2});
 }
 
 const btnAbrirModalProd = document.getElementById('btn-abrir-modal-prod');
-if (btnAbrirModalProd) { btnAbrirModalProd.addEventListener('click', () => document.getElementById('modal-producto')?.classList.add('active')); }
+if (btnAbrirModalProd) { 
+    btnAbrirModalProd.addEventListener('click', () => document.getElementById('modal-producto')?.classList.add('active')); 
+}
 
 const formNuevoProd = document.getElementById('form-nuevo-producto');
 if (formNuevoProd) {
     formNuevoProd.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnGuardar = e.target.querySelector('button[type="submit"]');
-        btnGuardar.disabled = true; btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+        btnGuardar.disabled = true; 
+        btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
         const nuevoProd = {
             nombre: document.getElementById('nuevo-prod-nombre').value.trim(),
@@ -144,25 +179,38 @@ if (formNuevoProd) {
             moneda: document.getElementById('nuevo-prod-moneda').value || 'ARS',
             iva: parseFloat(document.getElementById('nuevo-prod-iva').value) || 21
         };
+        
         try {
             await addDoc(collection(db, "productos"), nuevoProd);
             e.target.reset();
             document.getElementById('modal-producto')?.classList.remove('active');
             alert("¡Producto añadido al catálogo!");
-        } catch (error) { alert("Error al guardar en la nube."); } 
-        finally { btnGuardar.disabled = false; btnGuardar.innerText = "Guardar en Nube"; }
+        } catch (error) { 
+            alert("Error al guardar en la nube."); 
+        } finally { 
+            btnGuardar.disabled = false; 
+            btnGuardar.innerText = "Guardar en Nube"; 
+        }
     });
 }
 
 const btnBuscarMob = document.getElementById('btn-buscar-mob');
-if (btnBuscarMob) { btnBuscarMob.addEventListener('click', () => { abrirBuscador(filaEnEdicion, 'mobile'); }); }
+if (btnBuscarMob) { 
+    btnBuscarMob.addEventListener('click', () => { 
+        abrirBuscador(filaEnEdicion, 'mobile'); 
+    }); 
+}
 
 const inputBusquedaRapida = document.getElementById('input-busqueda-rapida');
-if(inputBusquedaRapida) { inputBusquedaRapida.addEventListener('input', (e) => renderizarResultados(e.target.value)); }
+if(inputBusquedaRapida) { 
+    inputBusquedaRapida.addEventListener('input', (e) => renderizarResultados(e.target.value)); 
+}
 
 const nroInput = document.getElementById('nro-presupuesto-input');
 const ultimoGuardado = localStorage.getItem('testa_ultimo_nro');
-if (nroInput) nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
+if (nroInput) {
+    nroInput.value = ultimoGuardado ? parseInt(ultimoGuardado) + 1 : 175;
+}
 
 const fechaInput = document.getElementById('fecha-presupuesto');
 if (fechaInput) {
@@ -181,11 +229,23 @@ if (tbody) {
 
         const btnBorrar = e.target.closest('.btn-remove-item');
         if (btnBorrar) { 
-            if (tbody.querySelectorAll('.item-row').length > 1) { fila.remove(); } 
-            else { fila.querySelector('.item-desc').value = ""; fila.querySelector('.item-detalles').value = ""; fila.querySelector('.item-cant').value = 1; fila.querySelector('.item-precio').value = 0; }
-            calcular(); return;
+            if (tbody.querySelectorAll('.item-row').length > 1) { 
+                fila.remove(); 
+            } else { 
+                fila.querySelector('.item-desc').value = ""; 
+                fila.querySelector('.item-detalles').value = ""; 
+                fila.querySelector('.item-cant').value = 1; 
+                fila.querySelector('.item-precio').value = 0; 
+            }
+            calcular(); 
+            return;
         }
-        if (e.target.closest('.btn-search-prod')) { abrirBuscador(fila, 'desktop'); return; }
+        
+        if (e.target.closest('.btn-search-prod')) { 
+            abrirBuscador(fila, 'desktop'); 
+            return; 
+        }
+        
         if (window.innerWidth <= 768) {
             filaEnEdicion = fila;
             const md = document.getElementById('mob-desc'); if(md) md.value = fila.querySelector('.item-desc').value;
@@ -194,6 +254,7 @@ if (tbody) {
             const mm = document.getElementById('mob-moneda'); if(mm) mm.value = fila.querySelector('.item-moneda').value;
             const mp = document.getElementById('mob-precio'); if(mp) mp.value = fila.querySelector('.item-precio').value;
             const mi = document.getElementById('mob-iva'); if(mi) mi.value = fila.querySelector('.item-iva').value;
+            
             document.getElementById('modal-edicion-mobile')?.classList.add('active');
         }
     });
@@ -204,11 +265,13 @@ if (btnAddPresItem && tbody) {
     btnAddPresItem.addEventListener('click', () => {
         const primeraFila = tbody.querySelector('.item-row');
         if(!primeraFila) return;
+        
         const tr = document.createElement('tr');
         tr.className = 'item-row';
         tr.innerHTML = primeraFila.innerHTML;
         tr.querySelectorAll('input:not([type="button"]), textarea').forEach(i => i.value = i.type === 'number' ? 0 : "");
         tr.querySelector('.item-cant').value = 1;
+        
         tbody.appendChild(tr);
         calcular();
     });
@@ -225,6 +288,7 @@ if (formEdicionMobile) {
             filaEnEdicion.querySelector('.item-moneda').value = document.getElementById('mob-moneda').value;
             filaEnEdicion.querySelector('.item-precio').value = document.getElementById('mob-precio').value;
             filaEnEdicion.querySelector('.item-iva').value = document.getElementById('mob-iva').value;
+            
             calcular();
             document.getElementById('modal-edicion-mobile')?.classList.remove('active');
         }
@@ -232,7 +296,9 @@ if (formEdicionMobile) {
 }
 
 const condWeb = document.getElementById('condiciones-web');
-if (condWeb) { condWeb.value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios NO incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`; }
+if (condWeb) { 
+    condWeb.value = `▪ Estos Precios INCLUYEN IVA\n▪ Valor cotizado es a cotización Dólar Oficial BANCO NACION a fecha Factura\n▪ Forma de Pago.: A convenir.\n▪ Plazo de Entrega.: Inmediato\n▪ Todo el equipamiento cotizado es nuevo sin uso y con su última versión de fabricación.\n▪ Estos precios NO incluyen los gastos de flete, seguro de transporte y acarreo.\n▪ Los equipos se entregarán con su manual correspondiente de uso.\n▪ Testa Equipamiento Medico es agente oficial y servicio técnico oficial de lo cotizado`; 
+}
 
 const fileToBase64 = (blob) => {
     return new Promise((resolve, reject) => {
@@ -242,6 +308,110 @@ const fileToBase64 = (blob) => {
         reader.onerror = reject;
     });
 };
+
+// ==========================================
+// LÓGICA DEL BUSCADOR DE FOLLETOS (En Vivo)
+// ==========================================
+
+// ACÁ ESTÁ LA MAGIA QUE PEDISTE: onSnapshot escucha Firebase en tiempo real
+onSnapshot(collection(db, "folletos"), (snap) => {
+    FOLLETOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Si tenías el buscador abierto mientras editabas, se actualiza solo
+    filtrarYRenderizarFolletos();
+});
+
+const btnAbrirModalFolletos = document.getElementById('btn-abrir-modal-folletos');
+if (btnAbrirModalFolletos) {
+    btnAbrirModalFolletos.addEventListener('click', () => {
+        const inputF = document.getElementById('input-busqueda-folletos');
+        const comboCat = document.getElementById('filtro-categoria-folletos');
+        if (inputF) inputF.value = '';
+        if (comboCat) comboCat.value = '';
+        
+        filtrarYRenderizarFolletos();
+        document.getElementById('modal-buscador-folletos')?.classList.add('active');
+        setTimeout(() => { if(inputF) inputF.focus() }, 100);
+    });
+}
+
+const inputBusquedaFolletos = document.getElementById('input-busqueda-folletos');
+if (inputBusquedaFolletos) {
+    inputBusquedaFolletos.addEventListener('input', filtrarYRenderizarFolletos);
+}
+
+const filtroCategoriaFolletos = document.getElementById('filtro-categoria-folletos');
+if (filtroCategoriaFolletos) {
+    filtroCategoriaFolletos.addEventListener('change', filtrarYRenderizarFolletos);
+}
+
+function filtrarYRenderizarFolletos() {
+    const contenedor = document.getElementById('lista-resultados-folletos');
+    if(!contenedor) return;
+    
+    contenedor.innerHTML = '';
+    
+    const term = (document.getElementById('input-busqueda-folletos')?.value || "").toLowerCase().trim();
+    const categoriaFiltro = document.getElementById('filtro-categoria-folletos')?.value || "";
+    
+    let filtrados = FOLLETOS_DB.filter(f => {
+        const coincideNombre = String(f.nombre || "").toLowerCase().includes(term);
+        const coincideCategoria = categoriaFiltro === "" || f.categoria === categoriaFiltro;
+        return coincideNombre && coincideCategoria;
+    });
+    
+    if (filtrados.length === 0) {
+        contenedor.innerHTML = '<p style="padding:15px; color:var(--text-muted); text-align:center;">No se encontraron folletos con esos filtros.</p>'; 
+        return;
+    }
+    
+    filtrados.sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || "")));
+
+    filtrados.forEach(folleto => {
+        const div = document.createElement('div');
+        div.className = 'modern-list-item resultado-item-cat';
+        div.style.cursor = 'pointer';
+        
+        let categoriaDisplay = folleto.categoria || "Sin categoría";
+
+        div.innerHTML = `
+            <div style="width:100%; display:flex; align-items:center; gap: 15px;">
+                <i class="fa-solid fa-file-pdf" style="color: var(--red-alert); font-size: 28px;"></i>
+                <div style="flex: 1;">
+                    <div class="cat-titulo" style="margin: 0; font-size: 15px;">${folleto.nombre || "Folleto sin nombre"}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-top: 3px;">📁 ${categoriaDisplay}</div>
+                </div>
+            </div>`;
+        
+        div.addEventListener('click', () => {
+            const hiddenUrl = document.getElementById('folleto-seleccionado-url');
+            const visualNombre = document.getElementById('nombre-folleto-visual');
+            const btnLimpiar = document.getElementById('btn-limpiar-folleto');
+            
+            if (hiddenUrl) hiddenUrl.value = folleto.url;
+            if (visualNombre) visualNombre.value = folleto.nombre;
+            if (btnLimpiar) btnLimpiar.style.display = 'block';
+            
+            document.getElementById('modal-buscador-folletos')?.classList.remove('active');
+        });
+        contenedor.appendChild(div);
+    });
+}
+
+const btnLimpiarFolleto = document.getElementById('btn-limpiar-folleto');
+if (btnLimpiarFolleto) {
+    btnLimpiarFolleto.addEventListener('click', () => {
+        const hiddenUrl = document.getElementById('folleto-seleccionado-url');
+        const visualNombre = document.getElementById('nombre-folleto-visual');
+        
+        if (hiddenUrl) hiddenUrl.value = '';
+        if (visualNombre) visualNombre.value = '';
+        btnLimpiarFolleto.style.display = 'none';
+    });
+}
+
+// ==========================================
+// GENERACIÓN DEL PDF FINAL
+// ==========================================
 
 const formPresupuesto = document.getElementById('form-presupuesto');
 if(formPresupuesto) {
@@ -270,8 +440,12 @@ if(formPresupuesto) {
         const nombreCarpetaDeseado = nombreDeseado;
         const fileName = `${nombreDeseado}.pdf`;
 
-        const pClienteNom = document.getElementById('pdf-cliente-nombre'); if(pClienteNom) pClienteNom.textContent = cliente;
-        const pNroPres = document.getElementById('pdf-nro-presupuesto-texto'); if(pNroPres) pNroPres.textContent = `M ${nroBase}-${anioCur}`;
+        const pClienteNom = document.getElementById('pdf-cliente-nombre'); 
+        if(pClienteNom) pClienteNom.textContent = cliente;
+        
+        const pNroPres = document.getElementById('pdf-nro-presupuesto-texto'); 
+        if(pNroPres) pNroPres.textContent = `M ${nroBase}-${anioCur}`;
+        
         const pFechaText = document.getElementById('pdf-fecha-text'); 
         if(pFechaText) {
             const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
@@ -289,7 +463,7 @@ if(formPresupuesto) {
 
         const formatoContable = (valText) => { return String(valText).replace(',00', ',-'); };
 
-        let arrayDeItemsParaDB = []; // <--- NUEVA MAGIA: Guardamos los ítems
+        let arrayDeItemsParaDB = [];
         const pdfTbody = document.getElementById('pdf-tbody');
         if(pdfTbody && tbody) {
             pdfTbody.innerHTML = '';
@@ -303,7 +477,6 @@ if(formPresupuesto) {
                 const pTot = formatoContable(f.querySelector('.item-subtotal').textContent);
                 const det = f.querySelector('.item-detalles').value;
                 
-                // Guardamos en el array para Firestore
                 arrayDeItemsParaDB.push({ desc: desc, cant: cant, detalle: det });
 
                 const detHtml = det ? `<div style="margin-top: 3px; font-size: 10px; color: #444;">${det}</div>` : '';
@@ -326,30 +499,64 @@ if(formPresupuesto) {
             const pTfoot = document.getElementById('pdf-tfoot');
             if(pTfoot) {
                 pTfoot.innerHTML = `
-                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; color:#000;">Base Imponible</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; color:#000;">${sim} ${b}</td></tr>
-                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">IVA 10,5 %</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">${sim} ${i10}</td></tr>
-                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">IVA 21%</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">${sim} ${i21}</td></tr>
-                    <tr><td colspan="4" style="border:none;"></td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; background:#f0f0f0; color:#000;">TOTAL</td><td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; background:#f0f0f0; color:#000;">${sim} ${t}</td></tr>`;
+                    <tr>
+                        <td colspan="4" style="border:none;"></td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; color:#000;">Base Imponible</td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; color:#000;">${sim} ${b}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="border:none;"></td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">IVA 10,5 %</td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">${sim} ${i10}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="border:none;"></td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">IVA 21%</td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; color:#000;">${sim} ${i21}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="border:none;"></td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; background:#f0f0f0; color:#000;">TOTAL</td>
+                        <td style="border:1px solid #333; padding:6px 5px; text-align:right; font-weight:bold; background:#f0f0f0; color:#000;">${sim} ${t}</td>
+                    </tr>`;
             }
         }
 
         const wrapper = document.getElementById('pdf-wrapper');
-        if(wrapper) { wrapper.style.opacity = "1"; wrapper.style.zIndex = "9999"; }
+        if(wrapper) { 
+            wrapper.style.opacity = "1"; 
+            wrapper.style.zIndex = "9999"; 
+        }
 
         try {
             const element = document.getElementById('pdf-content');
             if(!element) throw new Error("No se encontró el contenedor del PDF");
-            const opt = { margin: 0, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } };
+            
+            const opt = { 
+                margin: 0, 
+                image: { type: 'jpeg', quality: 1 }, 
+                html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, 
+                jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } 
+            };
 
             const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');
             const { PDFDocument } = PDFLib;
             let finalPdf = await PDFDocument.load(pdfObj.output('arraybuffer'));
             
-            const fileInput = document.getElementById('input-folleto-pdf');
-            if (fileInput && fileInput.files.length > 0) {
-                const folletoPdf = await PDFDocument.load(await fileInput.files[0].arrayBuffer());
-                const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
-                paginasCopiadas.forEach(page => finalPdf.addPage(page));
+            // FUSIÓN DEL FOLLETO (Opcional)
+            const folletoSeleccionadoUrl = document.getElementById('folleto-seleccionado-url')?.value;
+            
+            if (folletoSeleccionadoUrl) {
+                try {
+                    const folletoFetch = await fetch(folletoSeleccionadoUrl);
+                    const folletoBuffer = await folletoFetch.arrayBuffer();
+                    const folletoPdf = await PDFDocument.load(folletoBuffer);
+                    const paginasCopiadas = await finalPdf.copyPages(folletoPdf, folletoPdf.getPageIndices());
+                    paginasCopiadas.forEach(page => finalPdf.addPage(page));
+                } catch (errorFolleto) {
+                    console.error("No se pudo descargar el folleto de Firebase:", errorFolleto);
+                    alert("Aviso: Hubo un problema al adjuntar el folleto de la nube. El presupuesto se generará sin él.");
+                }
             }
 
             const pdfBytes = await finalPdf.save();
@@ -372,8 +579,6 @@ if(formPresupuesto) {
             const linkDrive = respuestaDrive.url; 
 
             const visitaElegida = document.getElementById('vinculo-visita')?.value;
-
-            // ACA GUARDAMOS LOS ITEMS Y EL VINCULO EN LA BD
             const q = query(collection(db, "presupuestos"), where("medico", "==", cliente));
             const querySnap = await getDocs(q);
             
@@ -417,7 +622,10 @@ if(formPresupuesto) {
             console.error("Error:", error); 
             alert("Error al procesar el PDF."); 
         } finally { 
-            if(wrapper) { wrapper.style.opacity = "0"; wrapper.style.zIndex = "-9999"; }
+            if(wrapper) { 
+                wrapper.style.opacity = "0"; 
+                wrapper.style.zIndex = "-9999"; 
+            }
             btnSubmit.disabled = false; 
             btnSubmit.innerHTML = '<i class="fa-solid fa-file-pdf"></i> GENERAR Y DESCARGAR Presupuesto'; 
         }
@@ -427,7 +635,9 @@ if(formPresupuesto) {
 onSnapshot(collection(db, "clientes"), (snap) => {
     listaMedicosCompletos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const dl = document.getElementById('lista-nombres-medicos');
-    if (dl) { dl.innerHTML = listaMedicosCompletos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join(''); }
+    if (dl) { 
+        dl.innerHTML = listaMedicosCompletos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join(''); 
+    }
 });
 
 onSnapshot(collection(db, "productos"), (snap) => {

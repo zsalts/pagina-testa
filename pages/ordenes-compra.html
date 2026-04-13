@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,274 +8,299 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#003b5c">
     <link rel="apple-touch-icon" href="../assets/img/IMG_2317.png">
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" href="../assets/css/styles.css">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
+
 <body>
 
-<div class="dashboard-container">
-    
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <img src="../assets/img/IMG_2317.png" alt="Testa Logo">
-            <div class="logo-text">
-                <span class="brand">TESTA</span>
-                <span class="sub-brand">CRM System</span>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="../index.html"><i class="fa-solid fa-house"></i> Panel General</a>
-            <a href="visitas.html"><i class="fa-solid fa-user-doctor"></i> Visitas CRM</a>
-            <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
-            <a href="ordenes-compra.html" class="active"><i class="fa-solid fa-file-invoice"></i> Órdenes de Compra</a>
-            <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice-dollar"></i> Facturas IVA</a>
-        </nav>
-    </aside>
+    <div class="dashboard-container">
 
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-    <main class="main-wrapper" id="main-wrapper">
-        <header class="top-header">
-            <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
-            <h1 class="top-header-title">Órdenes de Compra</h1>
-            <div class="user-profile-circle"><i class="fa-regular fa-user"></i></div>
-        </header>
-
-        <div class="dashboard-content">
-            <div class="toolbar-section">
-                <div class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="buscador-oc" placeholder="Buscar por Nro, Proveedor o Cliente...">
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-add" id="btn-nueva-oc">
-                        <i class="fa-solid fa-plus"></i> Emitir Orden de Compra
-                    </button>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
                 </div>
             </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Presupuesto</a>
+                <a href="folletos.html"><i class="fa-solid fa-file-pdf"></i> Folletos</a>
+                <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
+            </nav>
+        </aside>
 
-            <div class="table-card">
-                <table class="testa-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha y Nro</th>
-                            <th>Proveedor</th>
-                            <th>Cliente Referencia</th>
-                            <th>Documento</th>
-                            <th>Estado Visita</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-oc">
-                        <tr><td colspan="6" style="text-align: center; color: #64748b;">Cargando órdenes de compra...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-</div>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-<div class="modal-overlay" id="modal-oc">
-    <div class="modern-modal modal-lg">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-file-invoice"></i> Emitir Orden de Compra</h3>
-            <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <form id="form-oc" class="modern-form">
-            <div class="form-group" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px dashed #cbd5e1;">
-                <label style="color:var(--testa-blue-dark); font-weight:bold;">1. Seleccionar Presupuesto / Expediente Base</label>
-                <select id="oc-presupuesto" required class="form-control" style="border-color:var(--testa-blue);">
-                    <option value="">-- Seleccionar Presupuesto Base --</option>
-                </select>
-            </div>
+        <main class="main-wrapper" id="main-wrapper">
+            <header class="top-header">
+                <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                <h1 class="top-header-title">Órdenes de Compra</h1>
+                <div class="user-profile-circle"><i class="fa-regular fa-user"></i></div>
+            </header>
 
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label>Nro. de Orden</label>
-                    <input type="text" id="oc-nro" required style="background:#f1f5f9; font-weight:bold;" readonly>
-                </div>
-                
-                <div class="form-group">
-                    <label>Proveedor</label>
-                    <div style="display: flex; gap: 5px;">
-                        <select id="oc-proveedor" required class="form-control">
-                            <option value="">-- Seleccionar Proveedor --</option>
-                        </select>
-                        <button id="btn-nuevo-proveedor" type="button" class="btn btn-add" style="padding: 10px 15px; border-radius: 6px;" title="Cargar nuevo proveedor">
-                            <i class="fa-solid fa-plus"></i>
+            <div class="dashboard-content">
+                <div class="toolbar-section">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="buscador-oc" placeholder="Buscar por Nro, Proveedor o Cliente...">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-add" id="btn-nueva-oc">
+                            <i class="fa-solid fa-plus"></i> Emitir Orden de Compra
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label>Atención (Contacto)</label>
-                    <input type="text" id="oc-atte" placeholder="Ej: Ventas, Juan Pérez..." required>
-                </div>
-                <div class="form-group">
-                    <label>Condición de Pago</label>
-                    <input type="text" id="oc-pago" placeholder="Ej: Transferencia 30 días" required>
-                </div>
-            </div>
-
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label>Plazo de Entrega</label>
-                    <input type="text" id="oc-plazo" placeholder="Ej: Inmediato, 15 días..." required>
-                </div>
-                <div class="form-group">
-                    <label>Lugar de Entrega</label>
-                    <input type="text" id="oc-envio" placeholder="Ej: Depósito Central" required>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 20px;">
-                <label style="color:var(--testa-blue-dark); font-weight:bold;">2. Costos de Equipos y Vinculación al Catálogo</label>
-                <div style="overflow-x: auto;">
-                    <table class="testa-table" style="min-width: 800px;">
-                        <thead style="background: #f1f5f9;">
+                <div class="table-card">
+                    <table class="testa-table">
+                        <thead>
                             <tr>
-                                <th>Descripción / Catálogo</th>
-                                <th style="width: 80px;">Cant.</th>
-                                <th style="width: 140px;">Costo Unit.</th>
-                                <th style="width: 100px;">Moneda</th>
-                                <th style="width: 100px;">IVA</th>
+                                <th>Fecha y Nro</th>
+                                <th>Proveedor</th>
+                                <th>Cliente Referencia</th>
+                                <th>Documento</th>
+                                <th>Estado Visita</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="oc-items-table-body">
-                            <tr><td colspan="5" style="text-align:center; color:#64748b;">Seleccioná un presupuesto arriba para cargar los equipos.</td></tr>
+                        <tbody id="tabla-oc">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #64748b;">Cargando órdenes de
+                                    compra...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <div class="form-group" style="margin-top: 15px;">
-                <label>Cotización Dólar (Opcional, para aclaración en PDF)</label>
-                <input type="number" step="0.01" id="oc-coti" placeholder="Ej: 1050.50">
-            </div>
-            
-            <div class="form-group">
-                <label>Descuento Global Adicional ($ o U$S - Opcional)</label>
-                <input type="number" step="0.01" id="oc-dto" placeholder="0.00">
-            </div>
-
-            <div class="modal-footer" style="margin-top: 20px;">
-                <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 15px;">
-                    <i class="fa-solid fa-file-pdf"></i> Generar OC y Cerrar Operación
-                </button>
-            </div>
-        </form>
+        </main>
     </div>
-</div>
 
-<div id="pdf-wrapper-oc" style="opacity: 0; position: absolute; top: 0; left: 0; z-index: -9999; background: white; pointer-events: none; width: 800px;">
-    <div id="pdf-content-oc" style="width: 800px; padding: 40px; background: white; color: #000; font-family: Arial, sans-serif; box-sizing: border-box; font-size: 13px;">
-        
-        <div style="display: flex; border: 1px solid #000; margin-bottom: 20px; position: relative; box-sizing: border-box;">
-            <div style="width: 50%; padding: 15px; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
-                <img src="../assets/img/logo.jpeg" alt="Testa" style="max-height: 80px; max-width: 90%;">
+    <div class="modal-overlay" id="modal-oc">
+        <div class="modern-modal modal-lg">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-invoice"></i> Emitir Orden de Compra</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div style="position: absolute; left: 50%; top: 0; margin-left: -22px; width: 44px; height: 44px; border-left: 1px solid #000; border-right: 1px solid #000; border-bottom: 1px solid #000; background: white; text-align: center; line-height: 44px; font-size: 24px; font-weight: bold; box-sizing: border-box;">
-                X
-            </div>
+            <form id="form-oc" class="modern-form">
+                <div class="form-group"
+                    style="background:#f8fafc; padding:15px; border-radius:8px; border:1px dashed #cbd5e1;">
+                    <label style="color:var(--testa-blue-dark); font-weight:bold;">1. Seleccionar Presupuesto /
+                        Expediente Base</label>
+                    <select id="oc-presupuesto" required class="form-control" style="border-color:var(--testa-blue);">
+                        <option value="">-- Seleccionar Presupuesto Base --</option>
+                    </select>
+                </div>
 
-            <div style="width: 50%; padding: 15px; padding-left: 40px; box-sizing: border-box;">
-                <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">ORDEN DE COMPRA</div>
-                <div style="margin-bottom: 5px;"><strong>Nro. <span id="pdf-oc-nro-titulo"></span></strong></div>
-                <div><span id="pdf-oc-fecha"></span></div>
-                <div style="font-size: 11px; margin-top: 10px; color: #555;">Doc. No válido como factura</div>
-            </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Nro. de Orden</label>
+                        <input type="text" id="oc-nro" required style="background:#f1f5f9; font-weight:bold;" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Proveedor</label>
+                        <div style="display: flex; gap: 5px;">
+                            <select id="oc-proveedor" required class="form-control">
+                                <option value="">-- Seleccionar Proveedor --</option>
+                            </select>
+                            <button id="btn-nuevo-proveedor" type="button" class="btn btn-add"
+                                style="padding: 10px 15px; border-radius: 6px;" title="Cargar nuevo proveedor">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Atención (Contacto)</label>
+                        <input type="text" id="oc-atte" placeholder="Ej: Ventas, Juan Pérez..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Condición de Pago</label>
+                        <input type="text" id="oc-pago" placeholder="Ej: Transferencia 30 días" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Plazo de Entrega</label>
+                        <input type="text" id="oc-plazo" placeholder="Ej: Inmediato, 15 días..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lugar de Entrega</label>
+                        <input type="text" id="oc-envio" placeholder="Ej: Depósito Central" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="color:var(--testa-blue-dark); font-weight:bold;">2. Costos de Equipos y Vinculación al
+                        Catálogo</label>
+                    <div style="overflow-x: auto;">
+                        <table class="testa-table" style="min-width: 800px;">
+                            <thead style="background: #f1f5f9;">
+                                <tr>
+                                    <th>Descripción / Catálogo</th>
+                                    <th style="width: 80px;">Cant.</th>
+                                    <th style="width: 140px;">Costo Unit.</th>
+                                    <th style="width: 100px;">Moneda</th>
+                                    <th style="width: 100px;">IVA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="oc-items-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; color:#64748b;">Seleccioná un presupuesto
+                                        arriba para cargar los equipos.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Cotización Dólar (Opcional, para aclaración en PDF)</label>
+                    <input type="number" step="0.01" id="oc-coti" placeholder="Ej: 1050.50">
+                </div>
+
+                <div class="form-group">
+                    <label>Descuento Global Adicional ($ o U$S - Opcional)</label>
+                    <input type="number" step="0.01" id="oc-dto" placeholder="0.00">
+                </div>
+
+                <div class="modal-footer" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px; font-size: 15px;">
+                        <i class="fa-solid fa-file-pdf"></i> Generar OC y Cerrar Operación
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div style="margin-bottom: 20px; line-height: 1.6;">
-            <div><strong>Señores.:</strong> <span id="pdf-oc-prov"></span></div>
-            <div><strong>Atención.:</strong> <span id="pdf-oc-atte"></span></div>
-            <div><strong>Cliente Ref.:</strong> <span id="pdf-oc-cliente"></span></div>
-            <div><strong>Presente.</strong></div>
-        </div>
+    <div id="pdf-wrapper-oc"
+        style="opacity: 0; position: absolute; top: 0; left: 0; z-index: -9999; background: white; pointer-events: none; width: 800px;">
+        <div id="pdf-content-oc"
+            style="width: 800px; padding: 40px; background: white; color: #000; font-family: Arial, sans-serif; box-sizing: border-box; font-size: 13px;">
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #000; font-size: 12px;">
-            <thead>
-                <tr style="border-bottom: 1px solid #000;">
-                    <th style="padding: 8px; border-right: 1px solid #000; width: 50px;">Renglón</th>
-                    <th style="padding: 8px; border-right: 1px solid #000; text-align: left;">Descripción</th>
-                    <th style="padding: 8px; border-right: 1px solid #000; width: 50px;">Cant.</th>
-                    <th style="padding: 8px; border-right: 1px solid #000; text-align: right;">P. Unitario</th>
-                    <th style="padding: 8px; border-right: 1px solid #000; width: 60px;">% IVA</th>
-                    <th style="padding: 8px; text-align: right;">P. Total</th>
-                </tr>
-            </thead>
-            <tbody id="pdf-oc-tbody">
+            <div
+                style="display: flex; border: 1px solid #000; margin-bottom: 20px; position: relative; box-sizing: border-box;">
+                <div
+                    style="width: 50%; padding: 15px; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+                    <img src="../assets/img/logo.jpeg" alt="Testa" style="max-height: 80px; max-width: 90%;">
+                </div>
+
+                <div
+                    style="position: absolute; left: 50%; top: 0; margin-left: -22px; width: 44px; height: 44px; border-left: 1px solid #000; border-right: 1px solid #000; border-bottom: 1px solid #000; background: white; text-align: center; line-height: 44px; font-size: 24px; font-weight: bold; box-sizing: border-box;">
+                    X
+                </div>
+
+                <div style="width: 50%; padding: 15px; padding-left: 40px; box-sizing: border-box;">
+                    <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">ORDEN DE COMPRA</div>
+                    <div style="margin-bottom: 5px;"><strong>Nro. <span id="pdf-oc-nro-titulo"></span></strong></div>
+                    <div><span id="pdf-oc-fecha"></span></div>
+                    <div style="font-size: 11px; margin-top: 10px; color: #555;">Doc. No válido como factura</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px; line-height: 1.6;">
+                <div><strong>Señores.:</strong> <span id="pdf-oc-prov"></span></div>
+                <div><strong>Atención.:</strong> <span id="pdf-oc-atte"></span></div>
+                <div><strong>Cliente Ref.:</strong> <span id="pdf-oc-cliente"></span></div>
+                <div><strong>Presente.</strong></div>
+            </div>
+
+            <table
+                style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #000; font-size: 12px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #000;">
+                        <th style="padding: 8px; border-right: 1px solid #000; width: 50px;">Renglón</th>
+                        <th style="padding: 8px; border-right: 1px solid #000; text-align: left;">Descripción</th>
+                        <th style="padding: 8px; border-right: 1px solid #000; width: 50px;">Cant.</th>
+                        <th style="padding: 8px; border-right: 1px solid #000; text-align: right;">P. Unitario</th>
+                        <th style="padding: 8px; border-right: 1px solid #000; width: 60px;">% IVA</th>
+                        <th style="padding: 8px; text-align: right;">P. Total</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-oc-tbody">
                 </tbody>
-        </table>
+            </table>
 
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            
-            <div style="width: 60%; font-size: 11px; line-height: 1.6;">
-                <strong style="text-decoration: underline; font-size: 12px;">Condiciones Particulares de la Orden de Compra</strong>
-                <ul style="padding-left: 20px; margin-top: 5px; list-style-type: disc;">
-                    <li><strong>Forma de Pago.:</strong> <span id="pdf-oc-pago"></span></li>
-                    <li><strong>Plazo de Entrega.:</strong> <span id="pdf-oc-plazo"></span></li>
-                    <li><strong>Lugar de Entrega.:</strong> <span id="pdf-oc-envio"></span></li>
-                    <li id="caja-pdf-coti" style="display:none;">Valor cotizado es a cotización Dólar: $ <span id="pdf-oc-coti"></span></li>
-                </ul>
-                <div style="margin-top: 40px;">
-                    <div style="font-weight: bold;">Ate.:</div>
-                    <div>Testa CRM / Compras</div>
-                    <div>Alsina 2161 1°A - Mar del Plata - ventas@emtesta.com</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+
+                <div style="width: 60%; font-size: 11px; line-height: 1.6;">
+                    <strong style="text-decoration: underline; font-size: 12px;">Condiciones Particulares de la Orden de
+                        Compra</strong>
+                    <ul style="padding-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li><strong>Forma de Pago.:</strong> <span id="pdf-oc-pago"></span></li>
+                        <li><strong>Plazo de Entrega.:</strong> <span id="pdf-oc-plazo"></span></li>
+                        <li><strong>Lugar de Entrega.:</strong> <span id="pdf-oc-envio"></span></li>
+                        <li id="caja-pdf-coti" style="display:none;">Valor cotizado es a cotización Dólar: $ <span
+                                id="pdf-oc-coti"></span></li>
+                    </ul>
+                    <div style="margin-top: 40px;">
+                        <div style="font-weight: bold;">Ate.:</div>
+                        <div>Testa CRM / Compras</div>
+                        <div>Alsina 2161 1°A - Mar del Plata - ventas@emtesta.com</div>
+                    </div>
                 </div>
-            </div>
 
-            <div style="width: 35%;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #000;">
-                    <tbody id="pdf-oc-totales-tbody">
-                        <tr>
-                            <td style="padding: 6px; font-weight: bold; border-right: 1px solid #000; border-bottom: 1px solid #000;">Base Imponible</td>
-                            <td style="padding: 6px; text-align: right; border-bottom: 1px solid #000;" id="pdf-oc-subtotal"></td>
-                        </tr>
-                        <tr id="pdf-oc-total-row" style="font-weight: bold;">
-                            <td style="padding: 8px; border-right: 1px solid #000;">TOTAL</td>
-                            <td style="padding: 8px; text-align: right;" id="pdf-oc-total"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div style="text-align: right; font-size: 11px; margin-top: 5px; color: #e11d48;">
-                    <span id="pdf-oc-dto-texto" style="display:none;">Descuento aplicado: <span id="pdf-oc-dto"></span></span>
+                <div style="width: 35%;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #000;">
+                        <tbody id="pdf-oc-totales-tbody">
+                            <tr>
+                                <td
+                                    style="padding: 6px; font-weight: bold; border-right: 1px solid #000; border-bottom: 1px solid #000;">
+                                    Base Imponible</td>
+                                <td style="padding: 6px; text-align: right; border-bottom: 1px solid #000;"
+                                    id="pdf-oc-subtotal"></td>
+                            </tr>
+                            <tr id="pdf-oc-total-row" style="font-weight: bold;">
+                                <td style="padding: 8px; border-right: 1px solid #000;">TOTAL</td>
+                                <td style="padding: 8px; text-align: right;" id="pdf-oc-total"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="text-align: right; font-size: 11px; margin-top: 5px; color: #e11d48;">
+                        <span id="pdf-oc-dto-texto" style="display:none;">Descuento aplicado: <span
+                                id="pdf-oc-dto"></span></span>
+                    </div>
                 </div>
-            </div>
 
+            </div>
         </div>
     </div>
-</div>
 
-<script type="module" src="../assets/js/firebase-config.js"></script>
-<script type="module" src="../assets/js/ordenes-compra.js"></script>
-<script type="module" src="../assets/js/auth-guard.js"></script>
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/ordenes-compra.js"></script>
+    <script type="module" src="../assets/js/auth-guard.js"></script>
 
-<script>
-    const btnMenu = document.getElementById('mobile-menu-btn');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    if (btnMenu) {
-        btnMenu.addEventListener('click', () => {
-            sidebar.classList.add('open');
-            overlay.classList.add('active');
-        });
-    }
-    if (overlay) {
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-        });
-    }
-</script>
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (btnMenu) {
+            btnMenu.addEventListener('click', () => {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
+        }
+    </script>
 </body>
+
 </html>

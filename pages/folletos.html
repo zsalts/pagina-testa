@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testa CRM - Gestión de Folletos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+
+    <style>
+        .acordeon-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .acordeon-header {
+            width: 100%;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 15px;
+            color: var(--testa-blue-dark);
+            transition: background 0.2s;
+        }
+
+        .acordeon-header:hover {
+            background: #eaf5f9;
+        }
+
+        .acordeon-header .icon-arrow {
+            transition: transform 0.3s ease;
+            color: var(--testa-blue);
+        }
+
+        .acordeon-header.activo .icon-arrow {
+            transform: rotate(180deg);
+        }
+
+        .acordeon-content {
+            border-top: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .btn-edit {
+            color: var(--testa-blue);
+            background: var(--testa-blue-tint);
+        }
+
+        .btn-edit:hover {
+            background: var(--testa-blue);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Presupuesto</a>
+                <a href="folletos.html"><i class="fa-solid fa-file-pdf"></i> Folletos</a>
+                <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
+            </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title">Biblioteca de Folletos</h2>
+                </div>
+                <div class="user-profile-circle"><i class="fa-solid fa-user-circle"></i></div>
+            </header>
+
+            <main class="dashboard-content">
+
+                <section class="toolbar-section"
+                    style="flex-direction: column; align-items: flex-start; padding: 25px;">
+                    <h3 style="margin-bottom: 15px; color: var(--testa-blue-dark);">Subir Folleto al Catálogo</h3>
+                    <p style="margin-bottom: 15px; font-size: 13px; color: var(--text-muted);">
+                        <i class="fa-solid fa-circle-info"></i> Escribí el nombre para un folleto individual. <strong>Si
+                            dejás el nombre vacío y subís varios PDFs, se usarán los nombres originales</strong>.
+                    </p>
+
+                    <form id="form-subir-folleto" class="modern-form" style="width: 100%; max-width: 900px;">
+                        <div class="form-row-3" style="grid-template-columns: 1.5fr 1fr 1fr;">
+                            <div class="form-group">
+                                <label>Nombre del Folleto (Opcional)</label>
+                                <input type="text" id="nombre-folleto" placeholder="Dejar en blanco para carga masiva">
+                            </div>
+                            <div class="form-group">
+                                <label>Categoría (Carpeta)</label>
+                                <select id="categoria-folleto" required style="padding: 10px; font-weight: 600;">
+                                    <option value="">-- Elegí la categoría --</option>
+                                    <option value="Anestesia">Anestesia</option>
+                                    <option value="Bombas">Bombas</option>
+                                    <option value="Cardiologia">Cardiología</option>
+                                    <option value="Conmil">Conmil</option>
+                                    <option value="Ecografos">Ecógrafos</option>
+                                    <option value="Ginecologia">Ginecología</option>
+                                    <option value="Mobiliario">Mobiliario</option>
+                                    <option value="Monitores">Monitores</option>
+                                    <option value="Neonatologia">Neonatología</option>
+                                    <option value="Respiradores">Respiradores</option>
+                                    <option value="UTI">UTI</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Archivo/s PDF</label>
+                                <input type="file" id="archivo-folleto" accept="application/pdf" required multiple
+                                    style="padding: 7px; background: white; border: 1px dashed var(--testa-blue); cursor: pointer;">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-add width-100" id="btn-submit-folleto"
+                            style="margin-top: 10px;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Folleto/s
+                        </button>
+                    </form>
+                </section>
+
+                <section class="content-section">
+                    <div class="table-section-title"
+                        style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>Catálogo de Folletos</h3>
+                        <a href="https://drive.google.com/drive/folders/1hjc6Py5jp7AvCJ74W-NVEj9vFGnjJcWi"
+                            target="_blank" class="btn btn-secondary"
+                            style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-brands fa-google-drive" style="color: #1fa463; font-size: 16px;"></i> Abrir
+                            Google Drive
+                        </a>
+                    </div>
+                    <div id="catalogo-acordeon" style="margin-top: 15px;">
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-editar-folleto">
+        <div class="modal modern-modal modal-sm" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Editar Nombre del Folleto</h3>
+                <button type="button" class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-editar-folleto" class="modern-form">
+                <input type="hidden" id="edit-folleto-id">
+                <input type="hidden" id="edit-folleto-oldname">
+                <input type="hidden" id="edit-folleto-categoria">
+
+                <div class="form-group">
+                    <label>Nombre del Folleto</label>
+                    <input type="text" id="edit-folleto-nombre" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px;">Guardar y Sincronizar en
+                        Drive</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="../assets/js/folletos.js"></script>
+    <script type="module" src="../assets/js/auth-guard.js"></script>
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainWrapper = document.querySelector('.main-wrapper');
+
+        function toggleMenu() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed-desktop');
+                mainWrapper.classList.toggle('expanded-desktop');
+            }
+        }
+
+        if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
+</body>
+
+</html>
