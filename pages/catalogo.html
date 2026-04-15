@@ -28,7 +28,9 @@
                 <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
                 <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
                 <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Presupuesto</a>
-                <a href="catalogo.html" class="active" style="background: #e0f2fe; color: #0369a1; font-weight: bold; border-right: 4px solid #0284c7;"><i class="fa-solid fa-box-open"></i> Catálogo</a>
+                <a href="catalogo.html" class="active"
+                    style="background: #e0f2fe; color: #0369a1; font-weight: bold; border-right: 4px solid #0284c7;"><i
+                        class="fa-solid fa-box-open"></i> Catálogo</a>
                 <a href="folletos.html"><i class="fa-solid fa-file-pdf"></i> Folletos</a>
                 <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
                 <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
@@ -59,7 +61,7 @@
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
                         <input type="text" id="buscador-catalogo" placeholder="Buscar por nombre o detalle técnico...">
                     </div>
-                    
+
                     <div id="grid-productos" class="productos-grid">
                         <p style="grid-column: 1/-1; text-align: center; color: #666;">Cargando catálogo...</p>
                     </div>
@@ -72,11 +74,12 @@
         <div class="modal modern-modal">
             <div class="modal-header">
                 <h3 id="modal-titulo">Nuevo Producto</h3>
-                <button type="button" class="btn-close-modal" id="btn-cerrar-modal"><i class="fa-solid fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="btn-cerrar-modal"><i
+                        class="fa-solid fa-times"></i></button>
             </div>
             <form id="form-producto" class="modern-form">
                 <input type="hidden" id="prod-id">
-                
+
                 <div class="form-group">
                     <label>Nombre del Producto</label>
                     <input type="text" id="prod-nombre" placeholder="Ej. Monitor Multiparamétrico" required>
@@ -107,7 +110,8 @@
                     </select>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 15px;">Guardar en Catálogo</button>
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px;">Guardar en
+                        Catálogo</button>
                 </div>
             </form>
         </div>
@@ -117,31 +121,41 @@
         <div class="modal modern-modal modal-md">
             <div class="modal-header">
                 <h3>Detalle del Producto</h3>
-                <button type="button" class="btn-close-modal" id="btn-cerrar-detalle"><i class="fa-solid fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="btn-cerrar-detalle"><i
+                        class="fa-solid fa-times"></i></button>
             </div>
             <div style="padding: 25px; text-align: center;">
-                <i class="fa-solid fa-box-open" style="font-size: 50px; color: var(--testa-blue); margin-bottom: 15px;"></i>
-                
+                <i class="fa-solid fa-box-open"
+                    style="font-size: 50px; color: var(--testa-blue); margin-bottom: 15px;"></i>
+
                 <h2 id="detalle-nombre" style="color: var(--testa-blue-dark); margin-bottom: 10px;"></h2>
-                <p id="detalle-desc" style="color: #666; font-size: 14px; margin-bottom: 25px; min-height: 40px; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;"></p>
-                
-                <div style="display: flex; justify-content: space-around; align-items: center; background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px dashed var(--testa-blue);">
+                <p id="detalle-desc"
+                    style="color: #666; font-size: 14px; margin-bottom: 25px; min-height: 40px; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                </p>
+
+                <div
+                    style="display: flex; justify-content: space-around; align-items: center; background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px dashed var(--testa-blue);">
                     <div>
-                        <span style="display: block; font-size: 12px; color: #666; font-weight: bold;">PRECIO UNITARIO</span>
-                        <span id="detalle-precio" style="font-size: 22px; font-weight: 800; color: var(--testa-blue-dark);"></span>
+                        <span style="display: block; font-size: 12px; color: #666; font-weight: bold;">PRECIO
+                            UNITARIO</span>
+                        <span id="detalle-precio"
+                            style="font-size: 22px; font-weight: 800; color: var(--testa-blue-dark);"></span>
                     </div>
                     <div style="border-left: 1px solid #cbd5e1; height: 40px;"></div>
                     <div>
-                        <span style="display: block; font-size: 12px; color: #666; font-weight: bold;">ALÍCUOTA IVA</span>
+                        <span style="display: block; font-size: 12px; color: #666; font-weight: bold;">ALÍCUOTA
+                            IVA</span>
                         <span id="detalle-iva" style="font-size: 18px; font-weight: 600; color: #475569;"></span>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 15px;">
-                    <button type="button" class="btn btn-secondary" id="btn-editar-desde-detalle" style="flex: 1; padding: 12px; font-size: 15px;">
+                    <button type="button" class="btn btn-secondary" id="btn-editar-desde-detalle"
+                        style="flex: 1; padding: 12px; font-size: 15px;">
                         <i class="fa-solid fa-pen"></i> Editar
                     </button>
-                    <button type="button" class="btn btn-danger-outline" id="btn-borrar-desde-detalle" style="flex: 1; padding: 12px; font-size: 15px;">
+                    <button type="button" class="btn btn-danger-outline" id="btn-borrar-desde-detalle"
+                        style="flex: 1; padding: 12px; font-size: 15px;">
                         <i class="fa-solid fa-trash"></i> Eliminar
                     </button>
                 </div>
@@ -151,7 +165,7 @@
 
     <script type="module" src="../assets/js/catalogo.js"></script>
     <script type="module" src="../assets/js/auth-guard.js"></script>
-    
+
     <script>
         const btnMenu = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
@@ -171,4 +185,5 @@
         if (overlay) overlay.addEventListener('click', toggleMenu);
     </script>
 </body>
+
 </html>
