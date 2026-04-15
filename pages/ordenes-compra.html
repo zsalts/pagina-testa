@@ -55,7 +55,7 @@
                 <div class="toolbar-section">
                     <div class="search-bar">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="buscador-oc" placeholder="Buscar por Nro, Proveedor o Cliente...">
+                        <input type="text" id="buscador-oc" placeholder="Buscar por Nro, Proveedor o Transporte...">
                     </div>
                     <div class="action-buttons">
                         <button class="btn btn-add" id="btn-nueva-oc">
@@ -70,7 +70,7 @@
                             <tr>
                                 <th>Fecha y Nro</th>
                                 <th>Proveedor</th>
-                                <th>Cliente Referencia</th>
+                                <th>Medio de Transporte</th>
                                 <th>Documento</th>
                                 <th>Estado Visita</th>
                                 <th>Acciones</th>
@@ -147,6 +147,19 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>Medio de Transporte / Envío</label>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="oc-transporte" required class="form-control" style="border-color:var(--testa-blue);">
+                            <option value="">-- Seleccionar Transporte --</option>
+                        </select>
+                        <button id="btn-nuevo-transporte" type="button" class="btn btn-add"
+                            style="padding: 10px 15px; border-radius: 6px;" title="Cargar nuevo transporte">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-top: 20px;">
                     <label style="color:var(--testa-blue-dark); font-weight:bold;">2. Costos de Equipos y Vinculación al
                         Catálogo</label>
@@ -218,7 +231,6 @@
             <div style="margin-bottom: 20px; line-height: 1.6;">
                 <div><strong>Señores.:</strong> <span id="pdf-oc-prov"></span></div>
                 <div><strong>Atención.:</strong> <span id="pdf-oc-atte"></span></div>
-                <div><strong>Cliente Ref.:</strong> <span id="pdf-oc-cliente"></span></div>
                 <div><strong>Presente.</strong></div>
             </div>
 
@@ -247,6 +259,7 @@
                         <li><strong>Forma de Pago.:</strong> <span id="pdf-oc-pago"></span></li>
                         <li><strong>Plazo de Entrega.:</strong> <span id="pdf-oc-plazo"></span></li>
                         <li><strong>Lugar de Entrega.:</strong> <span id="pdf-oc-envio"></span></li>
+                        <li><strong>Medio de Envío.:</strong> <span id="pdf-oc-transporte"></span></li>
                         <li id="caja-pdf-coti" style="display:none;">Valor cotizado es a cotización Dólar: $ <span
                                 id="pdf-oc-coti"></span></li>
                     </ul>

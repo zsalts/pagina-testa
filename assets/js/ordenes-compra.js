@@ -6,10 +6,11 @@ const urlGoogleScript = "https://script.google.com/macros/s/AKfycby_iXJtc34gbu_Y
 
 let presupuestosDisponibles = [];
 let proveedoresDisponibles = [];
+let transportesDisponibles = [];
 let ultimoNroOC = 0; 
 
 // ==========================================
-// 1. CARGA DE DATOS (Proveedores y Presupuestos)
+// 1. CARGA DE DATOS (Proveedores, Transportes y Presupuestos)
 // ==========================================
 onSnapshot(collection(db, "proveedores"), (snap) => {
     proveedoresDisponibles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -21,6 +22,19 @@ onSnapshot(collection(db, "proveedores"), (snap) => {
             selectProv.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
         });
         selectProv.value = valorPrevio;
+    }
+});
+
+onSnapshot(collection(db, "transportes"), (snap) => {
+    transportesDisponibles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const selectTrans = document.getElementById('oc-transporte');
+    if (selectTrans) {
+        const valorPrevio = selectTrans.value;
+        selectTrans.innerHTML = '<option value="">-- Seleccionar Transporte --</option>';
+        transportesDisponibles.sort((a,b) => (a.nombre || '').localeCompare(b.nombre || '')).forEach(t => {
+            selectTrans.innerHTML += `<option value="${t.nombre}">${t.nombre}</option>`;
+        });
+        selectTrans.value = valorPrevio;
     }
 });
 
@@ -42,7 +56,7 @@ onSnapshot(collection(db, "presupuestos"), (snap) => {
 });
 
 // ==========================================
-// 2. AGREGAR NUEVO PROVEEDOR AL VUELO
+// 2. AGREGAR NUEVO PROVEEDOR / TRANSPORTE AL VUELO
 // ==========================================
 document.getElementById('btn-nuevo-proveedor')?.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -53,6 +67,19 @@ document.getElementById('btn-nuevo-proveedor')?.addEventListener('click', async 
             alert("¡Proveedor guardado con éxito! Ya podés seleccionarlo en la lista.");
         } catch (error) {
             alert("Error al guardar el proveedor.");
+        }
+    }
+});
+
+document.getElementById('btn-nuevo-transporte')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const nombreNuevo = prompt("Ingresá el nombre de la nueva empresa de Transporte/Envío:");
+    if (nombreNuevo && nombreNuevo.trim() !== "") {
+        try {
+            await addDoc(collection(db, "transportes"), { nombre: nombreNuevo.trim() });
+            alert("¡Transporte guardado con éxito! Ya podés seleccionarlo en la lista.");
+        } catch (error) {
+            alert("Error al guardar el transporte.");
         }
     }
 });
@@ -82,7 +109,6 @@ document.addEventListener('click', (e) => {
 // 4. ARMAR TABLA DE ÍTEMS (SIN CATÁLOGO)
 // ==========================================
 function crearFilaHTML(desc, cant) {
-    // La descripción ahora es un input editable para que muestre el nombre completo y puedas retocarlo
     let descInput = `<input type="text" class="oc-item-desc" value="${desc || ''}" placeholder="Descripción del equipo..." required style="width:100%; padding:8px; border:1px solid var(--testa-blue); border-radius:4px; font-weight: 500; color: var(--testa-blue-dark);">`;
     
     let cantInput = `<input type="number" class="oc-item-cant" value="${cant}" style="width:100%; padding:8px; border:1px solid var(--testa-blue); border-radius:4px;" min="1" required>`;
@@ -206,11 +232,11 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
         document.getElementById('pdf-oc-nro-titulo').textContent = nroOC;
         document.getElementById('pdf-oc-prov').textContent = document.getElementById('oc-proveedor').value;
         document.getElementById('pdf-oc-atte').textContent = document.getElementById('oc-atte').value;
-        document.getElementById('pdf-oc-cliente').textContent = pElegido.medico;
 
         document.getElementById('pdf-oc-pago').textContent = document.getElementById('oc-pago').value;
         document.getElementById('pdf-oc-plazo').textContent = document.getElementById('oc-plazo').value;
         document.getElementById('pdf-oc-envio').textContent = document.getElementById('oc-envio').value;
+        document.getElementById('pdf-oc-transporte').textContent = document.getElementById('oc-transporte').value;
         
         const coti = document.getElementById('oc-coti').value;
         const cajaCoti = document.getElementById('caja-pdf-coti');
@@ -231,7 +257,6 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
 
         const filas = document.querySelectorAll('.oc-item-row');
         filas.forEach((fila, index) => {
-            // Toma el valor del input directo, sin pasar por el catálogo
             const descFinal = fila.querySelector('.oc-item-desc').value || 'Sin descripción';
             const cant = parseFloat(fila.querySelector('.oc-item-cant').value);
             const costo = parseFloat(fila.querySelector('.oc-item-costo').value);
@@ -312,7 +337,7 @@ document.getElementById('form-oc')?.addEventListener('submit', async (e) => {
             fecha: new Date().toISOString(),
             nroOC: nroOC,
             proveedor: document.getElementById('oc-proveedor').value,
-            clienteRef: pElegido.medico,
+            transporte: document.getElementById('oc-transporte').value,
             pdfUrl: pdfUrl,
             presupuestoId: pElegido.id,
             carpetaDrive: carpetaDestino 
@@ -401,7 +426,7 @@ onSnapshot(collection(db, "ordenes_compra"), (snap) => {
             <tr>
                 <td><strong>${f}</strong><br><span style="font-size:10px; color:#666;">NRO: ${oc.nroOC}</span></td>
                 <td style="color: var(--testa-blue-dark); font-weight: bold;">${oc.proveedor}</td>
-                <td style="font-size: 12px;">${oc.clienteRef}</td>
+                <td style="font-size: 13px; font-weight: 500; color: #334155;">${oc.transporte || 'No especificado'}</td>
                 <td><a href="${oc.pdfUrl}" target="_blank" class="btn btn-secondary-tint" style="padding: 5px 10px;"><i class="fa-solid fa-file-pdf" style="color: #e11d48;"></i> Ver OC</a></td>
                 <td><span style="background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"><i class="fa-solid fa-check-double"></i> Visita Completada</span></td>
                 <td><button class="btn-icon btn-delete" onclick="window.borrarOC('${oc.id}')" title="Borrar OC"><i class="fa-regular fa-trash-can"></i></button></td>
