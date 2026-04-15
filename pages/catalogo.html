@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Productos | Testa CRM</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#003b5c">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/img/IMG_2317.png" alt="Testa" class="logo-img" onerror="this.style.display='none'">
+                <div class="logo-text">
+                    <span class="brand">TESTA</span>
+                    <span class="sub-brand">CRM System</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html"><i class="fa-solid fa-hospital-user"></i> Visitas CRM</a>
+                <a href="presupuesto.html"><i class="fa-solid fa-folder-open"></i> Expedientes</a>
+                <a href="generador-pdf.html"><i class="fa-solid fa-file-invoice-dollar"></i> Presupuesto</a>
+                <a href="catalogo.html" class="active" style="background: #e0f2fe; color: #0369a1; font-weight: bold; border-right: 4px solid #0284c7;"><i class="fa-solid fa-box-open"></i> Catálogo</a>
+                <a href="folletos.html"><i class="fa-solid fa-file-pdf"></i> Folletos</a>
+                <a href="ordenes-compra.html"><i class="fa-solid fa-cart-shopping"></i> Órdenes de Compra</a>
+                <a href="facturas-iva.html"><i class="fa-solid fa-file-invoice"></i> Facturas IVA</a>
+            </nav>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <div class="main-wrapper">
+
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="top-header-title">Catálogo de Productos</h2>
+                </div>
+                <div class="user-profile-circle"><i class="fa-solid fa-power-off"></i></div>
+            </header>
+
+            <main class="dashboard-content">
+                <div style="text-align: right; margin-bottom: 15px;">
+                    <button type="button" class="btn btn-add" id="btn-nuevo-producto" style="padding: 12px 20px;">
+                        <i class="fa-solid fa-plus"></i> Nuevo Producto
+                    </button>
+                </div>
+
+                <div class="table-card" style="box-sizing: border-box; padding-bottom: 20px;">
+                    <div class="search-bar" style="margin: 15px; border-bottom: none;">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="buscador-catalogo" placeholder="Buscar por nombre o detalle técnico...">
+                    </div>
+                    
+                    <div id="grid-productos" class="productos-grid">
+                        <p style="grid-column: 1/-1; text-align: center; color: #666;">Cargando catálogo...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-producto">
+        <div class="modal modern-modal">
+            <div class="modal-header">
+                <h3 id="modal-titulo">Nuevo Producto</h3>
+                <button type="button" class="btn-close-modal" id="btn-cerrar-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-producto" class="modern-form">
+                <input type="hidden" id="prod-id">
+                
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="prod-nombre" placeholder="Ej. Monitor Multiparamétrico" required>
+                </div>
+                <div class="form-group">
+                    <label>Detalles Técnicos</label>
+                    <textarea id="prod-detalles" placeholder="Modelo, características, accesorios..."></textarea>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Precio</label>
+                        <input type="number" id="prod-precio" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Moneda</label>
+                        <select id="prod-moneda">
+                            <option value="USD">USD</option>
+                            <option value="ARS">ARS</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>IVA %</label>
+                    <select id="prod-iva">
+                        <option value="21">21%</option>
+                        <option value="10.5">10.5%</option>
+                        <option value="0">Exento (0%)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 15px;">Guardar en Catálogo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-detalle-producto">
+        <div class="modal modern-modal modal-md">
+            <div class="modal-header">
+                <h3>Detalle del Producto</h3>
+                <button type="button" class="btn-close-modal" id="btn-cerrar-detalle"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div style="padding: 25px; text-align: center;">
+                <i class="fa-solid fa-box-open" style="font-size: 50px; color: var(--testa-blue); margin-bottom: 15px;"></i>
+                
+                <h2 id="detalle-nombre" style="color: var(--testa-blue-dark); margin-bottom: 10px;"></h2>
+                <p id="detalle-desc" style="color: #666; font-size: 14px; margin-bottom: 25px; min-height: 40px; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;"></p>
+                
+                <div style="display: flex; justify-content: space-around; align-items: center; background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px dashed var(--testa-blue);">
+                    <div>
+                        <span style="display: block; font-size: 12px; color: #666; font-weight: bold;">PRECIO UNITARIO</span>
+                        <span id="detalle-precio" style="font-size: 22px; font-weight: 800; color: var(--testa-blue-dark);"></span>
+                    </div>
+                    <div style="border-left: 1px solid #cbd5e1; height: 40px;"></div>
+                    <div>
+                        <span style="display: block; font-size: 12px; color: #666; font-weight: bold;">ALÍCUOTA IVA</span>
+                        <span id="detalle-iva" style="font-size: 18px; font-weight: 600; color: #475569;"></span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" class="btn btn-secondary" id="btn-editar-desde-detalle" style="flex: 1; padding: 12px; font-size: 15px;">
+                        <i class="fa-solid fa-pen"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-danger-outline" id="btn-borrar-desde-detalle" style="flex: 1; padding: 12px; font-size: 15px;">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../assets/js/catalogo.js"></script>
+    <script type="module" src="../assets/js/auth-guard.js"></script>
+    
+    <script>
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainWrapper = document.querySelector('.main-wrapper');
+
+        function toggleMenu() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed-desktop');
+                mainWrapper.classList.toggle('expanded-desktop');
+            }
+        }
+        if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>
