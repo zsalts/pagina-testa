@@ -16,6 +16,8 @@ const nombresModulos = {
     "index.html": "Visitas CRM",
     "presupuesto.html": "Expedientes",
     "generador-pdf.html": "Presupuestos",
+    "catalogo.html": "Catálogo",
+    "folletos.html": "Folletos",
     "ordenes-compra.html": "Órdenes de Compra",
     "facturas-iva.html": "Facturas IVA"
 };
