@@ -110,13 +110,14 @@
                     </p>
 
                     <form id="form-subir-folleto" class="modern-form" style="width: 100%; max-width: 900px;">
-                        <div class="form-row-3" style="grid-template-columns: 1.5fr 1fr 1fr;">
+                        <div class="form-row-3" style="grid-template-columns: 1.5fr 1.5fr 1fr;">
                             <div class="form-group">
                                 <label>Nombre del Folleto (Opcional)</label>
                                 <input type="text" id="nombre-folleto" placeholder="Dejar en blanco para carga masiva">
                             </div>
                             <div class="form-group">
                                 <label>Categoría (Carpeta)</label>
+                                <!-- BOTONES DE CREAR Y EDITAR CARPETA -->
                                 <div style="display: flex; gap: 8px;">
                                     <select id="categoria-folleto" required style="width: 100%; padding: 10px; font-weight: 600;">
                                         <option value="">-- Elegí la categoría --</option>
@@ -132,8 +133,11 @@
                                         <option value="Respiradores">Respiradores</option>
                                         <option value="UTI">UTI</option>
                                     </select>
-                                    <button type="button" id="btn-crear-carpeta" class="btn btn-secondary-tint" style="padding: 0 15px;" title="Crear Nueva Carpeta">
+                                    <button type="button" id="btn-abrir-crear-carpeta" class="btn btn-secondary-tint" style="padding: 0 15px;" title="Crear Nueva Carpeta">
                                         <i class="fa-solid fa-folder-plus"></i>
+                                    </button>
+                                    <button type="button" id="btn-abrir-editar-carpeta" class="btn btn-secondary-tint" style="padding: 0 15px; color: #b45309; border-color: #fde047; background: #fefce8;" title="Renombrar Carpeta">
+                                        <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                             </div>
@@ -169,6 +173,9 @@
         </div>
     </div>
 
+    <!-- MODALES -->
+
+    <!-- Modal Editar Archivo -->
     <div class="modal-overlay" id="modal-editar-folleto">
         <div class="modal modern-modal modal-sm" style="max-width: 500px;">
             <div class="modal-header">
@@ -185,8 +192,46 @@
                     <input type="text" id="edit-folleto-nombre" required>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-add width-100" style="padding: 12px;">Guardar y Sincronizar en
-                        Drive</button>
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px;">Guardar y Sincronizar en Drive</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Crear Carpeta (NUEVO) -->
+    <div class="modal-overlay" id="modal-crear-carpeta">
+        <div class="modal modern-modal modal-sm" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-folder-plus" style="color: var(--testa-blue);"></i> Nueva Carpeta</h3>
+                <button type="button" class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-crear-carpeta" class="modern-form">
+                <div class="form-group">
+                    <label>Nombre de la nueva categoría</label>
+                    <input type="text" id="input-nueva-carpeta" placeholder="Ej: Ecógrafos Portátiles" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px;">Confirmar y Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Carpeta (NUEVO) -->
+    <div class="modal-overlay" id="modal-editar-carpeta">
+        <div class="modal modern-modal modal-sm" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square" style="color: #b45309;"></i> Renombrar Carpeta</h3>
+                <button type="button" class="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="form-editar-carpeta" class="modern-form">
+                <input type="hidden" id="edit-carpeta-oldname">
+                <div class="form-group">
+                    <label>Nuevo nombre para la carpeta seleccionada</label>
+                    <input type="text" id="input-editar-carpeta" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-add width-100" style="padding: 12px; background: #b45309;">Guardar Cambios</button>
                 </div>
             </form>
         </div>
