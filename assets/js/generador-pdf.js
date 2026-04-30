@@ -309,19 +309,8 @@ const fileToBase64 = (blob) => {
     });
 };
 
-<<<<<<< HEAD
 onSnapshot(collection(db, "folletos"), (snap) => {
     FOLLETOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-=======
-// ==========================================
-// LÓGICA DEL BUSCADOR DE FOLLETOS (En Vivo)
-// ==========================================
-
-// ACÁ ESTÁ LA MAGIA QUE PEDISTE: onSnapshot escucha Firebase en tiempo real
-onSnapshot(collection(db, "folletos"), (snap) => {
-    FOLLETOS_DB = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // Si tenías el buscador abierto mientras editabas, se actualiza solo
->>>>>>> 901fbaa405db98a92c5e3798e3767a29e97be88d
     filtrarYRenderizarFolletos();
 });
 
@@ -537,7 +526,6 @@ if(formPresupuesto) {
             const element = document.getElementById('pdf-content');
             if(!element) throw new Error("No se encontró el contenedor del PDF");
             
-<<<<<<< HEAD
             // CONFIGURACIÓN DE HTML2PDF ACTUALIZADA PARA SALTOS DE PÁGINA A4
             const opt = { 
                 margin: 0,
@@ -546,13 +534,6 @@ if(formPresupuesto) {
                 html2canvas: { scale: 2, useCORS: true }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['css', 'legacy'], avoid: 'tr' }
-=======
-            const opt = { 
-                margin: 0, 
-                image: { type: 'jpeg', quality: 1 }, 
-                html2canvas: { scale: 2, width: 800, height: 1131, useCORS: true }, 
-                jsPDF: { unit: 'px', format: [800, 1131], orientation: 'portrait' } 
->>>>>>> 901fbaa405db98a92c5e3798e3767a29e97be88d
             };
 
             const pdfObj = await html2pdf().set(opt).from(element).toPdf().get('pdf');

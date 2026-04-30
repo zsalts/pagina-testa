@@ -248,6 +248,7 @@
         </div>
     </div>
 
+    <!-- MODAL INICIAR EXPEDIENTE MODIFICADO (Agregado "multiple") -->
     <div class="modal-overlay" id="modal-presupuesto">
         <div class="modal modern-modal">
             <div class="modal-header">
@@ -270,12 +271,15 @@
                     </select>
                 </div>
                 <div class="form-group"><label>Fecha de Envío</label><input type="date" id="pres-fecha" required></div>
+                
                 <div class="form-group">
-                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Archivo del
-                        Presupuesto (PDF)</label>
-                    <input type="file" id="pres-archivo" accept=".pdf" required
+                    <label style="color: var(--testa-blue-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Archivos del
+                        Presupuesto (Podés seleccionar varios PDFs)</label>
+                    <!-- ACÁ ESTÁ EL CAMBIO CLAVE: se agregó el atributo "multiple" -->
+                    <input type="file" id="pres-archivo" accept=".pdf" multiple required
                         style="background: white; border: 2px dashed var(--border-color); padding: 15px; cursor: pointer; width: 100%; box-sizing: border-box;">
                 </div>
+                
                 <div class="form-group">
                     <label>Estado Inicial</label>
                     <select id="pres-estado">
@@ -295,6 +299,7 @@
         </div>
     </div>
 
+    <!-- MODAL ADJUNTAR DOCUMENTACIÓN MODIFICADO (Agregado "multiple") -->
     <div class="modal-overlay" id="modal-archivo-extra">
         <div class="modal modern-modal">
             <div class="modal-header">
@@ -317,8 +322,9 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label><i class="fa-solid fa-file-pdf"></i> Seleccionar PDF / Imagen</label>
-                    <input type="file" id="extra-archivo" accept=".pdf,.jpg,.png" required
+                    <label><i class="fa-solid fa-file-pdf"></i> Seleccionar PDF / Imagen (Podés seleccionar varios)</label>
+                    <!-- ACÁ TAMBIÉN: se agregó el atributo "multiple" -->
+                    <input type="file" id="extra-archivo" accept=".pdf,.jpg,.png" multiple required
                         style="background: white; border: 2px dashed var(--border-color); padding: 15px; width: 100%; box-sizing: border-box;">
                 </div>
                 <div class="modal-footer">

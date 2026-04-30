@@ -117,20 +117,25 @@
                             </div>
                             <div class="form-group">
                                 <label>Categoría (Carpeta)</label>
-                                <select id="categoria-folleto" required style="padding: 10px; font-weight: 600;">
-                                    <option value="">-- Elegí la categoría --</option>
-                                    <option value="Anestesia">Anestesia</option>
-                                    <option value="Bombas">Bombas</option>
-                                    <option value="Cardiologia">Cardiología</option>
-                                    <option value="Conmil">Conmil</option>
-                                    <option value="Ecografos">Ecógrafos</option>
-                                    <option value="Ginecologia">Ginecología</option>
-                                    <option value="Mobiliario">Mobiliario</option>
-                                    <option value="Monitores">Monitores</option>
-                                    <option value="Neonatologia">Neonatología</option>
-                                    <option value="Respiradores">Respiradores</option>
-                                    <option value="UTI">UTI</option>
-                                </select>
+                                <div style="display: flex; gap: 8px;">
+                                    <select id="categoria-folleto" required style="width: 100%; padding: 10px; font-weight: 600;">
+                                        <option value="">-- Elegí la categoría --</option>
+                                        <option value="Anestesia">Anestesia</option>
+                                        <option value="Bombas">Bombas</option>
+                                        <option value="Cardiologia">Cardiología</option>
+                                        <option value="Conmil">Conmil</option>
+                                        <option value="Ecografos">Ecógrafos</option>
+                                        <option value="Ginecologia">Ginecología</option>
+                                        <option value="Mobiliario">Mobiliario</option>
+                                        <option value="Monitores">Monitores</option>
+                                        <option value="Neonatologia">Neonatología</option>
+                                        <option value="Respiradores">Respiradores</option>
+                                        <option value="UTI">UTI</option>
+                                    </select>
+                                    <button type="button" id="btn-crear-carpeta" class="btn btn-secondary-tint" style="padding: 0 15px;" title="Crear Nueva Carpeta">
+                                        <i class="fa-solid fa-folder-plus"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Archivo/s PDF</label>

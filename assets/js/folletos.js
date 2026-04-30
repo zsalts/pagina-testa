@@ -14,6 +14,52 @@ const fileToBase64 = (file) => {
     });
 };
 
+// ==========================================
+// LÓGICA DE CREAR NUEVA CARPETA (NUEVO)
+// ==========================================
+const btnCrearCarpeta = document.getElementById('btn-crear-carpeta');
+if (btnCrearCarpeta) {
+    btnCrearCarpeta.addEventListener('click', async () => {
+        const nuevaCarpeta = prompt("Escribí el nombre de la nueva categoría / carpeta:");
+        
+        if (!nuevaCarpeta || nuevaCarpeta.trim() === "") return;
+        
+        const nombreLimpio = nuevaCarpeta.trim();
+        const selectCategoria = document.getElementById('categoria-folleto');
+        
+        let existe = false;
+        Array.from(selectCategoria.options).forEach(opt => {
+            if (opt.value.toLowerCase() === nombreLimpio.toLowerCase()) existe = true;
+        });
+
+        if (!existe) {
+            const nuevaOpcion = document.createElement('option');
+            nuevaOpcion.value = nombreLimpio;
+            nuevaOpcion.textContent = nombreLimpio;
+            selectCategoria.appendChild(nuevaOpcion);
+        }
+        selectCategoria.value = nombreLimpio;
+
+        try {
+            await fetch(urlGoogleScript, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ 
+                    action: "createFolder", 
+                    carpeta: nombreLimpio 
+                })
+            });
+            alert(`¡Carpeta "${nombreLimpio}" creada y seleccionada con éxito!`);
+        } catch (err) {
+            console.error("Error al crear la carpeta en Drive", err);
+            alert(`La categoría "${nombreLimpio}" se seleccionó, pero podría no haberse creado en Drive. Se creará automáticamente al subir el primer folleto.`);
+        }
+    });
+}
+
+// ==========================================
+// LÓGICA SUBIDA DE FOLLETOS
+// ==========================================
 const formSubir = document.getElementById('form-subir-folleto');
 const btnSubmit = document.getElementById('btn-submit-folleto');
 
@@ -125,6 +171,21 @@ onSnapshot(collection(db, "folletos"), (snapshot) => {
 
     let html = '';
     const categoriasOrdenadas = Object.keys(folletosPorCategoria).sort();
+
+    // --- NUEVO: Agregar categorías personalizadas al select dinámicamente ---
+    const selectCategoria = document.getElementById('categoria-folleto');
+    if (selectCategoria) {
+        const categoriasExistentes = Array.from(selectCategoria.options).map(o => o.value);
+        categoriasOrdenadas.forEach(cat => {
+            if (!categoriasExistentes.includes(cat) && cat !== "Sin Categoría") {
+                const nuevaOpcion = document.createElement('option');
+                nuevaOpcion.value = cat;
+                nuevaOpcion.textContent = cat;
+                selectCategoria.appendChild(nuevaOpcion);
+            }
+        });
+    }
+    // -----------------------------------------------------------------------
 
     categoriasOrdenadas.forEach(categoria => {
         const catId = categoria.replace(/[^a-zA-Z0-9]/g, "");

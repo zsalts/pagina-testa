@@ -364,21 +364,28 @@ if (presMedico) {
     });
 }
 
+// ==========================================
+// FORMULARIO: INICIAR NUEVO EXPEDIENTE (MÚLTIPLES ARCHIVOS)
+// ==========================================
 const formPres = document.getElementById('form-presupuesto');
 if (formPres) {
     formPres.onsubmit = async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button[type="submit"]');
-        const archivoFisico = document.getElementById('pres-archivo').files[0];
+        const archivos = document.getElementById('pres-archivo').files;
         const medico = document.getElementById('pres-medico').value.trim();
-        if (!archivoFisico) return;
+        
+        if (archivos.length === 0) return;
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
         try {
-            const nombreOriginalConExt = archivoFisico.name;
+            // Se usa el nombre del primer archivo para generar la carpeta principal
+            const primerArchivo = archivos[0];
+            const nombreOriginalConExt = primerArchivo.name;
             const nombreOriginalSinExt = nombreOriginalConExt.split('.').slice(0, -1).join('.');
+            
             const fechaInput = document.getElementById('pres-fecha').value; 
             const partes = fechaInput.split('-');
             const fechaFormateada = `${partes[2]} - ${partes[1]} - ${partes[0].substring(2)}`;
@@ -386,23 +393,43 @@ if (formPres) {
             
             const codigoUnico = Date.now().toString().slice(-4);
             const nombreCarpeta = `${fechaFormateada} - ${medicoLimpio} - ${nombreOriginalSinExt} - ${codigoUnico}`;
-            const nombreArchivoFinal = nombreOriginalConExt;
 
-            const refArch = ref(storage, `expedientes/${nombreCarpeta}/${nombreArchivoFinal}`);
-            const snap = await uploadBytes(refArch, archivoFisico);
-            const urlPublica = await getDownloadURL(snap.ref);
+            let linkPrincipal = "";
+            let archivosExtraSubidos = {};
 
+            // Iterar y subir TODOS los archivos seleccionados
+            for (let i = 0; i < archivos.length; i++) {
+                const file = archivos[i];
+                const refArch = ref(storage, `expedientes/${nombreCarpeta}/${file.name}`);
+                const snap = await uploadBytes(refArch, file);
+                const urlPublica = await getDownloadURL(snap.ref);
+
+                if (i === 0) {
+                    linkPrincipal = urlPublica; // El primer archivo queda como principal
+                } else {
+                    archivosExtraSubidos[`Presupuesto Adicional ${i}`] = urlPublica; // El resto se va a extras
+                }
+
+                // Enviar a Drive archivo por archivo
+                fetch(urlGoogleScript, {
+                    method: 'POST', mode: 'no-cors',
+                    body: JSON.stringify({ carpeta: nombreCarpeta, archivo: file.name, link: urlPublica })
+                }).catch(e => console.log("Drive Error:", e));
+            }
+
+            // Guardar en la base de datos
             await addDoc(collection(db, "presupuestos"), {
                 medico, 
                 fecha: fechaInput,
                 estado: document.getElementById('pres-estado').value,
                 detalle: document.getElementById('pres-detalle').value.trim(),
                 nombreArchivo: nombreOriginalSinExt, 
-                link: urlPublica, 
+                link: linkPrincipal, 
                 carpetaUnica: nombreCarpeta, 
-                archivosExtra: {}
+                archivosExtra: archivosExtraSubidos
             });
 
+            // Vincular visita si fue seleccionada
             const visitaVal = document.getElementById('pres-visita').value;
             if (visitaVal) {
                 const [cId, vIdx] = visitaVal.split('_');
@@ -410,21 +437,25 @@ if (formPres) {
                 const cSnap = await getDoc(cRef);
                 if (cSnap.exists()) {
                     let vits = cSnap.data().visitas;
-                    vits[vIdx].presupuestoLink = urlPublica;
+                    vits[vIdx].presupuestoLink = linkPrincipal;
                     await updateDoc(cRef, { visitas: vits });
                 }
             }
 
-            fetch(urlGoogleScript, {
-                method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({ carpeta: nombreCarpeta, archivo: nombreArchivoFinal, link: urlPublica })
-            }).catch(e => console.log("Drive Error:", e));
-
             document.getElementById('modal-presupuesto')?.classList.remove('active');
-        } catch (e) { alert("Error al guardar."); } finally { btn.disabled = false; btn.innerText = "Guardar Presupuesto"; }
+        } catch (e) { 
+            alert("Error al guardar."); 
+            console.error(e);
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "Guardar Presupuesto"; 
+        }
     };
 }
 
+// ==========================================
+// FORMULARIO: ADJUNTAR DOCUMENTACIÓN (MÚLTIPLES ARCHIVOS)
+// ==========================================
 const formExtra = document.getElementById('form-archivo-extra');
 if (formExtra) {
     formExtra.onsubmit = async (e) => {
@@ -433,41 +464,56 @@ if (formExtra) {
         const id = document.getElementById('extra-id').value;
         const carpeta = document.getElementById('extra-carpeta').value;
         const tipo = document.getElementById('extra-tipo').value;
-        const file = document.getElementById('extra-archivo').files[0];
-        if (!file) return;
+        const archivos = document.getElementById('extra-archivo').files;
+        
+        if (archivos.length === 0) return;
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...';
+        
         try {
-            const nombreArchivoExtra = file.name;
-            const refArch = ref(storage, `expedientes/${carpeta}/${nombreArchivoExtra}`);
-            const snap = await uploadBytes(refArch, file);
-            const url = await getDownloadURL(snap.ref);
+            const updates = {};
+            
+            for (let i = 0; i < archivos.length; i++) {
+                const file = archivos[i];
+                const refArch = ref(storage, `expedientes/${carpeta}/${file.name}`);
+                const snap = await uploadBytes(refArch, file);
+                const url = await getDownloadURL(snap.ref);
 
+                // Si se suben varios del mismo tipo (ej: 3 Facturas), se enumeran: "Factura 1", "Factura 2", etc.
+                let claveDocumento = archivos.length > 1 ? `${tipo} ${i + 1}` : tipo;
+                updates[`archivosExtra.${claveDocumento}`] = url;
+
+                fetch(urlGoogleScript, {
+                    method: 'POST', mode: 'no-cors',
+                    body: JSON.stringify({ carpeta: carpeta, archivo: file.name, link: url })
+                }).catch(e => console.log("Drive Error:", e));
+            }
+
+            // Actualizar Firestore con todos los archivos juntos
             const pRef = doc(db, "presupuestos", id);
-            await updateDoc(pRef, { [`archivosExtra.${tipo}`]: url });
+            await updateDoc(pRef, updates);
 
+            // Verificar si con esto se completaron los obligatorios para Auto-Cerrar
             const pGuardado = listaPresupuestos.find(x => x.id === id);
             if (pGuardado) {
                 let archivosActuales = pGuardado.archivosExtra ? Object.keys(pGuardado.archivosExtra) : [];
+                // Agregamos la base del tipo para la validación
                 if (!archivosActuales.includes(tipo)) archivosActuales.push(tipo);
 
                 const obligatorios = ["Orden de Compra Proveedor", "Factura", "Remito", "Recibo de Cobro"];
-                const tieneTodos = obligatorios.every(req => archivosActuales.includes(req));
+                // Revisamos si alguna de las claves actuales contiene la palabra obligatoria
+                const tieneTodos = obligatorios.every(req => archivosActuales.some(k => k.includes(req)));
 
                 if (tieneTodos && pGuardado.estado !== 'cerrado') {
                     await updateDoc(pRef, { estado: 'cerrado' });
                 }
             }
 
-            fetch(urlGoogleScript, {
-                method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({ carpeta: carpeta, archivo: nombreArchivoExtra, link: url })
-            }).catch(e => console.log("Drive Error:", e));
-
             document.getElementById('modal-archivo-extra')?.classList.remove('active');
         } catch (e) { 
             alert("Error al adjuntar."); 
+            console.error(e);
         } finally { 
             btn.disabled = false; 
             btn.innerText = "Subir a la Carpeta";
